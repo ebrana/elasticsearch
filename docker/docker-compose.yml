@@ -1,0 +1,53 @@
+version: '3.3'
+services:
+    #PHP Service
+    elasticsearch-app:
+        build:
+            context: ./php-fpm
+            dockerfile: Dockerfile
+            args:
+                TIMEZONE: "${TIMEZONE}"
+        container_name: elasticsearch-app
+        restart: unless-stopped
+        tty: true
+        working_dir: /var/www
+        expose:
+            - "9003"
+        volumes:
+            - ./../:/var/www
+        networks:
+            - ebr-network
+    #Elasticsearch Service
+    ebr-elasticsearch:
+        build:
+            context: ./elastic
+            dockerfile: Dockerfile
+        networks:
+            - ebr-network
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+        environment:
+            - discovery.type=single-node
+            - ELASTIC_PASSWORD=test
+            - xpack.security.enabled=false
+    #Kibana service
+    ebr-kibana:
+        image: docker.elastic.co/kibana/kibana:8.12.0
+        depends_on:
+            - ebr-elasticsearch
+        ports:
+            - "5601:5601"
+        links:
+            - ebr-elasticsearch:ebr-elasticsearch
+        networks:
+            - ebr-network
+        environment:
+            SERVERNAME: kibana
+            ELASTICSEARCH_HOSTS: '["http://ebr-elasticsearch:9200"]'
+            ELASTICSEARCH_USERNAME: kibana_system
+            ELASTICSEARCH_PASSWORD: oSCnuSE_02hn59GVpdWG
+#Docker Networks
+networks:
+    ebr-network:
+        driver: bridge

@@ -1,0 +1,159 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Elasticsearch\Tests\Entity\Abstracted;
+
+use Doctrine\Common\Collections\ArrayCollection;
+use Elasticsearch\Mapping\Index;
+use Elasticsearch\Mapping\Settings\Analyzer;
+use Elasticsearch\Mapping\Settings\Filters\NgramAbstractFilter;
+use Elasticsearch\Mapping\Settings\Tokenizers\Enums\TokenChars;
+use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
+use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
+use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
+use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
+use Elasticsearch\Mapping\Types\ObjectsAndRelational\FieldTemplate;
+use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
+use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Types\Text\TextType;
+use Elasticsearch\Tests\Entity\Translations;
+
+#[Index(name: "AmproductsModule")]
+#[Analyzer(name: "trigrams", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
+#[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
+#[NgramAbstractFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
+abstract class AbstractGenerateProduct
+{
+    #[TextType]
+    protected string $pk;
+
+    #[IntegerType]
+    protected int $parameterValues;
+
+    #[IntegerType]
+    protected int $parameters;
+
+    #[KeywordType]
+    protected string $productTags;
+
+    /** @var \Doctrine\Common\Collections\ArrayCollection<Translations> */
+    #[NestedType(properties: [
+        new FloatType(name: "@cs"),
+        new FloatType(name: "@en"),
+        new FloatType(name: "@sk"),
+    ])]
+    protected ArrayCollection $sellingPrice;
+
+    /** @var \Doctrine\Common\Collections\ArrayCollection<Translations> */
+    #[ObjectType(properties: [
+        new FloatType(name: "@cs"),
+        new FloatType(name: "@en"),
+        new FloatType(name: "@sk")
+    ])]
+    #[KeywordType(name: "sellingPriceWithVatKeyword")]
+    protected ArrayCollection $sellingPriceWithVat;
+
+    #[ObjectType(properties: [
+        new FloatType(name: "@cs"),
+        new FloatType(name: "@en"),
+        new FloatType(name: "@sk")
+    ], name: "test1")]
+    #[ObjectType(properties: [
+        new FloatType(name: "@cs"),
+        new FloatType(name: "@en"),
+        new FloatType(name: "@sk")
+    ], name: "test2")]
+    #[ObjectType(keyResolver: true, properties: [
+        new ObjectType(properties: [
+            new ObjectType(properties: [
+                new FloatType(name: "@en"),
+                new FloatType(name: "@sk"),
+            ], name: "second")
+        ])
+    ], name: "test3")]
+    #[ObjectType(properties: [
+        new ObjectType(properties: [
+            new FloatType(name: "@en"),
+            new FloatType(name: "@sk")
+        ], name: "second")
+    ], name: "test4")]
+    protected ArrayCollection $translations;
+
+    public function __construct()
+    {
+        $this->sellingPrice = new ArrayCollection();
+        $this->sellingPriceWithVat = new ArrayCollection();
+        $this->translations = new ArrayCollection();
+    }
+
+    public function getPk(): string
+    {
+        return $this->pk;
+    }
+
+    public function setPk(string $pk): void
+    {
+        $this->pk = $pk;
+    }
+
+    public function getParameterValues(): int
+    {
+        return $this->parameterValues;
+    }
+
+    public function setParameterValues(int $parameterValues): void
+    {
+        $this->parameterValues = $parameterValues;
+    }
+
+    public function getParameters(): int
+    {
+        return $this->parameters;
+    }
+
+    public function setParameters(int $parameters): void
+    {
+        $this->parameters = $parameters;
+    }
+
+    public function getProductTags(): string
+    {
+        return $this->productTags;
+    }
+
+    public function setProductTags(string $productTags): void
+    {
+        $this->productTags = $productTags;
+    }
+
+    public function getSellingPrice(): ArrayCollection
+    {
+        return $this->sellingPrice;
+    }
+
+    public function addSellingPrice(Translations $sellingPrice): void
+    {
+        $this->sellingPrice[] = $sellingPrice;
+    }
+
+    public function getSellingPriceWithVat(): ArrayCollection
+    {
+        return $this->sellingPriceWithVat;
+    }
+
+    public function addSellingPriceWithVat(Translations $sellingPriceWithVat): void
+    {
+        $this->sellingPriceWithVat[] = $sellingPriceWithVat;
+    }
+
+    public function addTranslations(Translations $translations): void
+    {
+        $this->translations[] = $translations;
+    }
+
+    public function getTranslations(): ArrayCollection
+    {
+        return $this->translations;
+    }
+}
