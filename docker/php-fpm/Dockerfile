@@ -1,4 +1,4 @@
-FROM php:8.2-fpm as elasticsearch-app
+FROM php:8.3-fpm as elasticsearch-app
 ARG TIMEZONE
 
 RUN apt-get update -y && apt-get install -y \
@@ -6,12 +6,14 @@ RUN apt-get update -y && apt-get install -y \
     git \
     unzip
 
-RUN apt-get install -y --no-install-recommends libssl-dev zlib1g-dev curl git unzip netcat libxml2-dev libpq-dev libzip-dev net-tools cron \
+RUN apt-get install -y --no-install-recommends libssl-dev zlib1g-dev curl libxml2-dev libpq-dev libzip-dev \
     libxpm-dev libzip-dev zlib1g-dev libpng-dev libfreetype6-dev libjpeg62-turbo-dev libgd-dev libjpeg-dev && \
-    pecl install apcu xdebug-3.2.2 && \
+    pecl install apcu && \
     docker-php-ext-install -j$(nproc) zip opcache intl pdo pdo_mysql gd && \
     docker-php-ext-enable apcu && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN pecl install xdebug-3.3.0 && docker-php-ext-enable xdebug
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -20,9 +22,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo ${TIMEZONE} > /etc/timezone
 RUN printf '[PHP]\ndate.timezone = "%s"\n', ${TIMEZONE} > /usr/local/etc/php/conf.d/tzone.ini
 RUN "date"
-
-# configure xdebug
-RUN docker-php-ext-enable xdebug
 
 # Configure Xdebug
 RUN echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/xdebug.ini \
@@ -33,8 +32,4 @@ RUN echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/xdebug.ini
 
 WORKDIR /var/www/
 
-# Apply cron job
-RUN crontab /etc/crontab
-
-CMD bash -c "composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev && \
-  cron && php-fpm"
+CMD bash -c "composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev && php-fpm"

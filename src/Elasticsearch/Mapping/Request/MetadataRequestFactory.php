@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Mapping\Request;
 
-use Elasticsearch\Mapping\Exceptions\EmptyIndexNameException;
 use Elasticsearch\Mapping\Exceptions\MappingJsonCreateException;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analysis;

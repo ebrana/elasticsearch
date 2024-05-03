@@ -147,6 +147,7 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('@fr', $mapping['mappings']['properties']['test3']['properties']);
         $this->assertArrayHasKey('second', $mapping['mappings']['properties']['test3']['properties']['@cs']['properties']);
         $this->assertArrayHasKey('@sk', $mapping['mappings']['properties']['test3']['properties']['@cs']['properties']['second']['properties']);
+        $this->assertArrayNotHasKey('@fr', $mapping['mappings']['properties']['test3']['properties']['@cs']['properties']['second']['properties']);
     }
 
     public function testSearch(): void

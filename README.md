@@ -7,28 +7,25 @@ A simple mapping, indexing and filtering library on Elasticsearch...
 - [Indexing](src/Elasticsearch/Indexing/README.md)
 - [Searching](src/Elasticsearch/Search/README.md)
 
-### Satisfy
-Balíček je sestaven pro platformu. Nejprve je nutné ručně přidat štítek do master větve.
-Poté na adrese https://composer.ebrana.cz/admin pustit **"Build packages"**.
-Následně je na platformě v composeru dostupná nová verze balíků.
-
 ### Docker
-Nástroj lze kompletně provozovat v Dockeru. Pro jednoduchost lze použít připravené skripty přes make (Makefile).
+Pro jednoduchost lze použít připravené skripty přes make (Makefile).
 
-Nejprve kontejner sestavíme pomocí
+Nejprve kontejner sestavíme pomocí:
 ````
 make build
 ````
-
 Poté je možné si přidat do PHPStormu interpret **"elasticsearch-app"**.
 
-Pro spuštění použij
+Spuštění kontejneru:
 ````
-make app
+make up
 ````
 
-Kontejner podporuje xDebug. Kontejner je buildovan pro production mód.
-Pro phpunit a phpstan proto po spuštění kontejneru je třeba ještě spustit
+Kontejner podporuje xDebug a je buildován pro production mód.
+Pro používání phpunit a phpstan je třeba ještě spustit (kontejner musí být spuštěn)
 ````
 make composer-update
 ````
+
+### Symfony bundle
+https://github.com/ebrana/elasticsearch-bundle

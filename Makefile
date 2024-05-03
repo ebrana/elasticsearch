@@ -9,12 +9,12 @@ EOL  := $(shell tput -Txterm sgr0)
 build: down_all _build
 _build:
 	@echo "${GREEN}>>> building container${EOL}"
-	cd docker/ && docker-compose build --no-cache
+	cd docker/ && docker compose build --no-cache
 
 ## Start docker
 up: _start_docker
 _start_docker:
-	cd docker/ && docker-compose up -d
+	cd docker/ && docker compose up -d
 
 ## Stop docker
 stop: down_all
@@ -29,12 +29,12 @@ composer-update:
 phpstan: _phpstan
 _phpstan:
 	@echo "${BLUE}>>> Run PHPstan${EOL}"
-	@docker run -it --rm --network=host -v ${current_dir}:/var/www/Elasticsearch -w /var/www/Elasticsearch docker_elasticsearch-app /bin/bash -c "./vendor/bin/phpstan --configuration=phpstan.neon"
+	@docker run -it --rm --network=host -v ${current_dir}:/var/www/Elasticsearch -w /var/www/Elasticsearch docker-elasticsearch-app /bin/bash -c "./vendor/bin/phpstan --configuration=phpstan.neon"
 
 phpunit: _phpunit
 _phpunit:
 	@echo "${BLUE}>>> Run PHPunit${EOL}"
-	@docker run -it --rm --network=host -v ${current_dir}:/var/www/Elasticsearch -w /var/www/Elasticsearch docker_elasticsearch-app /bin/bash -c "./vendor/bin/phpunit src/Elasticsearch"
+	@docker run -it --rm --network=host -v ${current_dir}:/var/www/Elasticsearch -w /var/www/Elasticsearch docker-elasticsearch-app /bin/bash -c "./vendor/bin/phpunit src/Elasticsearch"
 
 bash:
 	@docker exec -it elasticsearch-app /bin/bash

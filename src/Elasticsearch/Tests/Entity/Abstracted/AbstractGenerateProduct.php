@@ -13,7 +13,6 @@ use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
 use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
 use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
-use Elasticsearch\Mapping\Types\ObjectsAndRelational\FieldTemplate;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
 use Elasticsearch\Mapping\Types\Text\TextType;
