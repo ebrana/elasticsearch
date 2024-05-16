@@ -13,7 +13,7 @@ RUN apt-get install -y --no-install-recommends libssl-dev zlib1g-dev curl libxml
     docker-php-ext-enable apcu && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN pecl install xdebug-3.3.0 && docker-php-ext-enable xdebug
+RUN pecl install xdebug-3.3.2 && docker-php-ext-enable xdebug
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -27,7 +27,6 @@ RUN "date"
 RUN echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.discover_client_host=1" >> /usr/local/etc/php/conf.d/xdebug.ini \
-    && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/xdebug.ini
 
 WORKDIR /var/www/
