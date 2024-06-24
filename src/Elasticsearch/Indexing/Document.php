@@ -33,7 +33,7 @@ final class Document implements DocumentInterface
      */
     public function set(string $key, mixed $value): void
     {
-        if (!is_scalar($value) && !is_array($value)) {
+        if ($value !== null && !is_scalar($value) && !is_array($value)) {
             throw new DocumentToJsonException();
         }
         $this->data->set($key, $value);
