@@ -36,6 +36,9 @@ abstract class AbstractGenerateProduct
     #[KeywordType]
     protected string $productTags;
 
+    #[KeywordType]
+    protected ?string $description = null;
+
     /** @var \Doctrine\Common\Collections\ArrayCollection<Translations> */
     #[NestedType(properties: [
         new FloatType(name: "@cs"),
@@ -129,6 +132,16 @@ abstract class AbstractGenerateProduct
     public function getSellingPrice(): ArrayCollection
     {
         return $this->sellingPrice;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): void
+    {
+        $this->description = $description;
     }
 
     public function addSellingPrice(Translations $sellingPrice): void
