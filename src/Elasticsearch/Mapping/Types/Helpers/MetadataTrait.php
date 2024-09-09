@@ -6,7 +6,7 @@ namespace Elasticsearch\Mapping\Types\Helpers;
 
 trait MetadataTrait
 {
-    private Metadata|null $meta = null;
+    private ?Metadata $meta = null;
 
     public function getMeta(): ?Metadata
     {

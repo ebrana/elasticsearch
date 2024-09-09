@@ -8,5 +8,5 @@ use Elasticsearch\Mapping\Index;
 
 interface DriverInterface
 {
-    public function loadMetadata(string $class): Index;
+    public function loadMetadata(string $source): Index;
 }

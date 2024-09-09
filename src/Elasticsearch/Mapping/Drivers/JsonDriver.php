@@ -9,7 +9,6 @@ use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\CharacterFilterReso
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\FiltersResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\TokenizerResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\PropertiesResolver\PropertiesResolver;
-use Elasticsearch\Mapping\Drivers\Resolvers\PropertiesResolver\PropertiesResolverInterface;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analysis;
 use RuntimeException;
@@ -33,19 +32,20 @@ class JsonDriver implements DriverInterface
     }
 
     /**
+     * @param string $source Path of source json file
      * @throws \Elasticsearch\Mapping\Exceptions\DuplicityPropertyException
      * @throws \JsonException
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */
-    public function loadMetadata(string $path): Index
+    public function loadMetadata(string $source): Index
     {
-        if (false === is_readable($path)) {
-            throw new RuntimeException(sprintf('Invalid path "%s"', $path));
+        if (false === is_readable($source)) {
+            throw new RuntimeException(sprintf('Invalid path "%s"', $source));
         }
 
-        $json = file_get_contents($path);
+        $json = file_get_contents($source);
         if (false === is_string($json)) {
-            throw new RuntimeException(sprintf('Invalid content in file "%s"', $path));
+            throw new RuntimeException(sprintf('Invalid content in file "%s"', $source));
         }
 
         /** @var stdClass $mapping */

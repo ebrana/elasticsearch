@@ -9,7 +9,7 @@ use Elasticsearch\Mapping\Index;
 class MetadataRequest
 {
     public function __construct(
-        private Index $index,
+        private readonly Index $index,
         private string $mappingJson = ''
     ) {
     }

@@ -27,7 +27,7 @@ final class Index
      */
     private ?string $name;
     private ArrayCollection $properties;
-    private Analysis|null $analysis = null;
+    private ?Analysis $analysis = null;
     private string $entityClass;
 
     public function __construct(

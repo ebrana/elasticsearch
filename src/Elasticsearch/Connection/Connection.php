@@ -6,6 +6,7 @@ namespace Elasticsearch\Connection;
 
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\Endpoints\Indices;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
@@ -33,7 +34,7 @@ class Connection
      */
     public function hasIndex(Index $index): bool
     {
-        $response = $this->getClient()->indices()->exists([
+        $response = $this->indices()->exists([
             'index' => $index->getNameWithPrefix($this->indexPrefix),
         ]);
         if ($response instanceof Elasticsearch) {
@@ -56,7 +57,7 @@ class Connection
             'body'  => $request->getMappingJson(),
         ];
 
-        $this->getClient()->indices()->create($params);
+        $this->indices()->create($params);
     }
 
     /**
@@ -68,7 +69,7 @@ class Connection
      */
     public function deleteIndex(Index $index): void
     {
-        $this->getClient()->indices()->delete([
+        $this->indices()->delete([
             'index' => $index->getNameWithPrefix($this->indexPrefix),
         ]);
     }
@@ -127,13 +128,21 @@ class Connection
     /**
      * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
      */
-    private function getClient(): Client
+    public function getClient(): Client
     {
         if (null === $this->client) {
             $this->client = $this->clientBuilder->build();
         }
 
         return $this->client;
+    }
+
+    /**
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     */
+    public function indices(): Indices
+    {
+        return $this->getClient()->indices();
     }
 
     public function getIndexPrefix(): string

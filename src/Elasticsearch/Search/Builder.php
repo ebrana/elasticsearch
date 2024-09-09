@@ -24,7 +24,7 @@ final class Builder
     /** @var null|array<string, string> */
     private ?array $searchAfter = null;
 
-    /** @var null|array<string,string> */
+    /** @var null|array<string, string> */
     private ?array $fields = null;
 
     public function __construct(readonly private Index $index)
