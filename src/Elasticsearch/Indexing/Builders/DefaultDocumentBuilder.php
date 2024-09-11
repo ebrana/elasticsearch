@@ -17,7 +17,6 @@ use RuntimeException;
 
 readonly class DefaultDocumentBuilder implements DocumentBuilderInterface
 {
-
     use CollectionByMappingResolverTrait;
 
     public function __construct(private Index $index)

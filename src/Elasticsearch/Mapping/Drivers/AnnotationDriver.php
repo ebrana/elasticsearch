@@ -15,11 +15,8 @@ use Elasticsearch\Mapping\Settings\Analysis;
 use Elasticsearch\Mapping\Settings\Analyzer;
 use Elasticsearch\Mapping\Settings\AbstractTokenizer;
 use Elasticsearch\Mapping\Types\AbstractType;
-use Elasticsearch\Mapping\Types\EndDefinition;
-use Elasticsearch\Mapping\Types\Fields;
 use Elasticsearch\Mapping\Types\MappingInterface;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
-use Elasticsearch\Mapping\Types\ObjectsAndRelational\Properties;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
@@ -29,7 +26,7 @@ use RuntimeException;
 class AnnotationDriver implements DriverInterface
 {
     private int $level = 0;
-    private KeyResolverInterface|null $keyResolver = null;
+    private ?KeyResolverInterface $keyResolver = null;
 
     public function setKeyResolver(?KeyResolverInterface $keyResolver): void
     {
@@ -37,19 +34,20 @@ class AnnotationDriver implements DriverInterface
     }
 
     /**
+     * @param class-string $source
      * @throws DuplicityPropertyException
      * @throws IndexDefinitionNotFoundException
      * @throws MissingKeyResolverException
      * @throws MissingObjectTypeTemplateFiledsException
      * @throws ReflectionException
      */
-    public function loadMetadata(string $class): Index
+    public function loadMetadata(string $source): Index
     {
-        if (false === class_exists($class)) {
-            throw new RuntimeException(sprintf('Class "%s" not exists or cannot loadable.', $class));
+        if (false === class_exists($source)) {
+            throw new RuntimeException(sprintf('Class "%s" not exists or cannot loadable.', $source));
         }
 
-        $reflection = new ReflectionClass($class);
+        $reflection = new ReflectionClass($source);
         $indexMetadata = null;
         $index = $reflection->getAttributes(Index::class);
 
@@ -62,7 +60,7 @@ class AnnotationDriver implements DriverInterface
             }
 
             if (null === $indexMetadata) {
-                throw new IndexDefinitionNotFoundException($class);
+                throw new IndexDefinitionNotFoundException($source);
             }
         } else {
             /** @var Index $indexMetadata */
@@ -110,7 +108,7 @@ class AnnotationDriver implements DriverInterface
         $properties = $reflection->getProperties();
         if (0 === $this->level) {
             $this->resolveProperties($indexMetadata, $reflection, $properties);
-            $indexMetadata->setEntityClass($class);
+            $indexMetadata->setEntityClass($source);
         } else {
             $this->level--;
         }
@@ -137,14 +135,19 @@ class AnnotationDriver implements DriverInterface
         foreach ($properties as $property) {
             $attributes = $property->getAttributes(MappingInterface::class, ReflectionAttribute::IS_INSTANCEOF);
 
-            for ($x = 0, $xMax = count($attributes); $x < $xMax; $x++) {
+            foreach ($attributes as $attribute) {
                 /** @var AbstractType|MappingInterface $instance */
-                $instance = $attributes[$x]->newInstance();
+                $instance = $attribute->newInstance();
 
                 if ($instance instanceof ObjectType) {
                     if ($instance->getMappedBy()) {
                         if ($instance->isKeyResolver()) {
-                            throw new \LogicException(sprintf('Dont use keyResolver, when using mappedBy attribute. Field "%s" in class "%s".', $property->getName(), $reflection->getName()));
+                            throw new \LogicException(
+                                sprintf(
+                                    'Dont use keyResolver, when using mappedBy attribute. Field "%s" in class "%s".',
+                                    $property->getName(),
+                                    $reflection->getName())
+                            );
                         }
                         $this->resolveObjectTypeByMapping($instance, $reflection);
                     } else if ($instance->isKeyResolver()) {
@@ -215,9 +218,9 @@ class AnnotationDriver implements DriverInterface
         foreach ($referenceProperties as $referenceProperty) {
             $refAttributes = $referenceProperty->getAttributes(MappingInterface::class, ReflectionAttribute::IS_INSTANCEOF);
 
-            for ($r = 0, $rxMax = count($refAttributes); $r < $rxMax; $r++) {
+            foreach ($refAttributes as $rValue) {
                 /** @var AbstractType $referenceInstance */
-                $referenceInstance = $refAttributes[$r]->newInstance();
+                $referenceInstance = $rValue->newInstance();
                 if ($referenceInstance->getContext() === $reflectionClass->getName()) {
                     $propertyName = $referenceProperty->getName();
                     if ('' === $referenceInstance->getName()) {
