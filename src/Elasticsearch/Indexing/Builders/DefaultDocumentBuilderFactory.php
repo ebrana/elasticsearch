@@ -10,7 +10,7 @@ use Elasticsearch\Mapping\Index;
 
 class DefaultDocumentBuilderFactory implements DocumentBuilderFactoryInterface
 {
-    public const DEFAULT = '~default~';
+    public const string DEFAULT = '~default~';
 
     public function create(Index $index): DocumentBuilderInterface
     {

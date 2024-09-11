@@ -12,11 +12,12 @@ use Elasticsearch\Mapping\Drivers\Factories\Properties\Text\TextTypeFactory;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Drivers\Factories\Properties\PropertyFactoryInterface;
 use stdClass;
 
 final class PropertiesResolver
 {
-    /** @var string[] */
+    /** @var class-string<PropertyFactoryInterface>[] */
     private array $propertiesFactories = [
         'text'    => TextTypeFactory::class,
         'keyword' => KeywordTypeFactory::class,
@@ -50,12 +51,10 @@ final class PropertiesResolver
                 $factory = $this->propertiesFactories[$property->type];
                 $field = $factory::create($key, $property);
 
-                if ($field) {
-                    if ($objectType) {
-                        $objectType->addProperty($field);
-                    } else {
-                        $index->addProperty($field);
-                    }
+                if ($objectType) {
+                    $objectType->addProperty($field);
+                } else {
+                    $index->addProperty($field);
                 }
             }
         }
