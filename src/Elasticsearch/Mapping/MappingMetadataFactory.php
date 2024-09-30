@@ -6,6 +6,7 @@ namespace Elasticsearch\Mapping;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Drivers\DriverInterface;
+use Psr\Cache\CacheItemPoolInterface;
 
 final readonly class MappingMetadataFactory
 {
@@ -14,12 +15,21 @@ final readonly class MappingMetadataFactory
      */
     public function __construct(
         private DriverInterface $driver,
-        private array $classes)
-    {
+        private array $classes,
+        private ?CacheItemPoolInterface $cacheItemPool = null,
+    ) {
     }
 
+    /**
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function create(): MappingMetada
     {
+        $mappingMetadata = $this->loadCache();
+        if ($mappingMetadata) {
+            return $mappingMetadata;
+        }
+
         $metadata = new ArrayCollection();
 
         foreach ($this->classes as $class) {
@@ -27,6 +37,43 @@ final readonly class MappingMetadataFactory
             $metadata->set($class, $indexMetadata);
         }
 
-        return new MappingMetada($metadata);
+        $mappingMetadata = new MappingMetada($metadata);
+
+        $this->saveCache($mappingMetadata);
+
+        return $mappingMetadata;
+    }
+
+    private function getCacheKey(): string
+    {
+        return 'es_$' . strtoupper(str_replace('\\', '_', __NAMESPACE__)) . '_METADATA';
+    }
+
+    /**
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    private function loadCache(): ?MappingMetada
+    {
+        if (null === $this->cacheItemPool) {
+            return null;
+        }
+
+        $mappingMetadata = null;
+        $item = $this->cacheItemPool->getItem($this->getCacheKey());
+        if ($item->isHit()) {
+            /** @var \Elasticsearch\Mapping\MappingMetada|null $mappingMetadata */
+            $mappingMetadata = $item->get();
+        }
+
+        return $mappingMetadata;
+    }
+
+    private function saveCache(MappingMetada $mappingMetadata): void
+    {
+        if ($this->cacheItemPool) {
+            $item = $this->cacheItemPool->getItem($this->getCacheKey());
+            $item->set($mappingMetadata);
+            $this->cacheItemPool->save($item);
+        }
     }
 }
