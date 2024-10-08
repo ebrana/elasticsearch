@@ -29,6 +29,7 @@ class Connection extends \Elasticsearch\Connection\Connection
 
         try {
             $hasIndex = parent::hasIndex($index);
+            $query->setBoolResult($hasIndex);
         } finally {
             $query->stop();
         }
@@ -99,6 +100,7 @@ class Connection extends \Elasticsearch\Connection\Connection
 
         try {
             $count = parent::count($builder);
+            $query->setCountResult($count);
         } finally {
             $query->stop();
         }
@@ -131,6 +133,7 @@ class Connection extends \Elasticsearch\Connection\Connection
             $this->debugDataHolder->addQuery($query);
             $query->start();
             $result = parent::search($builder);
+            $query->setResult($result);
         } finally {
             $query->stop();
         }

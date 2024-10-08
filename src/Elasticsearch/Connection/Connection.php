@@ -149,4 +149,23 @@ class Connection
     {
         return $this->indexPrefix;
     }
+
+    /**
+     * @return array{name: string, cluster_name: string, cluster_id: string, version: string[], tagline: string}
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
+    public function getServerInfo(): array
+    {
+        $response = $this->getClient()->info();
+        if ($response instanceof Elasticsearch) {
+            /** @var array{name: string, cluster_name: string, cluster_id: string, version: string[], tagline: string} $result */
+            $result = $response->asArray();
+
+            return $result;
+        }
+
+        throw new RuntimeException('Information getting error.');
+    }
 }
