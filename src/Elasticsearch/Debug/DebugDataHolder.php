@@ -18,6 +18,9 @@ class DebugDataHolder
             'query'       => $query->getQuery(),
             'body'        => $query->getBody(),
             'executionMS' => $query->getDuration(...),
+            'boolResult'  => $query->getBoolResult(...),
+            'countResult' => $query->getCountResult(...),
+            'result'      => $query->getResult(...),
         ];
     }
 
@@ -29,6 +32,15 @@ class DebugDataHolder
         foreach ($this->data as $idx => $data) {
             if (is_callable($data['executionMS'])) {
                 $this->data[$idx]['executionMS'] = $data['executionMS']();
+            }
+            if (is_callable($data['boolResult'])) {
+                $this->data[$idx]['boolResult'] = $data['boolResult']();
+            }
+            if (is_callable($data['countResult'])) {
+                $this->data[$idx]['countResult'] = $data['countResult']();
+            }
+            if (is_callable($data['result'])) {
+                $this->data[$idx]['result'] = $data['result']();
             }
         }
 

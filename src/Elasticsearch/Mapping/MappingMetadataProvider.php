@@ -12,6 +12,9 @@ class MappingMetadataProvider implements MetadataProviderInterface
     {
     }
 
+    /**
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function getMappingMetadata(): MappingMetada
     {
         if (null === $this->metadata) {

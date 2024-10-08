@@ -34,6 +34,7 @@ final class DocumentFactory implements DocumentFactoryInterface
 
     /**
      * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function create(IndexableEntityInterface $entity): DocumentInterface
     {
@@ -43,6 +44,7 @@ final class DocumentFactory implements DocumentFactoryInterface
     /**
      * @throws NotFoundBuilderFactoryException
      * @throws NotFoundMetadataIndexException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     private function getBuilder(IndexableEntityInterface $entity): DocumentBuilderInterface
     {
