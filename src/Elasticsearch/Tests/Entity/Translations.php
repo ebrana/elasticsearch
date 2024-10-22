@@ -116,4 +116,9 @@ class Translations
     {
         return '';
     }
+
+    public function getTest5(): string
+    {
+        return '';
+    }
 }

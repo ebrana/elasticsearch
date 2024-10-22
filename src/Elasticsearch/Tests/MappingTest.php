@@ -148,6 +148,10 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('second', $mapping['mappings']['properties']['test3']['properties']['@cs']['properties']);
         $this->assertArrayHasKey('@sk', $mapping['mappings']['properties']['test3']['properties']['@cs']['properties']['second']['properties']);
         $this->assertArrayNotHasKey('@fr', $mapping['mappings']['properties']['test3']['properties']['@cs']['properties']['second']['properties']);
+        $this->assertArrayHasKey('sort_name', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']);
+        $this->assertArrayHasKey('autocomplete', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']);
+        $this->assertEquals('keyword', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']['sort_name']['type']);
+        $this->assertEquals('text', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']['autocomplete']['type']);
     }
 
     public function testSearch(): void

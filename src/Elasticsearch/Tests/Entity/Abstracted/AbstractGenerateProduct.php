@@ -80,6 +80,14 @@ abstract class AbstractGenerateProduct
             new FloatType(name: "@sk")
         ], name: "second")
     ], name: "test4")]
+    #[ObjectType(
+        keyResolver: true,
+        fieldsTemplate: new TextType(analyzer: 'standard', name: 'name', fields: [
+            new KeywordType(name: 'sort_name'),
+            new TextType(analyzer: 'autocomplete_analyzer', name: 'autocomplete'),
+        ]),
+        name: "test5"
+    )]
     protected ArrayCollection $translations;
 
     public function __construct()

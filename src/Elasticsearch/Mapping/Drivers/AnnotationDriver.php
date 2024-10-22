@@ -157,6 +157,8 @@ class AnnotationDriver implements DriverInterface
                             $instance->setFieldsTemplate($template);
                             $this->resolveObjectTypeProperties($instance, $reflection, (string)$instance->getFieldName());
                             $instance->getProperties()->remove(0);
+                        } else {
+                            $this->resolveObjectTypeProperties($instance, $reflection, (string)$instance->getFieldName());
                         }
                     }
                 }
