@@ -14,7 +14,7 @@
     },
     "require": {
         "php": ">=8.3.0",
-        "elasticsearch/elasticsearch": "~v8.15.0",
+        "elasticsearch/elasticsearch": "~v8.17.0",
         "doctrine/collections": "~2.2.2",
         "psr/cache": "^3.0",
         "ext-json": "*"
