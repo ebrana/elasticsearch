@@ -1,0 +1,106 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Elasticsearch\Connection\Params;
+
+use Generator;
+
+final class SearchParams extends AbstractParams
+{
+    public function __construct(
+        protected ?bool $allow_no_indices = null,
+        protected ?bool $allow_partial_search_results = null,
+        protected ?string $analyzer = null,
+        protected ?bool $analyze_wildcard = null,
+        protected ?int $batched_reduce_size = null,
+        protected ?bool $ccs_minimize_roundtrips = null,
+        protected ?string $df = null,
+        protected ?string $docvalue_fields = null,
+        protected ?bool $explain = null,
+        protected ?int $from = null,
+        protected ?bool $ignore_throttled = null,
+        protected ?bool $include_named_queries_score = null,
+        protected ?bool $ignore_unavailable = null,
+        protected ?bool $lanient = null,
+        protected ?int $max_concurrent_shard_requests = null,
+        protected ?int $pre_filter_shard_size = null,
+        protected ?string $preference = null,
+        protected ?string $q = null,
+        protected ?bool $request_cache = null,
+        protected ?bool $rest_total_hits_as_int = null,
+        protected ?string $routing = null,
+        protected ?string $scroll = null,
+        protected ?string $search_type = null,
+        protected ?bool $seq_no_primary_term = null,
+        protected ?int $size = null,
+        protected ?string $sort = null,
+        protected string|bool|null $_source = null,
+        protected ?string $_source_excludes = null,
+        protected ?string $_source_includes = null,
+        protected ?string $stats = null,
+        protected ?string $stored_fields = null,
+        protected ?string $suggest_field = null,
+        protected ?int $suggest_size = null,
+        protected ?string $suggest_text = null,
+        protected ?int $terminate_after = null,
+        protected ?string $timeout = null,
+        protected ?bool $track_scores = null,
+        protected int|bool|null $track_total_hits = null,
+        protected ?bool $typed_keys = null,
+        protected ?bool $version = null,
+        protected ?ExpandWildcards $expand_wildcards = null,
+        protected ?SuggestMode $suggest_mode = null,
+        protected ?Operator $default_operator = null,
+    ) {
+    }
+
+    protected function getParams(): Generator
+    {
+        yield from [
+            'analyzer',
+            'analyze_wildcard',
+            'ccs_minimize_roundtrips',
+            'default_operator',
+            'df',
+            'explain',
+            'stored_fields',
+            'docvalue_fields',
+            'from',
+            'ignore_unavailable',
+            'ignore_throttled',
+            'allow_no_indices',
+            'expand_wildcards',
+            'lenient',
+            'preference',
+            'q',
+            'routing',
+            'scroll',
+            'search_type',
+            'size',
+            'sort',
+            '_source',
+            '_source_excludes',
+            '_source_includes',
+            'terminate_after',
+            'stats',
+            'suggest_field',
+            'suggest_mode',
+            'suggest_size',
+            'suggest_text',
+            'timeout',
+            'track_scores',
+            'track_total_hits',
+            'allow_partial_search_results',
+            'typed_keys',
+            'version',
+            'seq_no_primary_term',
+            'request_cache',
+            'batched_reduce_size',
+            'max_concurrent_shard_requests',
+            'pre_filter_shard_size',
+            'rest_total_hits_as_int',
+            'include_named_queries_score',
+        ];
+    }
+}

@@ -6,6 +6,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Elastic\Elasticsearch\ClientBuilder;
 use Elasticsearch\Connection\Connection;
+use Elasticsearch\Connection\Params\IndexDocumentParams;
+use Elasticsearch\Connection\Params\OpType;
+use Elasticsearch\Connection\Params\VersionType;
 use Elasticsearch\Indexing\Builders\DefaultDocumentBuilderFactory;
 use Elasticsearch\Indexing\DocumentFactory;
 use Elasticsearch\Mapping\Drivers\AnnotationDriver;
@@ -32,5 +35,5 @@ $document = $documentFactory->create($product);
 $document2 = $documentFactory->create($author);
 
 $client = new Connection(ClientBuilder::create()->setHosts(['ebr-elasticsearch:9200']), 'testing_');
-$client->indexDocument($document);
-$client->indexDocument($document2);
+$client->indexDocument($document, new IndexDocumentParams());
+$client->indexDocument($document2, new IndexDocumentParams(refresh: true, op_type: OpType::INDEX));

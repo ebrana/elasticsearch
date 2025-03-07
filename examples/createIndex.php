@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Elastic\Elasticsearch\ClientBuilder;
 use Elasticsearch\Connection\Connection;
+use Elasticsearch\Connection\Params\IndexDocumentParams;
 use Elasticsearch\Mapping\Drivers\AnnotationDriver;
 use Elasticsearch\Mapping\MappingMetadataFactory;
 use Elasticsearch\Mapping\MappingMetadataProvider;
@@ -31,6 +32,9 @@ $metadataAuthorRequest = $metadataRequestFactory->create($metadataAuthorIndex);
 $client = new Connection(ClientBuilder::create()->setHosts(['ebr-elasticsearch:9200']), 'testing_');
 $client->createIndex($metadataProductRequest);
 $client->createIndex($metadataAuthorRequest);
-if ($client->hasIndex($metadataProductIndex) && $client->hasIndex($metadataAuthorIndex)) {
+if (
+    $client->hasIndex($metadataProductIndex, new IndexDocumentParams(refresh: true)) &&
+    $client->hasIndex($metadataAuthorIndex)
+) {
     echo 'Index ready...' . PHP_EOL;
 }

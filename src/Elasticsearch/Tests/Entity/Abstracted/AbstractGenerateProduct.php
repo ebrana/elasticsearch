@@ -19,7 +19,7 @@ use Elasticsearch\Mapping\Types\Text\TextType;
 use Elasticsearch\Tests\Entity\Translations;
 
 #[Index(name: "AmproductsModule")]
-#[Analyzer(name: "trigrams", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
+#[Analyzer(name: "autocomplete_analyzer", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
 #[NgramAbstractFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
 abstract class AbstractGenerateProduct
