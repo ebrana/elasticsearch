@@ -35,5 +35,5 @@ $document = $documentFactory->create($product);
 $document2 = $documentFactory->create($author);
 
 $client = new Connection(ClientBuilder::create()->setHosts(['ebr-elasticsearch:9200']), 'testing_');
-$client->indexDocument($document, new IndexDocumentParams());
+$client->indexDocument($document, new IndexDocumentParams(refresh: false));
 $client->indexDocument($document2, new IndexDocumentParams(refresh: true, op_type: OpType::INDEX));
