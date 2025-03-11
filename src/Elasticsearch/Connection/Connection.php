@@ -8,6 +8,12 @@ use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Endpoints\Indices;
 use Elastic\Elasticsearch\Response\Elasticsearch;
+use Elasticsearch\Connection\Params\CountParams;
+use Elasticsearch\Connection\Params\CreateIndexParams;
+use Elasticsearch\Connection\Params\DeleteIndexParams;
+use Elasticsearch\Connection\Params\IndexDocumentParams;
+use Elasticsearch\Connection\Params\IndexExistParams;
+use Elasticsearch\Connection\Params\SearchParams;
 use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Request\MetadataRequest;
@@ -32,14 +38,19 @@ class Connection
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
      */
-    public function hasIndex(Index $index): bool
+    public function hasIndex(Index $index, ?IndexExistParams $params = null): bool
     {
-        $response = $this->indices()->exists([
+        $request = [
             'index' => $index->getNameWithPrefix($this->indexPrefix),
-        ]);
+        ];
+        if ($params) {
+            $request = array_merge($request, $params->toArray());
+        }
+        $response = $this->indices()->exists($request);
         if ($response instanceof Elasticsearch) {
             return $response->asBool();
         }
+
         throw new RuntimeException('Wrong data format');
     }
 
@@ -50,14 +61,18 @@ class Connection
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
      */
-    public function createIndex(MetadataRequest $request): void
+    public function createIndex(MetadataRequest $request, ?CreateIndexParams $params = null): void
     {
-        $params = [
+        $data = [
             'index' => $request->getIndex()->getNameWithPrefix($this->indexPrefix),
             'body'  => $request->getMappingJson(),
         ];
 
-        $this->indices()->create($params);
+        if ($params) {
+            $data = array_merge($data, $params->toArray());
+        }
+
+        $this->indices()->create($data);
     }
 
     /**
@@ -67,19 +82,25 @@ class Connection
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
      */
-    public function deleteIndex(Index $index): void
+    public function deleteIndex(Index $index, ?DeleteIndexParams $params = null): void
     {
-        $this->indices()->delete([
+        $data = [
             'index' => $index->getNameWithPrefix($this->indexPrefix),
-        ]);
+        ];
+
+        if ($params) {
+            $data = array_merge($data, $params->toArray());
+        }
+
+        $this->indices()->delete($data);
     }
 
     /**
      * @throws \Exception
      */
-    public function indexDocument(DocumentInterface $document): void
+    public function indexDocument(DocumentInterface $document, ?IndexDocumentParams $params = null): void
     {
-        $record = [
+        $request = [
             'index' => $document->getIndex()->getNameWithPrefix($this->indexPrefix),
             'type'  => '_doc',
             'body'  => $document->toJson(),
@@ -87,10 +108,14 @@ class Connection
 
         $documentId = $document->getId();
         if (null !== $documentId) {
-            $record['id'] = $documentId;
+            $request['id'] = $documentId;
         }
 
-        $this->getClient()->index($record);
+        if ($params) {
+            $request = array_merge($request, $params->toArray());
+        }
+
+        $this->getClient()->index($request);
     }
 
     /**
@@ -98,9 +123,13 @@ class Connection
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
-    public function count(Builder $builder): int
+    public function count(Builder $builder, ?CountParams $params = null): int
     {
-        $response = $this->getClient()->count($builder->build(false, false)->toArray());
+        $request = $builder->build(false, false)->toArray();
+        if ($params) {
+            $request = array_merge($request, $params->toArray());
+        }
+        $response = $this->getClient()->count($request);
         if ($response instanceof Elasticsearch) {
             $data = $response->asArray();
 
@@ -115,9 +144,13 @@ class Connection
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
-    public function search(Builder $builder): Result
+    public function search(Builder $builder, ?SearchParams $params = null): Result
     {
-        $response = $this->getClient()->search($builder->build()->toArray());
+        $request = $builder->build()->toArray();
+        if ($params) {
+            $request = array_merge($request, $params->toArray());
+        }
+        $response = $this->getClient()->search($request);
         if ($response instanceof Elasticsearch) {
             return new Result($response->asArray());
         }

@@ -5,6 +5,13 @@ declare(strict_types=1);
 namespace Elasticsearch\Debug;
 
 use Elastic\Elasticsearch\ClientBuilder;
+use Elasticsearch\Connection\Params\AbstractParams;
+use Elasticsearch\Connection\Params\CountParams;
+use Elasticsearch\Connection\Params\CreateIndexParams;
+use Elasticsearch\Connection\Params\DeleteIndexParams;
+use Elasticsearch\Connection\Params\IndexDocumentParams;
+use Elasticsearch\Connection\Params\IndexExistParams;
+use Elasticsearch\Connection\Params\SearchParams;
 use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Request\MetadataRequest;
@@ -21,14 +28,16 @@ class Connection extends \Elasticsearch\Connection\Connection
         parent::__construct($clientBuilder, $indexPrefix);
     }
 
-    public function hasIndex(Index $index): bool
+    public function hasIndex(Index $index, ?IndexExistParams $params = null): bool
     {
-        $query = new Query('HEAD /' . $index->getNameWithPrefix($this->getIndexPrefix()));
+        $url = 'HEAD /' . $index->getNameWithPrefix($this->getIndexPrefix());
+        $this->addParamsIntoQuery($url, $params);
+        $query = new Query($url);
         $this->debugDataHolder->addQuery($query);
         $query->start();
 
         try {
-            $hasIndex = parent::hasIndex($index);
+            $hasIndex = parent::hasIndex($index, $params);
             $query->setBoolResult($hasIndex);
         } finally {
             $query->stop();
@@ -37,69 +46,74 @@ class Connection extends \Elasticsearch\Connection\Connection
         return $hasIndex;
     }
 
-    public function createIndex(MetadataRequest $request): void
+    public function createIndex(MetadataRequest $request, ?CreateIndexParams $params = null): void
     {
         $index = $request->getIndex();
-        $query = new Query('PUT /' . $index->getNameWithPrefix($this->getIndexPrefix()));
+        $url = 'PUT /' . $index->getNameWithPrefix($this->getIndexPrefix());
+        $this->addParamsIntoQuery($url, $params);
+        $query = new Query($url);
         $query->setBody($request->getMappingJson());
         $this->debugDataHolder->addQuery($query);
         $query->start();
 
         try {
-            parent::createIndex($request);
+            parent::createIndex($request, $params);
         } finally {
             $query->stop();
         }
     }
 
-    public function deleteIndex(Index $index): void
+    public function deleteIndex(Index $index, ?DeleteIndexParams $params = null): void
     {
-        $query = new Query('DELETE /' . $index->getNameWithPrefix($this->getIndexPrefix()));
+        $url = 'DELETE /' . $index->getNameWithPrefix($this->getIndexPrefix());
+        $this->addParamsIntoQuery($url, $params);
+        $query = new Query($url);
         $this->debugDataHolder->addQuery($query);
         $query->start();
 
         try {
-            parent::deleteIndex($index);
+            parent::deleteIndex($index, $params);
         } finally {
             $query->stop();
         }
     }
 
-    public function indexDocument(DocumentInterface $document): void
+    public function indexDocument(DocumentInterface $document, ?IndexDocumentParams $params = null): void
     {
         $type = $document->getId() !== null ? 'PUT' : 'POST';
         $index = $document->getIndex();
-        $query = sprintf('%s /%s/_doc/%s',
+        $url = sprintf('%s /%s/_doc/%s',
             $type,
             $index->getNameWithPrefix($this->getIndexPrefix()),
             $document->getId());
-        $query = new Query($query);
+        $this->addParamsIntoQuery($url, $params);
+        $query = new Query($url);
         $query->setBody($document->toJson());
         $this->debugDataHolder->addQuery($query);
         $query->start();
 
         try {
-            parent::indexDocument($document);
+            parent::indexDocument($document, $params);
         } finally {
             $query->stop();
         }
     }
 
-    public function count(Builder $builder): int
+    public function count(Builder $builder, ?CountParams $params = null): int
     {
-        $params = $builder->build(false, false)->toArray();
-        $method = empty($params['body']) ? 'GET ' : 'POST ';
+        $data = $builder->build(false, false)->toArray();
+        $method = empty($data['body']) ? 'GET ' : 'POST ';
         $url = '/_count';
-        if (isset($params['index'])) {
-            $url = '/' . $params['index'] . '/_count';
+        if (isset($data['index'])) {
+            $url = '/' . $data['index'] . '/_count';
         }
-
+        $this->addParamsIntoQuery($url, $params);
         $query = new Query($method . $url);
         $this->debugDataHolder->addQuery($query);
         $query->start();
 
         try {
-            $count = parent::count($builder);
+            $count = parent::count($builder, $params);
             $query->setCountResult($count);
         } finally {
             $query->stop();
@@ -108,36 +122,44 @@ class Connection extends \Elasticsearch\Connection\Connection
         return $count;
     }
 
-    public function search(Builder $builder): Result
+    public function search(Builder $builder, ?SearchParams $params = null): Result
     {
-        $params = $builder->build()->toArray();
-        $method = empty($params['body']) ? 'GET ' : 'POST ';
-        if (isset($params['index'])) {
-            $url = '/' . $params['index'] . '/_search';
+        $data = $builder->build()->toArray();
+        $method = empty($data['body']) ? 'GET ' : 'POST ';
+        if (isset($data['index'])) {
+            $url = '/' . $data['index'] . '/_search';
         } else {
             $url = '/_search';
         }
         $bodyArr = [
-            'body' => $params['body'],
+            'body' => $data['body'],
         ];
-        if (isset($params['size'])) {
-            $bodyArr['size'] = $params['size'];
+        if (isset($data['size'])) {
+            $bodyArr['size'] = $data['size'];
         }
-        if (isset($params['from'])) {
-            $bodyArr['from'] = $params['from'];
+        if (isset($data['from'])) {
+            $bodyArr['from'] = $data['from'];
         }
+        $this->addParamsIntoQuery($url, $params);
         $query = new Query($method . $url);
         $body = json_encode($bodyArr, JSON_THROW_ON_ERROR);
         try {
             $query->setBody($body);
             $this->debugDataHolder->addQuery($query);
             $query->start();
-            $result = parent::search($builder);
+            $result = parent::search($builder, $params);
             $query->setResult($result);
         } finally {
             $query->stop();
         }
 
         return $result;
+    }
+
+    private function addParamsIntoQuery(string &$query, ?AbstractParams $params = null): void
+    {
+        if ($params) {
+            $query .= sprintf('?%s', http_build_query($params->toArray()));
+        }
     }
 }
