@@ -204,6 +204,8 @@ class AnnotationDriver implements DriverInterface
     }
 
     /**
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException
      * @throws \ReflectionException
      */
     private function resolveObjectTypeByMapping(
@@ -230,7 +232,11 @@ class AnnotationDriver implements DriverInterface
                     }
                     $referenceInstance->setFieldName($propertyName);
                     if ($referenceInstance instanceof ObjectType) {
-                        $this->resolveObjectTypeByMapping($referenceInstance, $reflection);
+                        if ($referenceInstance->getMappedBy()) {
+                            $this->resolveObjectTypeByMapping($referenceInstance, $reflection);
+                        } else {
+                            $this->resolveObjectTypeProperties($referenceInstance, $reflection, (string)$referenceInstance->getFieldName());
+                        }
                     }
                     $objectType->addProperty($referenceInstance);
                 }
