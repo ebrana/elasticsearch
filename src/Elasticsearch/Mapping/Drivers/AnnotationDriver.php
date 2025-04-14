@@ -155,10 +155,10 @@ class AnnotationDriver implements DriverInterface
                         $template = $instance->getProperties()->get(0);
                         if (null !== $template) {
                             $instance->setFieldsTemplate($template);
-                            $this->resolveObjectTypeProperties($instance, $reflection, (string)$instance->getFieldName());
+                            $this->resolveObjectTypePropertiesByKeyResolver($instance, $reflection, (string)$instance->getFieldName());
                             $instance->getProperties()->remove(0);
                         } else {
-                            $this->resolveObjectTypeProperties($instance, $reflection, (string)$instance->getFieldName());
+                            $this->resolveObjectTypePropertiesByKeyResolver($instance, $reflection, (string)$instance->getFieldName());
                         }
                     }
                 }
@@ -181,7 +181,7 @@ class AnnotationDriver implements DriverInterface
      * @throws MissingKeyResolverException
      * @throws MissingObjectTypeTemplateFiledsException
      */
-    private function resolveObjectTypeProperties(
+    private function resolveObjectTypePropertiesByKeyResolver(
         ObjectType $classType,
         ReflectionClass $reflection,
         string $propertyName
@@ -234,8 +234,9 @@ class AnnotationDriver implements DriverInterface
                     if ($referenceInstance instanceof ObjectType) {
                         if ($referenceInstance->getMappedBy()) {
                             $this->resolveObjectTypeByMapping($referenceInstance, $reflection);
-                        } else {
-                            $this->resolveObjectTypeProperties($referenceInstance, $reflection, (string)$referenceInstance->getFieldName());
+                        } else if ($referenceInstance->isKeyResolver()) {
+                            $this->resolveObjectTypePropertiesByKeyResolver($referenceInstance, $reflection,
+                                (string)$referenceInstance->getFieldName());
                         }
                     }
                     $objectType->addProperty($referenceInstance);

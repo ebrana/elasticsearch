@@ -15,6 +15,7 @@ use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
 use Elasticsearch\Mapping\Types\Common\BooleanType;
 use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\LongType;
+use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
 use Elasticsearch\Search\Aggregations\SumAggregation;
 use Elasticsearch\Search\Aggregations\TermsAggregation;
 use Elasticsearch\Search\Queries\BoolQuery;
@@ -95,7 +96,11 @@ class MappingTest extends TestCase
         $attachmentField = $booksField->getProperties()->get('attachments');
 
         $this->assertCount(4, $booksField->getProperties());
-        $this->assertCount(2, $attachmentField->getProperties());
+        $this->assertCount(3, $attachmentField->getProperties());
+
+        $priceField = $attachmentField->getProperties()->get('price');
+        $this->assertCount(3, $priceField->getProperties());
+        $this->assertInstanceOf(NestedType::class, $priceField);
     }
 
     public function testMetadataRequest(): void
