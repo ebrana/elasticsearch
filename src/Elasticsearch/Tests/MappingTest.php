@@ -96,11 +96,15 @@ class MappingTest extends TestCase
         $attachmentField = $booksField->getProperties()->get('attachments');
 
         $this->assertCount(4, $booksField->getProperties());
-        $this->assertCount(3, $attachmentField->getProperties());
+        $this->assertCount(4, $attachmentField->getProperties());
 
-        $priceField = $attachmentField->getProperties()->get('price');
+        $attachmentProperties = $attachmentField->getProperties();
+        $priceField = $attachmentProperties->get('price');
+        /** @var NestedType $sellingPriceField */
+        $sellingPriceField = $attachmentProperties->get('sellingPrice');
         $this->assertCount(3, $priceField->getProperties());
         $this->assertInstanceOf(NestedType::class, $priceField);
+        $this->assertEquals(CustomKeyResolver::class, $sellingPriceField->getKeyResolver());
     }
 
     public function testMetadataRequest(): void
@@ -256,8 +260,8 @@ class MappingTest extends TestCase
 
     private function getMappingMetadata(): MetadataProviderInterface
     {
-        $driver = new AnnotationDriver();
-        $driver->setKeyResolver(new LangKeyResolver());
+        $driver = new AnnotationDriver([CustomKeyResolver::class => new CustomKeyResolver()]);
+        $driver->setDefaultKeyResolver(new LangKeyResolver());
         $factory = new MappingMetadataFactory($driver, [Product::class, Address::class, Author::class]);
 
         return new MappingMetadataProvider($factory);

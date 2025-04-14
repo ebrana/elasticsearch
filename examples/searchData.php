@@ -22,7 +22,7 @@ use Elasticsearch\Tests\Entity\Product;
 use Elasticsearch\Tests\LangKeyResolver;
 
 $driver = new AnnotationDriver();
-$driver->setKeyResolver(new LangKeyResolver());
+$driver->setDefaultKeyResolver(new LangKeyResolver());
 $factory = new MappingMetadataFactory($driver, [Product::class, Author::class]);
 $provider = new MappingMetadataProvider($factory);
 $metadata = $provider->getMappingMetadata();

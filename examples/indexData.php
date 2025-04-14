@@ -23,7 +23,7 @@ $product = Product::create();
 $author = Author::create();
 
 $driver = new AnnotationDriver();
-$driver->setKeyResolver(new LangKeyResolver());
+$driver->setDefaultKeyResolver(new LangKeyResolver());
 $factory = new MappingMetadataFactory($driver, [Product::class, Author::class]);
 $provider = new MappingMetadataProvider($factory);
 

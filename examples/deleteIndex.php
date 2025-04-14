@@ -14,7 +14,7 @@ use Elasticsearch\Tests\LangKeyResolver;
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $driver = new AnnotationDriver();
-$driver->setKeyResolver(new LangKeyResolver());
+$driver->setDefaultKeyResolver(new LangKeyResolver());
 $factory = new MappingMetadataFactory($driver, [Product::class, Author::class]);
 $provider = new MappingMetadataProvider($factory);
 $metadata = $provider->getMappingMetadata()->getMetadata();

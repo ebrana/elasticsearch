@@ -8,6 +8,8 @@ use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
 use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
+use Elasticsearch\Mapping\Types\Text\TextType;
+use Elasticsearch\Tests\CustomKeyResolver;
 
 class Attachment
 {
@@ -26,6 +28,13 @@ class Attachment
         context: Book::class
     )]
     protected array $price = [];
+
+    #[NestedType(
+        keyResolver: CustomKeyResolver::class,
+        fieldsTemplate: new TextType(),
+        context: Book::class
+    )]
+    protected array $sellingPrice = [];
 
     public function getId(): int
     {
@@ -55,5 +64,15 @@ class Attachment
     public function setPrice(array $price): void
     {
         $this->price = $price;
+    }
+
+    public function getSellingPrice(): array
+    {
+        return $this->sellingPrice;
+    }
+
+    public function setSellingPrice(array $sellingPrice): void
+    {
+        $this->sellingPrice = $sellingPrice;
     }
 }

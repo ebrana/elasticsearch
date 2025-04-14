@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Tests\Entity;
 
+use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Types\Common\BooleanType;
 use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
 use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
 
+#[Index(name: "Book")]
 class Book
 {
     #[IntegerType(context: Author::class)]

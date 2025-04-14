@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Elasticsearch\Mapping\Exceptions;
 
@@ -7,8 +9,17 @@ use Throwable;
 
 class MissingKeyResolverException extends Exception
 {
-    public function __construct(Throwable $previous = null)
+    public function __construct(string $key, Throwable $previous = null)
     {
-        parent::__construct('Key Resolver missing in driver. Please set key resolver by setKeyResolver function.', 0, $previous);
+        $message = 'Key Resolver "%s" missing in driver. Please set key resolver by ObjectType/NestedType property keyResolver.';
+
+        parent::__construct(
+            sprintf(
+                $message,
+                $key
+            ),
+            0,
+            $previous
+        );
     }
 }
