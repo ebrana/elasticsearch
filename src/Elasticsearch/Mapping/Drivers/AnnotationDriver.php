@@ -205,25 +205,22 @@ class AnnotationDriver implements DriverInterface
      * @throws MissingKeyResolverException
      */
     private function resolveObjectTypePropertiesByKeyResolver(
-        ObjectType $classType,
+        ObjectType $objectType,
         ReflectionClass $reflection,
         string $propertyName
     ): void {
-        if (null === $this->keyResolvers) {
-            throw new MissingDefaultKeyResolverException();
-        }
         // mam typ object a zaroven rikam, ze chci klice pres resolver
-        $keyResolver = $this->getKeyResolver($classType);
+        $keyResolver = $this->getKeyResolver($objectType);
         $keys = $keyResolver->resolve();
         foreach ($keys as $key) {
-            $template = $classType->getFieldsTemplate();
+            $template = $objectType->getFieldsTemplate();
             if (null === $template) {
                 throw new MissingObjectTypeTemplateFiledsException($reflection->getName(), $propertyName);
             }
 
             $field = clone $template;
             $field->setName($key);
-            $classType->addProperty($field);
+            $objectType->addProperty($field);
         }
     }
 
@@ -260,8 +257,11 @@ class AnnotationDriver implements DriverInterface
                         if ($referenceInstance->getMappedBy()) {
                             $this->resolveObjectTypeByMapping($referenceInstance, $reflection);
                         } else if ($referenceInstance->isKeyResolver()) {
-                            $this->resolveObjectTypePropertiesByKeyResolver($referenceInstance, $reflection,
-                                (string)$referenceInstance->getFieldName());
+                            $this->resolveObjectTypePropertiesByKeyResolver(
+                                $referenceInstance,
+                                $reflection,
+                                (string)$referenceInstance->getFieldName()
+                            );
                         }
                     }
                     $objectType->addProperty($referenceInstance);
