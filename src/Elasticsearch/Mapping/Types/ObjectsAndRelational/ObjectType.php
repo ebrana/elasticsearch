@@ -21,7 +21,7 @@ class ObjectType extends AbstractType implements ValidatorInterface
      */
     public function __construct(
         Dynamic $dynamic = Dynamic::TRUE,
-        protected bool $keyResolver = false,
+        protected bool|string $keyResolver = false,
         protected ?AbstractType $fieldsTemplate = null,
         array $properties =  [],
         ?string $name = null,
@@ -54,6 +54,11 @@ class ObjectType extends AbstractType implements ValidatorInterface
     }
 
     public function isKeyResolver(): bool
+    {
+        return $this->keyResolver === true || is_string($this->keyResolver);
+    }
+
+    public function getKeyResolver(): string|bool
     {
         return $this->keyResolver;
     }
