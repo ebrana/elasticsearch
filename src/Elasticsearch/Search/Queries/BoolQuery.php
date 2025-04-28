@@ -25,6 +25,16 @@ class BoolQuery implements Query
 
     protected null|float $boost = null;
 
+    public function setMinimumShouldMatch(int|string|null $minimum_should_match): void
+    {
+        $this->minimum_should_match = $minimum_should_match;
+    }
+
+    public function setBoost(?float $boost): void
+    {
+        $this->boost = $boost;
+    }
+
     public function add(Query $query, BoolType $type = BoolType::MUST): self
     {
         $this->{$type->value}[] = $query;
