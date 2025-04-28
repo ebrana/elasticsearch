@@ -21,6 +21,10 @@ class BoolQuery implements Query
     /** @var Query[] */
     protected array $must_not = [];
 
+    protected null|int|string $minimum_should_match = null;
+
+    protected null|float $boost = null;
+
     public function add(Query $query, BoolType $type = BoolType::MUST): self
     {
         $this->{$type->value}[] = $query;
@@ -44,6 +48,14 @@ class BoolQuery implements Query
                 return iterator_to_array($query->toArray());
             }, $this->must_not),
         ];
+
+        if (null !== $this->minimum_should_match) {
+            $bool['minimum_should_match'] = $this->minimum_should_match;
+        }
+
+        if (null !== $this->boost) {
+            $bool['boost'] = $this->boost;
+        }
 
         yield 'bool' => array_filter($bool);
     }
