@@ -8,7 +8,7 @@ use Throwable;
 
 class EmptyIndexNameException extends \Exception
 {
-    public function __construct(Throwable $previous = null)
+    public function __construct(?Throwable $previous = null)
     {
         parent::__construct('Empty index name.', 0, $previous);
     }

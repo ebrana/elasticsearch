@@ -9,7 +9,7 @@ use Throwable;
 
 class NotFoundBuilderFactoryException extends Exception
 {
-    public function __construct(string $entityClass, Throwable $previous = null)
+    public function __construct(string $entityClass, ?Throwable $previous = null)
     {
         parent::__construct('Not found builder factory for entity "' . $entityClass . '".', 0, $previous);
     }
