@@ -19,11 +19,9 @@ jobs:
     strategy:
       matrix:
         php:
-          - '8.2'
           - '8.3'
           - '8.4'
         include:
-          - php: '8.2'
           - php: '8.3'
           - php: '8.4'
             coverage: true
