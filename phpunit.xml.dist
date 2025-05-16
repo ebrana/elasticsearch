@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         backupGlobals="false"
+         colors="true"
+         cacheDirectory=".phpunit.cache">
+    <php>
+        <ini name="error_reporting" value="-1"/>
+        <ini name="memory_limit" value="-1"/>
+        <!-- This is necessary for GitHub Actions to work properly -->
+<!--        <server name="KERNEL_DIR" value="tests/Fixtures/app/"/>-->
+<!--        <server name="KERNEL_CLASS" value="AppKernel"/>-->
+        <env name="APP_ENV" value="test"/>
+        <!-- to remove behat extensions in the AppKernel -->
+        <env name="APP_PHPUNIT" value="true"/>
+    </php>
+
+    <testsuites>
+        <testsuite name="Elasticsearch Test Suite">
+            <directory>src/Elasticsearch/Tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <source ignoreSuppressionOfDeprecations="true" ignoreIndirectDeprecations="true" baseline="phpunit.baseline.xml">
+        <deprecationTrigger>
+            <function>trigger_deprecation</function>
+            <method>Doctrine\Deprecations\Deprecation::trigger</method>
+            <method>Doctrine\Deprecations\Deprecation::delegateTriggerToBackend</method>
+        </deprecationTrigger>
+        <include>
+            <directory>.</directory>
+        </include>
+        <exclude>
+            <directory>vendor</directory>
+        </exclude>
+    </source>
+</phpunit>

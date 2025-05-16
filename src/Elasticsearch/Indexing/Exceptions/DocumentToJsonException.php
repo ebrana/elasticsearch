@@ -7,7 +7,7 @@ use Throwable;
 
 class DocumentToJsonException extends Exception
 {
-    public function __construct(Throwable $previous = null)
+    public function __construct(?Throwable $previous = null)
     {
         parent::__construct('Create json from document error.', 0, $previous);
     }

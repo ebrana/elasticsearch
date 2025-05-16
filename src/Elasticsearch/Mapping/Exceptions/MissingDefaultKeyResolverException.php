@@ -7,7 +7,7 @@ use Throwable;
 
 class MissingDefaultKeyResolverException extends Exception
 {
-    public function __construct(Throwable $previous = null)
+    public function __construct(?Throwable $previous = null)
     {
         parent::__construct('Default Key Resolver missing in driver. Please set key resolver by setDefaultKeyResolver function.', 0, $previous);
     }

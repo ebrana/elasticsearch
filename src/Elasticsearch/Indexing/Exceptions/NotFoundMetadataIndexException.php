@@ -9,7 +9,7 @@ use Throwable;
 
 class NotFoundMetadataIndexException extends Exception
 {
-    public function __construct(string $entityClass, Throwable $previous = null)
+    public function __construct(string $entityClass, ?Throwable $previous = null)
     {
         parent::__construct('Not found metadata index for entity "' . $entityClass . '".', 0, $previous);
     }

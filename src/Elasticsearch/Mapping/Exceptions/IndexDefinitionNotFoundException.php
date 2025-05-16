@@ -9,7 +9,7 @@ use Throwable;
 
 class IndexDefinitionNotFoundException extends Exception
 {
-    public function __construct(string $class, Throwable $previous = null)
+    public function __construct(string $class, ?Throwable $previous = null)
     {
         parent::__construct(sprintf('Missing index definition: %s', $class), 0, $previous);
     }
