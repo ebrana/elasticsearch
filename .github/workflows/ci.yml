@@ -1,80 +1,130 @@
 name: CI
 
 on:
-  push:
-  pull_request:
+    push:
+    pull_request:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+    cancel-in-progress: true
 
 env:
-  COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+    COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
-  phpunit:
-    name: PHPUnit (PHP ${{ matrix.php }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      matrix:
-        php:
-          - '8.3'
-          - '8.4'
-        include:
-          - php: '8.3'
-          - php: '8.4'
-            coverage: true
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          tools: pecl, composer
-          extensions: intl, bcmath, curl, openssl, mbstring, pdo_sqlite, mongodb
-          coverage: pcov
-          ini-values: memory_limit=-1
-      - name: Get composer cache directory
-        id: composercache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composercache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-          restore-keys: ${{ runner.os }}-composer-
-      - name: Update project dependencies
-        run: |
-          composer global require soyuka/pmu
-          composer global config allow-plugins.soyuka/pmu true --no-interaction
-          composer global link .
-      - name: Run PHPUnit tests
-        run: vendor/bin/phpunit --log-junit build/logs/phpunit/junit.xml ${{ matrix.coverage && '--coverage-clover build/logs/phpunit/clover.xml' || '' }}
-      - name: Upload test artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phpunit-logs-php${{ matrix.php }}
-          path: build/logs/phpunit
-        continue-on-error: true
-      - name: Upload coverage results to Codecov
-        if: matrix.coverage
-        uses: codecov/codecov-action@v3
-        with:
-          directory: build/logs/phpunit
-          name: phpunit-php${{ matrix.php }}
-          flags: phpunit
-          fail_ci_if_error: true
-        continue-on-error: true
-      - name: Upload coverage results to Coveralls
-        if: matrix.coverage
+    phpstan:
+        name: PHPStan (PHP ${{ matrix.php }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        strategy:
+            matrix:
+                php:
+                    - '8.4'
+            fail-fast: false
         env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          composer global require --prefer-dist --no-interaction --no-progress --ansi php-coveralls/php-coveralls
-          export PATH="$PATH:$HOME/.composer/vendor/bin"
-          php-coveralls --coverage_clover=build/logs/phpunit/clover.xml
-        continue-on-error: true
+            APP_DEBUG: '1' # https://github.com/phpstan/phpstan-symfony/issues/37
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    tools: pecl, composer
+                    extensions: intl, bcmath, curl, openssl, mbstring, mongodb
+                    coverage: none
+                    ini-values: memory_limit=-1
+            -   name: Get composer cache directory
+                id: composercache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            -   name: Cache dependencies
+                uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composercache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+                    restore-keys: ${{ runner.os }}-composer-
+            -   name: Update project dependencies
+                run: |
+                    composer global require soyuka/pmu
+                    composer global config allow-plugins.soyuka/pmu true --no-interaction
+                    composer global link .
+            -   name: Cache PHPStan results
+                uses: actions/cache@v4
+                with:
+                    path: /tmp/phpstan
+                    key: phpstan-php${{ matrix.php }}-${{ github.sha }}
+                    restore-keys: |
+                        phpstan-php${{ matrix.php }}-
+                        phpstan-
+                continue-on-error: true
+            -   name: Run PHPStan analysis
+                run: |
+                    ./vendor/bin/phpstan --version
+                    ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi
+    
+    phpunit:
+        name: PHPUnit (PHP ${{ matrix.php }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        strategy:
+            matrix:
+                php:
+                    - '8.3'
+                    - '8.4'
+                include:
+                    -   php: '8.3'
+                    -   php: '8.4'
+                        coverage: true
+            fail-fast: false
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    tools: pecl, composer
+                    extensions: intl, bcmath, curl, openssl, mbstring, pdo_sqlite, mongodb
+                    coverage: pcov
+                    ini-values: memory_limit=-1
+            -   name: Get composer cache directory
+                id: composercache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            -   name: Cache dependencies
+                uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composercache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+                    restore-keys: ${{ runner.os }}-composer-
+            -   name: Update project dependencies
+                run: |
+                    composer global require soyuka/pmu
+                    composer global config allow-plugins.soyuka/pmu true --no-interaction
+                    composer global link .
+            -   name: Run PHPUnit tests
+                run: vendor/bin/phpunit --log-junit build/logs/phpunit/junit.xml ${{ matrix.coverage && '--coverage-clover build/logs/phpunit/clover.xml' || '' }}
+            -   name: Upload test artifacts
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: phpunit-logs-php${{ matrix.php }}
+                    path: build/logs/phpunit
+                continue-on-error: true
+            -   name: Upload coverage results to Codecov
+                if: matrix.coverage
+                uses: codecov/codecov-action@v3
+                with:
+                    directory: build/logs/phpunit
+                    name: phpunit-php${{ matrix.php }}
+                    flags: phpunit
+                    fail_ci_if_error: true
+                continue-on-error: true
+            -   name: Upload coverage results to Coveralls
+                if: matrix.coverage
+                env:
+                    COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run: |
+                    composer global require --prefer-dist --no-interaction --no-progress --ansi php-coveralls/php-coveralls
+                    export PATH="$PATH:$HOME/.composer/vendor/bin"
+                    php-coveralls --coverage_clover=build/logs/phpunit/clover.xml
+                continue-on-error: true
