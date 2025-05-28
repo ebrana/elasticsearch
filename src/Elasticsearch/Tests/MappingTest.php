@@ -99,6 +99,7 @@ class MappingTest extends TestCase
         $this->assertCount(4, $attachmentField->getProperties());
 
         $attachmentProperties = $attachmentField->getProperties();
+        /** @var NestedType $priceField */
         $priceField = $attachmentProperties->get('price');
         /** @var NestedType $sellingPriceField */
         $sellingPriceField = $attachmentProperties->get('sellingPrice');

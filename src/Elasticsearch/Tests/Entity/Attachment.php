@@ -19,6 +19,9 @@ class Attachment
     #[KeywordType(context: Book::class)]
     private string $name;
 
+    /**
+     * @var float[]
+     */
     #[NestedType(
         properties: [
             new FloatType(name: "@cs"),
@@ -29,6 +32,9 @@ class Attachment
     )]
     protected array $price = [];
 
+    /**
+     * @var string[]
+     */
     #[NestedType(
         keyResolver: CustomKeyResolver::class,
         fieldsTemplate: new TextType(),
@@ -56,23 +62,19 @@ class Attachment
         $this->name = $name;
     }
 
+    /**
+     * @return float[]
+     */
     public function getPrice(): array
     {
         return $this->price;
     }
 
-    public function setPrice(array $price): void
-    {
-        $this->price = $price;
-    }
-
+    /**
+     * @return string[]
+     */
     public function getSellingPrice(): array
     {
         return $this->sellingPrice;
-    }
-
-    public function setSellingPrice(array $sellingPrice): void
-    {
-        $this->sellingPrice = $sellingPrice;
     }
 }

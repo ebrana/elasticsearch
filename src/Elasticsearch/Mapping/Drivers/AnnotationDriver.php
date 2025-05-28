@@ -30,7 +30,7 @@ class AnnotationDriver implements DriverInterface
     private int $level = 0;
 
     /**
-     * @param KeyResolverInterface[]|null $keyResolvers
+     * @param array<KeyResolverInterface|null>|null $keyResolvers
      */
     public function __construct(private ?array $keyResolvers = null)
     {
