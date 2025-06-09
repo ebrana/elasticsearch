@@ -45,7 +45,7 @@ final class KeywordType extends AbstractType implements MultiFieldsInterface
         $this->context = $context;
         $this->type = 'keyword';
 
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
 

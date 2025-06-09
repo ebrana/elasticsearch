@@ -10,6 +10,9 @@ use stdClass;
 
 class EdgeNgramFilterFactory implements FilterFactoryInterface
 {
+    /**
+     * @param stdClass&object{min_gram?: string, max_gram?: string, preserve_original?: int, side?: string} $configuration
+     */
     public static function create(string $name, stdClass $configuration): EdgeNgramAbstractFilter
     {
         $min_gram = 1;

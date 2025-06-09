@@ -176,7 +176,7 @@ class MappingTest extends TestCase
         $this->assertCount(1, $matchOnly->getFields());
         $this->assertInstanceOf(TextType::class, $firstField);
         $this->assertEquals('extra_field', $firstField->getName());
-        $this->assertEquals('test_unit', $matchOnly->getMeta()->getUnit());
+        $this->assertEquals('test_unit', $matchOnly->getMeta()?->getUnit());
     }
 
     public function testSearch(): void

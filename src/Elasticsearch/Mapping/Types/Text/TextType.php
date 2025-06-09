@@ -49,7 +49,7 @@ final class TextType extends AbstractType implements MultiFieldsInterface
         $this->type = 'text';
         $this->meta = $meta;
 
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
 

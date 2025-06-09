@@ -31,7 +31,7 @@ class MatchOnlyTextType extends AbstractType
         $this->type = 'match_only_text';
         $this->meta = $meta;
 
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
 

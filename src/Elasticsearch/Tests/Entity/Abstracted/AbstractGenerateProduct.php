@@ -64,7 +64,7 @@ abstract class AbstractGenerateProduct
         fields: [new TextType(name: "extra_field")],
         meta: new Metadata(unit: "test_unit", metric_type: "test_metric")
     )]
-    protected $matchOnlyText;
+    protected string $matchOnlyText = '';
 
     #[ObjectType(properties: [
         new FloatType(name: "@cs"),
@@ -188,17 +188,17 @@ abstract class AbstractGenerateProduct
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getMatchOnlyText()
+    public function getMatchOnlyText(): string
     {
         return $this->matchOnlyText;
     }
 
     /**
-     * @param mixed $matchOnlyText
+     * @param string $matchOnlyText
      */
-    public function setMatchOnlyText($matchOnlyText): void
+    public function setMatchOnlyText(string $matchOnlyText): void
     {
         $this->matchOnlyText = $matchOnlyText;
     }

@@ -9,6 +9,9 @@ use stdClass;
 
 class NgramFilterFactory implements FilterFactoryInterface
 {
+    /**
+     * @param stdClass&object{min_gram?: string, max_gram?: string, preserve_original?: int, side?: string} $configuration
+     */
     public static function create(string $name, stdClass $configuration): NgramAbstractFilter
     {
         $min_gram = 1;

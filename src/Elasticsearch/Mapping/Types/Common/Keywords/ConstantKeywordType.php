@@ -31,7 +31,7 @@ final class ConstantKeywordType extends AbstractType implements MultiFieldsInter
         $this->type = 'constant_keyword';
         $this->context = $context;
 
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
 

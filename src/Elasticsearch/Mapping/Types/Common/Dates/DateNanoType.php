@@ -18,7 +18,7 @@ final class DateNanoType extends AbstractType
 
         $this->context = $context;
         $this->type = 'date_nanos';
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
     }

@@ -10,6 +10,9 @@ use stdClass;
 
 class StemmerFilterFactory implements FilterFactoryInterface
 {
+    /**
+     * @param stdClass&object{language?: string} $configuration
+     */
     public static function create(string $name, stdClass $configuration): StemmerAbstractFilter
     {
         $language = Language::ENGLISH;

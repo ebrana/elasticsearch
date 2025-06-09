@@ -13,6 +13,7 @@ use stdClass;
 class PatternReplaceCharacterFilterFactory implements CharacterFilterFactoryInterface
 {
     /**
+     * @param stdClass&object{pattern?: string, replacement?: string, flags?: string} $configuration
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */
     public static function create(string $name, stdClass $configuration): AbstractCharactedFilter

@@ -12,6 +12,7 @@ use stdClass;
 class MappingCharacterFilterFactory implements CharacterFilterFactoryInterface
 {
     /**
+     * @param stdClass&object{mappings?: array<string, string>|null, mappings_path?: string|null} $configuration
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */
     public static function create(string $name, stdClass $configuration): AbstractCharactedFilter
@@ -25,6 +26,7 @@ class MappingCharacterFilterFactory implements CharacterFilterFactoryInterface
         if (isset($configuration->mappings)) {
             $mappings = $configuration->mappings;
         } else {
+            /** @var string|null $mappings_path */
             $mappings_path = $configuration->mappings_path;
         }
 

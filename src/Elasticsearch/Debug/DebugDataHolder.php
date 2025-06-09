@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Debug;
 
 use Closure;
+use Elasticsearch\Search\Results\Result;
 use function is_callable;
 
 class DebugDataHolder
@@ -25,26 +26,37 @@ class DebugDataHolder
     }
 
     /**
-     * @return array<int, array<string|float|null>>
+     * @return array<int, array<float|string|null|bool|int|Result>>
      */
     public function getData(): array
     {
+        $returnData = [];
+
         foreach ($this->data as $idx => $data) {
+            $returnData[$idx] = [];
             if (is_callable($data['executionMS'])) {
-                $this->data[$idx]['executionMS'] = $data['executionMS']();
+                /** @var float $typedData */
+                $typedData = call_user_func($data['executionMS']);
+                $returnData[$idx]['executionMS'] = $typedData;
             }
             if (is_callable($data['boolResult'])) {
-                $this->data[$idx]['boolResult'] = $data['boolResult']();
+                /** @var bool $typedData */
+                $typedData = call_user_func($data['boolResult']);
+                $returnData[$idx]['boolResult'] = $typedData;
             }
             if (is_callable($data['countResult'])) {
-                $this->data[$idx]['countResult'] = $data['countResult']();
+                /** @var int $typedData */
+                $typedData = call_user_func($data['countResult']);
+                $returnData[$idx]['countResult'] = $typedData;
             }
             if (is_callable($data['result'])) {
-                $this->data[$idx]['result'] = $data['result']();
+                /** @var Result $typedData */
+                $typedData = call_user_func($data['result']);
+                $returnData[$idx]['result'] = $typedData;
             }
         }
 
-        return $this->data;
+        return $returnData;
     }
 
     public function reset(): void

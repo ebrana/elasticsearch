@@ -20,7 +20,7 @@ final class AliasType extends AbstractType
 
         $this->context = $contect;
         $this->type = 'alias';
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
     }

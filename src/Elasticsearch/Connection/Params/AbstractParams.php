@@ -8,6 +8,9 @@ use Generator;
 
 abstract class AbstractParams
 {
+    /**
+     * @return Generator<string>
+     */
     abstract protected function getParams(): Generator;
 
     /**
@@ -23,7 +26,9 @@ abstract class AbstractParams
                 if (is_object($value) && method_exists($value, 'toString')) {
                     $value = $value->toString();
                 }
-                $result[$param] = $value;
+                /** @var string|int|null $value */
+                $typedValude = $value;
+                $result[$param] = $typedValude;
             }
         }
 

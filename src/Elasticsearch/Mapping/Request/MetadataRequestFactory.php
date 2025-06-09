@@ -77,7 +77,7 @@ class MetadataRequestFactory
     }
 
     /**
-     * @param array<string, array<string, array<string, array<string, array<string>|string>>>> $settings
+     * @param array<string, mixed> $settings
      */
     private function provideAnalyzers(Analysis $analysis, array &$settings): void
     {
@@ -90,7 +90,7 @@ class MetadataRequestFactory
     }
 
     /**
-     * @param array<string, array<string, array<string, array<string, array<string>|string>>>> $settings
+     * @param array<string, mixed> $settings
      */
     private function provideFilters(Analysis $analysis, array &$settings): void
     {

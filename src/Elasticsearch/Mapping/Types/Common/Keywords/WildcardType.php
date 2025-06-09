@@ -30,7 +30,7 @@ final class WildcardType extends AbstractType implements MultiFieldsInterface
         $this->type = 'wildcard';
         $this->context = $context;
 
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
 

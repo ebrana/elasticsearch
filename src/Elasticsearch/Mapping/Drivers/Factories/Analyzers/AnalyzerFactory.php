@@ -11,6 +11,7 @@ use stdClass;
 final class AnalyzerFactory implements AnalyzerFactoryInterface
 {
     /**
+     * @param stdClass&object{tokenizer?: string, filter?: string[]|null|scalar} $configuration
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */
     public static function create(string $name, stdClass $configuration): Analyzer

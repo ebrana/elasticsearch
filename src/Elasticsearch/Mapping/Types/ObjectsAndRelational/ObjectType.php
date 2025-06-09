@@ -35,7 +35,7 @@ class ObjectType extends AbstractType implements ValidatorInterface
         $this->dynamic = $dynamic;
         $this->properties = new ArrayCollection($properties);
 
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
     }
