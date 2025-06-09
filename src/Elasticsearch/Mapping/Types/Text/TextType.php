@@ -37,6 +37,7 @@ final class TextType extends AbstractType implements MultiFieldsInterface
         private string $term_vector = 'no',
         private ?int $index_prefixes_min_chars = null,
         private ?int $index_prefixes_max_chars = null,
+        private ?string $copy_to = null,
         ?string $name = null,
         ?Metadata $meta = null,
         ?array $fields = null,
@@ -205,6 +206,16 @@ final class TextType extends AbstractType implements MultiFieldsInterface
         $this->index_prefixes_max_chars = $index_prefixes_max_chars;
     }
 
+    public function getCopyTo(): ?string
+    {
+        return $this->copy_to;
+    }
+
+    public function setCopyTo(?string $copy_to): void
+    {
+        $this->copy_to = $copy_to;
+    }
+
     public function getCollection(): ArrayCollection
     {
         $collection = parent::getCollection();
@@ -222,6 +233,10 @@ final class TextType extends AbstractType implements MultiFieldsInterface
 
         if (true === $this->isStore()) {
             $collection->set('store', $this->isStore());
+        }
+
+        if ($this->copy_to) {
+            $collection->set('copy_to', $this->copy_to);
         }
 
         $meta = $this->provideMetadataAsArray();

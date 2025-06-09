@@ -35,6 +35,7 @@ final class KeywordType extends AbstractType implements MultiFieldsInterface
         private Similary $similarity = Similary::BM25,
         private ?string $null_value = null,
         private ?string $normalizer = null,
+        private ?string $copy_to = null,
         ?array $fields = null,
         ?string $name = null,
         ?string $context = null,
@@ -151,6 +152,16 @@ final class KeywordType extends AbstractType implements MultiFieldsInterface
         $this->normalizer = $normalizer;
     }
 
+    public function getCopyTo(): ?string
+    {
+        return $this->copy_to;
+    }
+
+    public function setCopyTo(?string $copy_to): void
+    {
+        $this->copy_to = $copy_to;
+    }
+
     public function getCollection(): ArrayCollection
     {
         $collection = parent::getCollection();
@@ -194,6 +205,15 @@ final class KeywordType extends AbstractType implements MultiFieldsInterface
 
         if ($this->normalizer) {
             $collection->set('normalizer', $this->normalizer);
+        }
+
+        if ($this->copy_to) {
+            $collection->set('copy_to', $this->copy_to);
+        }
+
+        $meta = $this->provideMetadataAsArray();
+        if ($meta) {
+            $collection->set('meta', $meta);
         }
 
         return $collection;

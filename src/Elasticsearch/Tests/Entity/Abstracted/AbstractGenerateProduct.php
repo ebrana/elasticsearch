@@ -13,13 +13,16 @@ use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
 use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
 use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
+use Elasticsearch\Mapping\Types\Helpers\Metadata;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Types\Text\MatchOnlyTextType;
 use Elasticsearch\Mapping\Types\Text\TextType;
 use Elasticsearch\Tests\Entity\Translations;
 
 #[Index(name: "AmproductsModule")]
 #[Analyzer(name: "autocomplete_analyzer", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
+#[Analyzer(name: "standard", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
 #[NgramAbstractFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
 abstract class AbstractGenerateProduct
@@ -53,8 +56,15 @@ abstract class AbstractGenerateProduct
         new FloatType(name: "@en"),
         new FloatType(name: "@sk")
     ])]
-    #[KeywordType(name: "sellingPriceWithVatKeyword")]
+    #[KeywordType(copy_to: "copy", name: "sellingPriceWithVatKeyword")]
     protected ArrayCollection $sellingPriceWithVat;
+
+    #[MatchOnlyTextType(
+        copy_to: "copy_match",
+        fields: [new TextType(name: "extra_field")],
+        meta: new Metadata(unit: "test_unit", metric_type: "test_metric")
+    )]
+    protected $matchOnlyText;
 
     #[ObjectType(properties: [
         new FloatType(name: "@cs"),
@@ -175,5 +185,21 @@ abstract class AbstractGenerateProduct
     public function getTranslations(): ArrayCollection
     {
         return $this->translations;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMatchOnlyText()
+    {
+        return $this->matchOnlyText;
+    }
+
+    /**
+     * @param mixed $matchOnlyText
+     */
+    public function setMatchOnlyText($matchOnlyText): void
+    {
+        $this->matchOnlyText = $matchOnlyText;
     }
 }
