@@ -8,8 +8,11 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Filters\Enums\Language;
 
-#[Attribute(Attribute::TARGET_CLASS)]
-class StemmerAbstractFilter extends AbstractFilter
+/**
+ * @see https://www.elastic.co/guide/en/elasticsearch/reference/8.8/analysis-stemmer-tokenfilter.html
+ */
+#[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
+class StemmerFilter extends AbstractFilter
 {
     public function __construct(
         string $name,

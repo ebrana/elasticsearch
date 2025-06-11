@@ -7,8 +7,8 @@ namespace Elasticsearch\Mapping\Settings\Filters;
 use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 
-#[Attribute(Attribute::TARGET_CLASS)]
-class StopAbstractFilter  extends AbstractFilter
+#[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
+class StopFilter  extends AbstractFilter
 {
     /**
      * @param string[]|string $stopwords

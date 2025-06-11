@@ -19,6 +19,7 @@ final class FiltersResolver
         'ngram'      => NgramFilterFactory::class,
         'stemmer'    => StemmerFilterFactory::class,
         'edge_ngram' => EdgeNgramFilterFactory::class,
+        'hunspell' => EdgeNgramFilterFactory::class,
     ];
 
     public function resolveFilters(stdClass $filters, Analysis $analysis): void

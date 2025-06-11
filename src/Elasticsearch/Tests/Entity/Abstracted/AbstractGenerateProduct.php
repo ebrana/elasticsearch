@@ -7,7 +7,7 @@ namespace Elasticsearch\Tests\Entity\Abstracted;
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analyzer;
-use Elasticsearch\Mapping\Settings\Filters\NgramAbstractFilter;
+use Elasticsearch\Mapping\Settings\Filters\NgramFilter;
 use Elasticsearch\Mapping\Settings\Tokenizers\Enums\TokenChars;
 use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
 use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
@@ -24,7 +24,7 @@ use Elasticsearch\Tests\Entity\Translations;
 #[Analyzer(name: "autocomplete_analyzer", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[Analyzer(name: "standard", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
-#[NgramAbstractFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
+#[NgramFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
 abstract class AbstractGenerateProduct
 {
     #[TextType]

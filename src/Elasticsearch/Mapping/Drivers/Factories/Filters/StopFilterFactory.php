@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Mapping\Drivers\Factories\Filters;
 
 use Elasticsearch\Mapping\Exceptions\AttributeMissingException;
-use Elasticsearch\Mapping\Settings\Filters\StopAbstractFilter;
+use Elasticsearch\Mapping\Settings\Filters\StopFilter;
 use stdClass;
 
 class StopFilterFactory implements FilterFactoryInterface
@@ -13,7 +13,7 @@ class StopFilterFactory implements FilterFactoryInterface
     /**
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */
-    public static function create(string $name, stdClass $configuration): StopAbstractFilter
+    public static function create(string $name, stdClass $configuration): StopFilter
     {
         $stopwords_path = null;
         $ignore_case = false;
@@ -35,6 +35,6 @@ class StopFilterFactory implements FilterFactoryInterface
             $remove_trailing = (bool)$configuration->remove_trailing;
         }
 
-        return new StopAbstractFilter($name, $configuration->stopwords, $stopwords_path, $ignore_case, $remove_trailing);
+        return new StopFilter($name, $configuration->stopwords, $stopwords_path, $ignore_case, $remove_trailing);
     }
 }

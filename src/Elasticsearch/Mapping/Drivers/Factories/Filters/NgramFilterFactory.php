@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Mapping\Drivers\Factories\Filters;
 
-use Elasticsearch\Mapping\Settings\Filters\NgramAbstractFilter;
+use Elasticsearch\Mapping\Settings\Filters\NgramFilter;
 use stdClass;
 
 class NgramFilterFactory implements FilterFactoryInterface
@@ -12,7 +12,7 @@ class NgramFilterFactory implements FilterFactoryInterface
     /**
      * @param stdClass&object{min_gram?: string, max_gram?: string, preserve_original?: int, side?: string} $configuration
      */
-    public static function create(string $name, stdClass $configuration): NgramAbstractFilter
+    public static function create(string $name, stdClass $configuration): NgramFilter
     {
         $min_gram = 1;
         $max_gram = 2;
@@ -30,6 +30,6 @@ class NgramFilterFactory implements FilterFactoryInterface
             $preserve_original = (bool)$configuration->preserve_original;
         }
 
-        return new NgramAbstractFilter($name, $min_gram, $max_gram, $preserve_original);
+        return new NgramFilter($name, $min_gram, $max_gram, $preserve_original);
     }
 }

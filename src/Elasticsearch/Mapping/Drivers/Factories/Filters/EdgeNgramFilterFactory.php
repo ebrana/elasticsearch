@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Mapping\Drivers\Factories\Filters;
 
-use Elasticsearch\Mapping\Settings\Filters\EdgeNgramAbstractFilter;
+use Elasticsearch\Mapping\Settings\Filters\EdgeNgramFilter;
 use Elasticsearch\Mapping\Settings\Filters\Enums\Side;
 use stdClass;
 
@@ -13,7 +13,7 @@ class EdgeNgramFilterFactory implements FilterFactoryInterface
     /**
      * @param stdClass&object{min_gram?: string, max_gram?: string, preserve_original?: int, side?: string} $configuration
      */
-    public static function create(string $name, stdClass $configuration): EdgeNgramAbstractFilter
+    public static function create(string $name, stdClass $configuration): EdgeNgramFilter
     {
         $min_gram = 1;
         $max_gram = 2;
@@ -39,6 +39,6 @@ class EdgeNgramFilterFactory implements FilterFactoryInterface
             };
         }
 
-        return new EdgeNgramAbstractFilter($name, $min_gram, $max_gram, $preserve_original, $side);
+        return new EdgeNgramFilter($name, $min_gram, $max_gram, $preserve_original, $side);
     }
 }
