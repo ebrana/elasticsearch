@@ -13,14 +13,14 @@ class HunspellFilter extends AbstractFilter
     public function __construct(
         string $name,
         private string $locale,
-        private string $dictionary = 'english',
+        private ?string $dictionary = null,
         private bool $dedup = false,
         private bool $longest_only = false,
     ) {
         parent::__construct($name, 'hunspell');
     }
 
-    public function getDictionary(): string
+    public function getDictionary(): ?string
     {
         return $this->dictionary;
     }
@@ -66,12 +66,14 @@ class HunspellFilter extends AbstractFilter
     public function toArray(): array
     {
         $data = parent::toArray();
-
-        $data['dictionary'] = $this->getDictionary();
         $data['locale'] = $this->getLocale();
 
+        if ($this->getDictionary()) {
+            $data['dictionary'] = $this->getDictionary();
+        }
+
         if ($this->isDedup()) {
-            $data['depup'] = true;
+            $data['dedup'] = true;
         }
 
         if ($this->isLongestOnly()) {
