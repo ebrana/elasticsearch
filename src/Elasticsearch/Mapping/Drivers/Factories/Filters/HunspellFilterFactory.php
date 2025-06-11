@@ -28,9 +28,6 @@ class HunspellFilterFactory implements FilterFactoryInterface
         if (isset($configuration->dedup)) {
             $dedup = $configuration->dedup;
         }
-        if (isset($configuration->dictionary)) {
-            $dictionary = $configuration->dictionary;
-        }
         if (isset($configuration->longest_only)) {
             $longest_only = $configuration->longest_only;
         }
