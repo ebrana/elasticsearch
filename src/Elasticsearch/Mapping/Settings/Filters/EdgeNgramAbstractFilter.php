@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Mapping\Settings\Filters;
 
+use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Filters\Enums\Side;
 
