@@ -18,6 +18,7 @@ use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
 use Elasticsearch\Mapping\Types\Text\MatchOnlyTextType;
 use Elasticsearch\Mapping\Types\Text\TextType;
+use Elasticsearch\Tests\Entity\Book;
 use Elasticsearch\Tests\Entity\Translations;
 
 #[Index(name: "AmproductsModule")]
@@ -100,11 +101,15 @@ abstract class AbstractGenerateProduct
     )]
     protected ArrayCollection $translations;
 
+    #[NestedType(keyResolver: true, fieldsTemplate: new NestedType(mappedBy: Book::class), name: "books")]
+    protected ArrayCollection $anotherBooks;
+
     public function __construct()
     {
         $this->sellingPrice = new ArrayCollection();
         $this->sellingPriceWithVat = new ArrayCollection();
         $this->translations = new ArrayCollection();
+        $this->anotherBooks = new ArrayCollection();
     }
 
     public function getPk(): string
@@ -201,5 +206,10 @@ abstract class AbstractGenerateProduct
     public function setMatchOnlyText(string $matchOnlyText): void
     {
         $this->matchOnlyText = $matchOnlyText;
+    }
+
+    public function getAnotherBooks(): ArrayCollection
+    {
+        return $this->anotherBooks;
     }
 }

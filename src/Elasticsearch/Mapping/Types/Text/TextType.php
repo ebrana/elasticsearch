@@ -235,7 +235,7 @@ final class TextType extends AbstractType implements MultiFieldsInterface
             $collection->set('store', $this->isStore());
         }
 
-        if ($this->copy_to) {
+        if ($this->getCopyTo()) {
             $collection->set('copy_to', $this->copy_to);
         }
 

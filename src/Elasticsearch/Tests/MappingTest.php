@@ -130,6 +130,8 @@ class MappingTest extends TestCase
         $keyword = $metadataProductIndex->getProperties()->get('sellingPriceWithVatKeyword');
         /** @var \Elasticsearch\Mapping\Types\Text\MatchOnlyTextType $matchOnly */
         $matchOnly = $metadataProductIndex->getProperties()->get('matchOnlyText');
+        /** @var NestedType $nestedByKeyResolver */
+        $nestedByKeyResolver = $metadataProductIndex->getProperties()->get('books');
 
         $this->assertSame('amproductsmodule', $metadataRequest->getIndex()->getName());
 
@@ -170,6 +172,8 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('autocomplete', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']);
         $this->assertEquals('keyword', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']['sort_name']['type']);
         $this->assertEquals('text', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']['autocomplete']['type']);
+        $this->assertTrue($nestedByKeyResolver->getProperties()->first()->getProperties()->containsKey('price'));
+        $this->assertTrue($nestedByKeyResolver->getProperties()->first()->getProperties()->containsKey('currency'));
         $this->assertEquals('copy', $keyword->getCopyTo());
         $this->assertEquals('copy_match', $matchOnly->getCopyTo());
         $firstField = $matchOnly->getFields()->first();
