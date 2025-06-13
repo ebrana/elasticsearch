@@ -46,7 +46,11 @@ class Connection
         if ($params) {
             $request = array_merge($request, $params->toArray());
         }
-        $response = $this->indices()->exists($request);
+
+        /** @var array{index: string|array<string>, local?: bool, ignore_unavailable?: bool, allow_no_indices?: bool, expand_wildcards?: string, flat_settings?: bool, include_defaults?: bool, pretty?: bool} $typedRequest */
+        $typedRequest = $request;
+
+        $response = $this->indices()->exists($typedRequest);
         if ($response instanceof Elasticsearch) {
             return $response->asBool();
         }
@@ -72,7 +76,10 @@ class Connection
             $data = array_merge($data, $params->toArray());
         }
 
-        $this->indices()->create($data);
+        /** @var array{index: string, body: string, wait_for_active_shards?: string, timeout?: string, master_timeout?: string} $typedData */
+        $typedData = $data;
+
+        $this->indices()->create($typedData);
     }
 
     /**
@@ -92,7 +99,10 @@ class Connection
             $data = array_merge($data, $params->toArray());
         }
 
-        $this->indices()->delete($data);
+        /** @var array{index: string|array<string>, timeout?: string, master_timeout?: string, ignore_unavailable?: bool, allow_no_indices?: bool, expand_wildcards?: string} $typedData */
+        $typedData = $data;
+
+        $this->indices()->delete($typedData);
     }
 
     /**
@@ -115,7 +125,10 @@ class Connection
             $request = array_merge($request, $params->toArray());
         }
 
-        $this->getClient()->index($request);
+        /** @var array{index: string, body: string, type: string, wait_for_active_shards?: string, timeout?: string, master_timeout?: string} $typedData */
+        $typedData = $request;
+
+        $this->getClient()->index($typedData);
     }
 
     /**
@@ -129,11 +142,17 @@ class Connection
         if ($params) {
             $request = array_merge($request, $params->toArray());
         }
-        $response = $this->getClient()->count($request);
+
+        /** @var array{index?: string|array<string>, query: string|null, ignore_unavailable?: bool, allow_no_indices?: bool, expand_wildcards?: string, min_score?: int, preference?: string, routing?: string, terminate_after?: int, timeout?: string} $typedData */
+        $typedData = $request;
+
+        $response = $this->getClient()->count($typedData);
         if ($response instanceof Elasticsearch) {
             $data = $response->asArray();
+            /** @var int $count */
+            $count = $data['count'] ?? 0;
 
-            return $data['count'] ?? 0;
+            return $count;
         }
 
         throw new RuntimeException('Wrong data format');
@@ -150,7 +169,41 @@ class Connection
         if ($params) {
             $request = array_merge($request, $params->toArray());
         }
-        $response = $this->getClient()->search($request);
+
+        /** @var array{
+         *     index?: string,
+         *     from?: int,
+         *     size?: int,
+         *     query?: string,
+         *     aggs?: string,
+         *     sort?: string,
+         *     _source?: string,
+         *     timeout?: string,
+         *     terminate_after?: int,
+         *     explain?: bool,
+         *     track_total_hits?: bool|int,
+         *     highlight?: string,
+         *     collapse?: string,
+         *     from_seq_no?: int,
+         *     max_concurrent_shard_requests?: int,
+         *     stored_fields?: string,
+         *     docvalue_fields?: string,
+         *     min_score?: float,
+         *     preference?: string,
+         *     routing?: string,
+         *     scroll?: string,
+         *     version?: bool,
+         *     seq_no_primary_term?: bool,
+         *     stats?: string,
+         *     allow_no_indices?: bool,
+         *     ignore_unavailable?: bool,
+         *     expand_wildcards?: string,
+         *     track_scores?: bool,
+         * } $typedData
+         */
+        $typedData = $request;
+
+        $response = $this->getClient()->search($typedData);
         if ($response instanceof Elasticsearch) {
             return new Result($response->asArray());
         }

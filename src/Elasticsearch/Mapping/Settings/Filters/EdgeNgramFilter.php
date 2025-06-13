@@ -6,20 +6,19 @@ namespace Elasticsearch\Mapping\Settings\Filters;
 
 use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
+use Elasticsearch\Mapping\Settings\Filters\Enums\Side;
 
-/**
- * @deprecated use NgramFilter instead
- */
 #[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
-class NgramAbstractFilter extends AbstractFilter
+final class EdgeNgramFilter extends AbstractFilter
 {
     public function __construct(
         string $name,
         private readonly int $min_gram = 1,
         private readonly int $max_gram = 2,
-        private readonly bool $preserve_original = false
+        private readonly bool $preserve_original = false,
+        private readonly Side $side = Side::FRONT
     ) {
-        parent::__construct($name, 'ngram');
+        parent::__construct($name, 'edge_ngram');
     }
 
     public function getMinGram(): int
@@ -37,12 +36,19 @@ class NgramAbstractFilter extends AbstractFilter
         return $this->preserve_original;
     }
 
+    public function getSide(): Side
+    {
+        return $this->side;
+    }
+
     /**
      * @return array<string, array<string>|int|string|true>
      */
     public function toArray(): array
     {
         $data = parent::toArray();
+
+        $data['side'] = $this->getSide()->value;
 
         if ($this->getMinGram() !== 1) {
             $data['min_gram'] = $this->getMinGram();

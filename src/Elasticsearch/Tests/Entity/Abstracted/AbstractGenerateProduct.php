@@ -7,21 +7,25 @@ namespace Elasticsearch\Tests\Entity\Abstracted;
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analyzer;
-use Elasticsearch\Mapping\Settings\Filters\NgramAbstractFilter;
+use Elasticsearch\Mapping\Settings\Filters\NgramFilter;
 use Elasticsearch\Mapping\Settings\Tokenizers\Enums\TokenChars;
 use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
 use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
 use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
+use Elasticsearch\Mapping\Types\Helpers\Metadata;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Types\Text\MatchOnlyTextType;
 use Elasticsearch\Mapping\Types\Text\TextType;
+use Elasticsearch\Tests\Entity\Book;
 use Elasticsearch\Tests\Entity\Translations;
 
 #[Index(name: "AmproductsModule")]
 #[Analyzer(name: "autocomplete_analyzer", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
+#[Analyzer(name: "standard", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
-#[NgramAbstractFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
+#[NgramFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
 abstract class AbstractGenerateProduct
 {
     #[TextType]
@@ -53,8 +57,15 @@ abstract class AbstractGenerateProduct
         new FloatType(name: "@en"),
         new FloatType(name: "@sk")
     ])]
-    #[KeywordType(name: "sellingPriceWithVatKeyword")]
+    #[KeywordType(copy_to: "copy", name: "sellingPriceWithVatKeyword")]
     protected ArrayCollection $sellingPriceWithVat;
+
+    #[MatchOnlyTextType(
+        copy_to: "copy_match",
+        fields: [new TextType(name: "extra_field")],
+        meta: new Metadata(unit: "test_unit", metric_type: "test_metric")
+    )]
+    protected string $matchOnlyText = '';
 
     #[ObjectType(properties: [
         new FloatType(name: "@cs"),
@@ -90,11 +101,15 @@ abstract class AbstractGenerateProduct
     )]
     protected ArrayCollection $translations;
 
+    #[NestedType(keyResolver: true, fieldsTemplate: new NestedType(mappedBy: Book::class), name: "books")]
+    protected ArrayCollection $anotherBooks;
+
     public function __construct()
     {
         $this->sellingPrice = new ArrayCollection();
         $this->sellingPriceWithVat = new ArrayCollection();
         $this->translations = new ArrayCollection();
+        $this->anotherBooks = new ArrayCollection();
     }
 
     public function getPk(): string
@@ -175,5 +190,26 @@ abstract class AbstractGenerateProduct
     public function getTranslations(): ArrayCollection
     {
         return $this->translations;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMatchOnlyText(): string
+    {
+        return $this->matchOnlyText;
+    }
+
+    /**
+     * @param string $matchOnlyText
+     */
+    public function setMatchOnlyText(string $matchOnlyText): void
+    {
+        $this->matchOnlyText = $matchOnlyText;
+    }
+
+    public function getAnotherBooks(): ArrayCollection
+    {
+        return $this->anotherBooks;
     }
 }

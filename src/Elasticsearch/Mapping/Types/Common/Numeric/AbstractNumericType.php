@@ -35,7 +35,7 @@ abstract class AbstractNumericType extends AbstractType
         $this->type = static::TYPE;
         $this->meta = $meta;
 
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
     }

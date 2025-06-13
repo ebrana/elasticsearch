@@ -1,7 +1,8 @@
 parameters:
-    level: max
+    level: 8
     ignoreErrors:
-        - identifier: missingType.generics
+        - '#with generic class .* does not specify its types:.*#'
+    treatPhpDocTypesAsCertain: false
     paths:
         - src
     excludePaths:

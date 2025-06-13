@@ -22,7 +22,7 @@ final class BinaryType extends AbstractType
 
         $this->type = 'binary';
         $this->context = $context;
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
     }

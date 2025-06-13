@@ -7,11 +7,8 @@ namespace Elasticsearch\Mapping\Settings\Filters;
 use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 
-/**
- * @deprecated use NgramFilter instead
- */
 #[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
-class NgramAbstractFilter extends AbstractFilter
+final class NgramFilter extends AbstractFilter
 {
     public function __construct(
         string $name,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Mapping\Drivers;
 
+use Closure;
 use Elasticsearch\Mapping\Drivers\Resolvers\KeyResolver\KeyResolverInterface;
 use Elasticsearch\Mapping\Exceptions\DuplicityPropertyException;
 use Elasticsearch\Mapping\Exceptions\IndexDefinitionNotFoundException;
@@ -153,36 +154,7 @@ class AnnotationDriver implements DriverInterface
                 $instance = $attribute->newInstance();
 
                 if ($instance instanceof ObjectType) {
-                    if ($instance->getMappedBy()) {
-                        if ($instance->isKeyResolver()) {
-                            throw new \LogicException(
-                                sprintf(
-                                    'Dont use keyResolver, when using mappedBy attribute. Field "%s" in class "%s".',
-                                    $property->getName(),
-                                    $reflection->getName())
-                            );
-                        }
-                        $this->resolveObjectTypeByMapping($instance, $reflection);
-                    } else if ($instance->isKeyResolver()) {
-                        /** @var AbstractType|null $template */
-                        $template = $instance->getProperties()->get(0);
-                        $fieldName = (string)$instance->getFieldName();
-                        if (null !== $template) {
-                            $instance->setFieldsTemplate($template);
-                            $this->resolveObjectTypePropertiesByKeyResolver(
-                                $instance,
-                                $reflection,
-                                $fieldName
-                            );
-                            $instance->getProperties()->remove(0);
-                        } else {
-                            $this->resolveObjectTypePropertiesByKeyResolver(
-                                $instance,
-                                $reflection,
-                                $fieldName
-                            );
-                        }
-                    }
+                    $this->resolveObjectTypeProperties($instance, $property->getName(), $reflection);
                 }
 
                 if (!$instance instanceof AbstractType) {
@@ -203,6 +175,7 @@ class AnnotationDriver implements DriverInterface
      * @throws MissingDefaultKeyResolverException
      * @throws MissingObjectTypeTemplateFiledsException
      * @throws MissingKeyResolverException
+     * @throws ReflectionException
      */
     private function resolveObjectTypePropertiesByKeyResolver(
         ObjectType $objectType,
@@ -220,6 +193,13 @@ class AnnotationDriver implements DriverInterface
 
             $field = clone $template;
             $field->setName($key);
+
+            if ($field instanceof ObjectType) {
+                if ($field->isKeyResolver() || $field->getMappedBy() !== null) {
+                    $name = $field->getFieldName() ?? $objectType->getName();
+                    $this->resolveObjectTypeProperties($field, $name, $reflection);
+                }
+            }
             $objectType->addProperty($field);
         }
     }
@@ -232,9 +212,25 @@ class AnnotationDriver implements DriverInterface
      */
     private function resolveObjectTypeByMapping(
         ObjectType $objectType,
-        ReflectionClass $reflectionClass
+        ReflectionClass $reflectionClass,
     ): void {
-        $referenceClass = $objectType->getMappedBy();
+        $this->resolvingByMappingBy(
+            $objectType,
+            $reflectionClass,
+            function (AbstractType $referenceInstance) use ($objectType): void {
+                $objectType->addProperty($referenceInstance);
+            });
+    }
+
+    /**
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingDefaultKeyResolverException
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException
+     * @throws \ReflectionException
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
+     */
+    private function resolvingByMappingBy(ObjectType $type, ReflectionClass $reflectionClass, Closure $callback): void
+    {
+        $referenceClass = $type->getMappedBy();
         if (null === $referenceClass || false === class_exists($referenceClass)) {
             throw new RuntimeException(sprintf('Class "%s" not exists or cannot loadable.', $referenceClass));
         }
@@ -264,7 +260,7 @@ class AnnotationDriver implements DriverInterface
                             );
                         }
                     }
-                    $objectType->addProperty($referenceInstance);
+                    $callback($referenceInstance);
                 }
             }
         }
@@ -288,5 +284,50 @@ class AnnotationDriver implements DriverInterface
             throw new MissingKeyResolverException($key);
         }
         return $this->keyResolvers[$key];
+    }
+
+    /**
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingDefaultKeyResolverException
+     * @throws \ReflectionException
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
+     */
+    private function resolveObjectTypeProperties(
+        ObjectType $instance,
+        string $propertyName,
+        ReflectionClass $reflection
+    ): void {
+        if ($instance->getMappedBy()) {
+            if ($instance->isKeyResolver()) {
+                throw new \LogicException(
+                    sprintf(
+                        'Dont use keyResolver, when using mappedBy attribute. Field "%s" in class "%s".',
+                        $propertyName,
+                        $reflection->getName())
+                );
+            }
+            $this->resolveObjectTypeByMapping($instance, $reflection);
+        } else {
+            if ($instance->isKeyResolver()) {
+                /** @var AbstractType|null $template */
+                $template = $instance->getProperties()->get(0);
+                $fieldName = (string)$instance->getFieldName();
+                if (null !== $template) {
+                    $instance->setFieldsTemplate($template);
+                    $this->resolveObjectTypePropertiesByKeyResolver(
+                        $instance,
+                        $reflection,
+                        $fieldName
+                    );
+                    $instance->getProperties()->remove(0);
+                } else {
+                    $this->resolveObjectTypePropertiesByKeyResolver(
+                        $instance,
+                        $reflection,
+                        $fieldName
+                    );
+                }
+            }
+        }
     }
 }

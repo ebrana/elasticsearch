@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver;
 
 use Elasticsearch\Mapping\Drivers\Factories\Filters\EdgeNgramFilterFactory;
+use Elasticsearch\Mapping\Drivers\Factories\Filters\HunspellFilterFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Filters\NgramFilterFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Filters\StemmerFilterFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Filters\StopFilterFactory;
@@ -19,6 +20,7 @@ final class FiltersResolver
         'ngram'      => NgramFilterFactory::class,
         'stemmer'    => StemmerFilterFactory::class,
         'edge_ngram' => EdgeNgramFilterFactory::class,
+        'hunspell'   => HunspellFilterFactory::class,
     ];
 
     public function resolveFilters(stdClass $filters, Analysis $analysis): void

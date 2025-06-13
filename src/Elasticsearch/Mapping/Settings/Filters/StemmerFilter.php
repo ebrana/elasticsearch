@@ -9,10 +9,10 @@ use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Filters\Enums\Language;
 
 /**
- * @deprecated Use StemmerFilter instead
+ * @see https://www.elastic.co/guide/en/elasticsearch/reference/8.8/analysis-stemmer-tokenfilter.html
  */
 #[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
-class StemmerAbstractFilter extends AbstractFilter
+class StemmerFilter extends AbstractFilter
 {
     public function __construct(
         string $name,

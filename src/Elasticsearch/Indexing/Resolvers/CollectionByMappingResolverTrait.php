@@ -40,7 +40,9 @@ trait CollectionByMappingResolverTrait
                     if (!is_iterable($relValue)) {
                         throw new InvalidArgumentException('Resolving data for instance of ObjectType must be iterable.');
                     }
-                    $record[$objectPropertyName] = $this->resolveCollection($relProperty, $relValue);
+                    /** @var IndexableEntityInterface[] $typedValue */
+                    $typedValue = $relValue;
+                    $record[$objectPropertyName] = $this->resolveCollection($relProperty, $typedValue);
                 } else {
                     if (!is_scalar($relValue) && null !== $relValue) {
                         throw new RuntimeException(

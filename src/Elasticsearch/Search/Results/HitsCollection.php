@@ -9,6 +9,9 @@ use Countable;
 use Doctrine\Common\Collections\ArrayCollection;
 use IteratorAggregate;
 
+/**
+ * @implements IteratorAggregate<int, scalar|null>
+ */
 final class HitsCollection implements IteratorAggregate, Countable
 {
     private ArrayCollection $collection;
@@ -58,9 +61,11 @@ final class HitsCollection implements IteratorAggregate, Countable
 
     public function getIterator(): ArrayIterator
     {
-        /** <array{_index: string, _id: string, _score: ?int, _source: ?array, sort: array}>  */
-        /** @phpstan-ignore-next-line */
-        return $this->collection->getIterator();
+        /** <array{_index: string, _id: string, _score: int|null, _source: array|null, sort: array}>  */
+        /** @var ArrayIterator<int, scalar|null> $iterator */
+        $iterator = $this->collection->getIterator();
+
+        return $iterator;
     }
 
     public function count(): int
@@ -73,8 +78,9 @@ final class HitsCollection implements IteratorAggregate, Countable
         return $this->collection->isEmpty();
     }
 
-    /** <array{_index: string, _id: string, _score: ?int, _source: ?array, sort: array}>  */
-    /** @phpstan-ignore-next-line */
+    /**
+     * @return array<int, scalar|null>
+     */
     public function toArray(): array
     {
         return $this->collection->toArray();

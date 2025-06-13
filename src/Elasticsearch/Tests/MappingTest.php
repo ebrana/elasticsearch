@@ -16,6 +16,7 @@ use Elasticsearch\Mapping\Types\Common\BooleanType;
 use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\LongType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
+use Elasticsearch\Mapping\Types\Text\TextType;
 use Elasticsearch\Search\Aggregations\SumAggregation;
 use Elasticsearch\Search\Aggregations\TermsAggregation;
 use Elasticsearch\Search\Queries\BoolQuery;
@@ -125,6 +126,12 @@ class MappingTest extends TestCase
         $objectType3 = $metadataProductIndex->getProperties()->get('test1');
         /** @var \Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType $objectType4 */
         $objectType4 = $metadataProductIndex->getProperties()->get('test3');
+        /** @var \Elasticsearch\Mapping\Types\Common\Keywords\KeywordType $keyword */
+        $keyword = $metadataProductIndex->getProperties()->get('sellingPriceWithVatKeyword');
+        /** @var \Elasticsearch\Mapping\Types\Text\MatchOnlyTextType $matchOnly */
+        $matchOnly = $metadataProductIndex->getProperties()->get('matchOnlyText');
+        /** @var NestedType $nestedByKeyResolver */
+        $nestedByKeyResolver = $metadataProductIndex->getProperties()->get('books');
 
         $this->assertSame('amproductsmodule', $metadataRequest->getIndex()->getName());
 
@@ -143,6 +150,9 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('settings', $mapping);
         $this->assertArrayHasKey('analysis', $mapping['settings']);
         $this->assertArrayHasKey('analyzer', $mapping['settings']['analysis']);
+        $this->assertCount(2, $mapping['settings']['analysis']['analyzer']);
+        $this->assertArrayHasKey('standard', $mapping['settings']['analysis']['analyzer']);
+        $this->assertArrayHasKey('autocomplete_analyzer', $mapping['settings']['analysis']['analyzer']);
         $this->assertArrayHasKey('filter', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('tokenizer', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('ngram', $mapping['settings']['analysis']['tokenizer']);
@@ -162,6 +172,15 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('autocomplete', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']);
         $this->assertEquals('keyword', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']['sort_name']['type']);
         $this->assertEquals('text', $mapping['mappings']['properties']['test5']['properties']['@cs']['fields']['autocomplete']['type']);
+        $this->assertTrue($nestedByKeyResolver->getProperties()->first()->getProperties()->containsKey('price'));
+        $this->assertTrue($nestedByKeyResolver->getProperties()->first()->getProperties()->containsKey('currency'));
+        $this->assertEquals('copy', $keyword->getCopyTo());
+        $this->assertEquals('copy_match', $matchOnly->getCopyTo());
+        $firstField = $matchOnly->getFields()->first();
+        $this->assertCount(1, $matchOnly->getFields());
+        $this->assertInstanceOf(TextType::class, $firstField);
+        $this->assertEquals('extra_field', $firstField->getName());
+        $this->assertEquals('test_unit', $matchOnly->getMeta()?->getUnit());
     }
 
     public function testSearch(): void

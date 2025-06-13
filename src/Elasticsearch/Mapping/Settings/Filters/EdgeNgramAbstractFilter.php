@@ -8,8 +8,11 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Filters\Enums\Side;
 
-#[Attribute(Attribute::TARGET_CLASS)]
-final class EdgeNgramAbstractFilter extends AbstractFilter
+/**
+ * @deprecated use EdgeNgramFilter instead
+ */
+#[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
+class EdgeNgramAbstractFilter extends AbstractFilter
 {
     public function __construct(
         string $name,

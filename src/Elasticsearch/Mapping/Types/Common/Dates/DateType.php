@@ -32,7 +32,7 @@ final class DateType extends AbstractType
         $this->meta = $meta;
         $this->script = $script;
         $this->on_script_error = $on_script_error;
-        if ($name && $name !== '') {
+        if (null !== $name && $name !== '') {
             $this->setName($name);
         }
     }

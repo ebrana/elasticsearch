@@ -8,6 +8,9 @@ use ArrayIterator;
 use IteratorAggregate;
 use Traversable;
 
+/**
+ * @implements IteratorAggregate<int, string>
+ */
 final class KeyCollection implements IteratorAggregate
 {
     /**

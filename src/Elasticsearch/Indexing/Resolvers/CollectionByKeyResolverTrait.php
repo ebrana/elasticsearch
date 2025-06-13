@@ -65,6 +65,9 @@ trait CollectionByKeyResolverTrait
         }
     }
 
+    /**
+     * @return Collection<int, object>|null
+     */
     private function getCollection(AbstractType $field, IndexableEntityInterface $entity): ?Collection
     {
         $propertyName = $field->getFieldName();

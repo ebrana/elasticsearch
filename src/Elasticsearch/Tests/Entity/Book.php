@@ -26,6 +26,12 @@ class Book
     #[ObjectType(context: Author::class, mappedBy: Attachment::class)]
     private array $attachments;
 
+    #[IntegerType(context: Product::class)]
+    private int $price = 0;
+
+    #[KeywordType(context: Product::class)]
+    private string $currency = 'CZK';
+
     /**
      * @param \Elasticsearch\Tests\Entity\Attachment[] $attachments
      */
@@ -70,5 +76,15 @@ class Book
     public function getAttachments(): array
     {
         return $this->attachments;
+    }
+
+    public function getPrice(): int
+    {
+        return $this->price;
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->currency;
     }
 }

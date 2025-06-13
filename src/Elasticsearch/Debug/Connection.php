@@ -105,7 +105,9 @@ class Connection extends \Elasticsearch\Connection\Connection
         $method = empty($data['body']) ? 'GET ' : 'POST ';
         $url = '/_count';
         if (isset($data['index'])) {
-            $url = '/' . $data['index'] . '/_count';
+            /** @var string $index */
+            $index = $data['index'];
+            $url = sprintf('/%s/_count', $index);
         }
         $this->addParamsIntoQuery($url, $params);
         $query = new Query($method . $url);
@@ -127,7 +129,9 @@ class Connection extends \Elasticsearch\Connection\Connection
         $data = $builder->build()->toArray();
         $method = empty($data['body']) ? 'GET ' : 'POST ';
         if (isset($data['index'])) {
-            $url = '/' . $data['index'] . '/_search';
+            /** @var string $index */
+            $index = $data['index'];
+            $url = sprintf('/%s/_search', $index);
         } else {
             $url = '/_search';
         }

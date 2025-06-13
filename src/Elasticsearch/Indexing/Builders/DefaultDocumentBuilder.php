@@ -35,7 +35,9 @@ readonly class DefaultDocumentBuilder implements DocumentBuilderInterface
             if (!method_exists($entity, 'getId')) {
                 throw new DataResolverExistsException(sprintf('Entity "%s" does not have method "%s(...)".', get_class($entity), 'getId'));
             }
-            $id = (string)$entity->getId();
+            /** @var scalar $id */
+            $id = $entity->getId();
+            $id = (string)$id;
         }
         $document = new Document($this->index, $id);
 
@@ -54,7 +56,9 @@ readonly class DefaultDocumentBuilder implements DocumentBuilderInterface
                 if (!is_iterable($data)) {
                     throw new InvalidArgumentException('Resolving data for instance of ObjectType must be iterable.');
                 }
-                $data = $this->resolveCollection($property, $data);
+                /** @var IndexableEntityInterface[] $typedData */
+                $typedData = $data;
+                $data = $this->resolveCollection($property, $typedData);
             } else if (!is_scalar($data) && null !== $data) {
                 throw new RuntimeException(
                     sprintf('Resolved value must be null or scalar. Entity "%s" and property "%s". Write your custom resolver instead.',
