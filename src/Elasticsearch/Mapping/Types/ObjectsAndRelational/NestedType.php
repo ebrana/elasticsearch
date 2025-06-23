@@ -15,7 +15,7 @@ class NestedType extends ObjectType
     private bool $include_in_root;
 
     public function __construct(
-        bool|string $keyResolver = false,
+        ?string $keyResolver = null,
         Dynamic $dynamic = Dynamic::TRUE,
         bool $include_in_parent = false,
         bool $include_in_root = false,

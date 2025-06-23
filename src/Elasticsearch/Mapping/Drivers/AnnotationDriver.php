@@ -6,11 +6,12 @@ namespace Elasticsearch\Mapping\Drivers;
 
 use Closure;
 use Elasticsearch\Mapping\Drivers\Resolvers\KeyResolver\KeyResolverInterface;
+use Elasticsearch\Mapping\Drivers\Events\PostEventInterface;
 use Elasticsearch\Mapping\Exceptions\DuplicityPropertyException;
 use Elasticsearch\Mapping\Exceptions\IndexDefinitionNotFoundException;
-use Elasticsearch\Mapping\Exceptions\MissingDefaultKeyResolverException;
 use Elasticsearch\Mapping\Exceptions\MissingKeyResolverException;
 use Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException;
+use Elasticsearch\Mapping\Exceptions\MissingPostEventException;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Analysis;
@@ -27,32 +28,26 @@ use RuntimeException;
 
 class AnnotationDriver implements DriverInterface
 {
-    private const string DEFAULT = 'default';
     private int $level = 0;
 
     /**
      * @param array<KeyResolverInterface|null>|null $keyResolvers
+     * @param array<PostEventInterface|null>|null $postEvents
      */
-    public function __construct(private ?array $keyResolvers = null)
-    {
-    }
-
-    public function setDefaultKeyResolver(?KeyResolverInterface $keyResolver): void
-    {
-        if (null === $this->keyResolvers) {
-            $this->keyResolvers = [];
-        }
-        $this->keyResolvers[self::DEFAULT] = $keyResolver;
+    public function __construct(
+        readonly private ?array $keyResolvers = null,
+        readonly private ?array $postEvents = null,
+    ) {
     }
 
     /**
      * @param class-string $source
      * @throws DuplicityPropertyException
      * @throws IndexDefinitionNotFoundException
-     * @throws MissingDefaultKeyResolverException
      * @throws MissingObjectTypeTemplateFiledsException
      * @throws ReflectionException
      * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingPostEventException
      */
     public function loadMetadata(string $source): Index
     {
@@ -122,6 +117,10 @@ class AnnotationDriver implements DriverInterface
         if (0 === $this->level) {
             $this->resolveProperties($indexMetadata, $reflection, $properties);
             $indexMetadata->setEntityClass($source);
+            if (0 === $this->level && null !== $postEventKey = $indexMetadata->getPostEventClass()) {
+                $postEventCallback = $this->getPostEvent($postEventKey);
+                $postEventCallback->postCreateIndex($indexMetadata);
+            }
         } else {
             $this->level--;
         }
@@ -132,7 +131,6 @@ class AnnotationDriver implements DriverInterface
     /**
      * @param ReflectionProperty[] $properties
      * @throws \Elasticsearch\Mapping\Exceptions\DuplicityPropertyException
-     * @throws \Elasticsearch\Mapping\Exceptions\MissingDefaultKeyResolverException
      * @throws \Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException
      * @throws \ReflectionException
      * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
@@ -172,7 +170,6 @@ class AnnotationDriver implements DriverInterface
     }
 
     /**
-     * @throws MissingDefaultKeyResolverException
      * @throws MissingObjectTypeTemplateFiledsException
      * @throws MissingKeyResolverException
      * @throws ReflectionException
@@ -182,8 +179,12 @@ class AnnotationDriver implements DriverInterface
         ReflectionClass $reflection,
         string $propertyName
     ): void {
+        $key = $objectType->getKeyResolver();
+        if (null === $key) {
+            throw new RuntimeException(sprintf('Filed "%s" has no set keyResolver.', $objectType->getFieldName()));
+        }
         // mam typ object a zaroven rikam, ze chci klice pres resolver
-        $keyResolver = $this->getKeyResolver($objectType);
+        $keyResolver = $this->getKeyResolver($key);
         $keys = $keyResolver->resolve();
         foreach ($keys as $key) {
             $template = $objectType->getFieldsTemplate();
@@ -195,7 +196,7 @@ class AnnotationDriver implements DriverInterface
             $field->setName($key);
 
             if ($field instanceof ObjectType) {
-                if ($field->isKeyResolver() || $field->getMappedBy() !== null) {
+                if ($field->hasKeyResolver() || $field->getMappedBy() !== null) {
                     $name = $field->getFieldName() ?? $objectType->getName();
                     $this->resolveObjectTypeProperties($field, $name, $reflection);
                 }
@@ -205,7 +206,6 @@ class AnnotationDriver implements DriverInterface
     }
 
     /**
-     * @throws \Elasticsearch\Mapping\Exceptions\MissingDefaultKeyResolverException
      * @throws \Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException
      * @throws \ReflectionException
      * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
@@ -223,7 +223,6 @@ class AnnotationDriver implements DriverInterface
     }
 
     /**
-     * @throws \Elasticsearch\Mapping\Exceptions\MissingDefaultKeyResolverException
      * @throws \Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException
      * @throws \ReflectionException
      * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
@@ -252,7 +251,7 @@ class AnnotationDriver implements DriverInterface
                     if ($referenceInstance instanceof ObjectType) {
                         if ($referenceInstance->getMappedBy()) {
                             $this->resolveObjectTypeByMapping($referenceInstance, $reflection);
-                        } else if ($referenceInstance->isKeyResolver()) {
+                        } else if ($referenceInstance->hasKeyResolver()) {
                             $this->resolveObjectTypePropertiesByKeyResolver(
                                 $referenceInstance,
                                 $reflection,
@@ -268,27 +267,30 @@ class AnnotationDriver implements DriverInterface
 
     /**
      * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
-     * @throws \Elasticsearch\Mapping\Exceptions\MissingDefaultKeyResolverException
      */
-    private function getKeyResolver(ObjectType $classType): KeyResolverInterface
+    private function getKeyResolver(string $key): KeyResolverInterface
     {
-        if (is_bool($classType->getKeyResolver())) {
-            if (!isset($this->keyResolvers[self::DEFAULT])) {
-                throw new MissingDefaultKeyResolverException();
-            }
-            return $this->keyResolvers[self::DEFAULT];
-        }
-
-        $key = $classType->getKeyResolver();
         if (!isset($this->keyResolvers[$key])) {
             throw new MissingKeyResolverException($key);
         }
+
         return $this->keyResolvers[$key];
     }
 
     /**
+     * @throws \Elasticsearch\Mapping\Exceptions\MissingPostEventException
+     */
+    private function getPostEvent(string $key): PostEventInterface
+    {
+        if (!isset($this->postEvents[$key])) {
+            throw new MissingPostEventException($key);
+        }
+
+        return $this->postEvents[$key];
+    }
+
+    /**
      * @throws \Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException
-     * @throws \Elasticsearch\Mapping\Exceptions\MissingDefaultKeyResolverException
      * @throws \ReflectionException
      * @throws \Elasticsearch\Mapping\Exceptions\MissingKeyResolverException
      */
@@ -298,7 +300,7 @@ class AnnotationDriver implements DriverInterface
         ReflectionClass $reflection
     ): void {
         if ($instance->getMappedBy()) {
-            if ($instance->isKeyResolver()) {
+            if ($instance->hasKeyResolver()) {
                 throw new \LogicException(
                     sprintf(
                         'Dont use keyResolver, when using mappedBy attribute. Field "%s" in class "%s".',
@@ -307,27 +309,31 @@ class AnnotationDriver implements DriverInterface
                 );
             }
             $this->resolveObjectTypeByMapping($instance, $reflection);
-        } else {
-            if ($instance->isKeyResolver()) {
-                /** @var AbstractType|null $template */
-                $template = $instance->getProperties()->get(0);
-                $fieldName = (string)$instance->getFieldName();
-                if (null !== $template) {
-                    $instance->setFieldsTemplate($template);
-                    $this->resolveObjectTypePropertiesByKeyResolver(
-                        $instance,
-                        $reflection,
-                        $fieldName
-                    );
-                    $instance->getProperties()->remove(0);
-                } else {
-                    $this->resolveObjectTypePropertiesByKeyResolver(
-                        $instance,
-                        $reflection,
-                        $fieldName
-                    );
-                }
+
+            return;
+        }
+
+        if ($instance->hasKeyResolver()) {
+            /** @var AbstractType|null $template */
+            $template = $instance->getProperties()->get(0);
+            $fieldName = (string)$instance->getFieldName();
+            if (null !== $template) {
+                $instance->setFieldsTemplate($template);
+                $this->resolveObjectTypePropertiesByKeyResolver(
+                    $instance,
+                    $reflection,
+                    $fieldName
+                );
+                $instance->getProperties()->remove(0);
+
+                return;
             }
+
+            $this->resolveObjectTypePropertiesByKeyResolver(
+                    $instance,
+                    $reflection,
+                    $fieldName
+            );
         }
     }
 }

@@ -142,6 +142,7 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('pk', $mapping['mappings']['properties']);
         $this->assertArrayHasKey('parameterValues', $mapping['mappings']['properties']);
         $this->assertArrayHasKey('sellingPriceWithVat', $mapping['mappings']['properties']);
+        $this->assertArrayHasKey('postEventName', $mapping['mappings']['properties']);
         $this->assertArrayHasKey('properties', $mapping['mappings']['properties']['sellingPriceWithVat']);
         $this->assertArrayHasKey('@cs', $mapping['mappings']['properties']['sellingPriceWithVat']['properties']);
         $this->assertArrayHasKey('@en', $mapping['mappings']['properties']['sellingPriceWithVat']['properties']);
@@ -280,8 +281,10 @@ class MappingTest extends TestCase
 
     private function getMappingMetadata(): MetadataProviderInterface
     {
-        $driver = new AnnotationDriver([CustomKeyResolver::class => new CustomKeyResolver()]);
-        $driver->setDefaultKeyResolver(new LangKeyResolver());
+        $driver = new AnnotationDriver([
+            LangKeyResolver::class => new LangKeyResolver(),
+            CustomKeyResolver::class => new CustomKeyResolver(),
+        ], [PostEventSample::class => new PostEventSample()]);
         $factory = new MappingMetadataFactory($driver, [Product::class, Address::class, Author::class]);
 
         return new MappingMetadataProvider($factory);

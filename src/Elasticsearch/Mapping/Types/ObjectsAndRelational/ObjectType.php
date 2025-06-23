@@ -21,7 +21,7 @@ class ObjectType extends AbstractType implements ValidatorInterface
      */
     public function __construct(
         Dynamic $dynamic = Dynamic::TRUE,
-        protected bool|string $keyResolver = false,
+        protected ?string $keyResolver = null,
         protected ?AbstractType $fieldsTemplate = null,
         array $properties =  [],
         ?string $name = null,
@@ -53,12 +53,12 @@ class ObjectType extends AbstractType implements ValidatorInterface
         $this->properties->set($type->getName(), $type);
     }
 
-    public function isKeyResolver(): bool
+    public function hasKeyResolver(): bool
     {
-        return $this->keyResolver === true || is_string($this->keyResolver);
+        return $this->keyResolver !== null;
     }
 
-    public function getKeyResolver(): string|bool
+    public function getKeyResolver(): ?string
     {
         return $this->keyResolver;
     }
@@ -115,16 +115,18 @@ class ObjectType extends AbstractType implements ValidatorInterface
 
     public function validate(): void
     {
-        if (false === $this->keyResolver && $this->properties->isEmpty()) {
-            throw new RuntimeException('ObjectType has empty fields properties.');
+        if (null === $this->keyResolver && $this->properties->isEmpty()) {
+            throw new RuntimeException(sprintf('Field "%s" has empty fields properties.', $this->getFieldName()));
         }
 
-        if (true === $this->keyResolver && null === $this->fieldsTemplate) {
-            throw new RuntimeException('Please set fieldsType.');
+        if (null !== $this->keyResolver && null === $this->fieldsTemplate) {
+            throw new RuntimeException(
+                sprintf('Field "%s" has empty fieldsTemplate. Please set fieldsTemplate.', $this->getFieldName())
+            );
         }
 
-        if (false === $this->keyResolver && null !== $this->fieldsTemplate) {
-            trigger_error('$fieldsTemplate is set. You didn\'t forget to set it $keyResolver to true.', E_USER_WARNING);
+        if (null === $this->keyResolver && null !== $this->fieldsTemplate) {
+            trigger_error('$fieldsTemplate is set. You didn\'t forget to set it $keyResolver property.', E_USER_WARNING);
         }
     }
 }
