@@ -126,7 +126,7 @@ class ObjectType extends AbstractType implements ValidatorInterface
         }
 
         if (null === $this->keyResolver && null !== $this->fieldsTemplate) {
-            trigger_error('$fieldsTemplate is set. You didn\'t forget to set it $keyResolver property.', E_USER_WARNING);
+            trigger_error('$fieldsTemplate is set. You didn\'t set it $keyResolver property.', E_USER_WARNING);
         }
     }
 }

@@ -181,7 +181,7 @@ class AnnotationDriver implements DriverInterface
     ): void {
         $key = $objectType->getKeyResolver();
         if (null === $key) {
-            throw new RuntimeException(sprintf('Filed "%s" has no set keyResolver.', $objectType->getFieldName()));
+            throw new RuntimeException(sprintf('Field "%s" has no keyResolver.', $objectType->getFieldName()));
         }
         // mam typ object a zaroven rikam, ze chci klice pres resolver
         $keyResolver = $this->getKeyResolver($key);
