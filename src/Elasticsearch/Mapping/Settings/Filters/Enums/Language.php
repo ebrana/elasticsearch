@@ -17,4 +17,19 @@ enum Language: string
     case ENGLISH = 'english';
     case DANISH = 'danich';
     case DUTCH = 'dutch';
+    case GERMAN = 'german';
+    case GREEK = 'greek';
+    case SWEDISH = 'swedish';
+    case TURKISH = 'turkish';
+    case SPANISH = 'spanish';
+    case RUSSIAN = 'russian';
+    case ITALIAN = 'italian';
+    case FINNISH = 'finnish';
+    case FRENCH = 'french';
+    case HUNGARIAN = 'hungarian';
+    case LATVIAN = 'latvian';
+    case PORTUGUESE = 'portuguese';
+    case LIGHT_GERMANY = 'light_german';
+    case LIGHT_ITALIAN = 'light_italian';
+    case LIGHT_SPANISH = 'light_spanish';
 }
