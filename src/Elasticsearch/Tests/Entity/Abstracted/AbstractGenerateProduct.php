@@ -20,8 +20,10 @@ use Elasticsearch\Mapping\Types\Text\MatchOnlyTextType;
 use Elasticsearch\Mapping\Types\Text\TextType;
 use Elasticsearch\Tests\Entity\Book;
 use Elasticsearch\Tests\Entity\Translations;
+use Elasticsearch\Tests\LangKeyResolver;
+use Elasticsearch\Tests\PostEventSample;
 
-#[Index(name: "AmproductsModule")]
+#[Index(name: "AmproductsModule", postEventClass: PostEventSample::class)]
 #[Analyzer(name: "autocomplete_analyzer", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[Analyzer(name: "standard", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
@@ -77,7 +79,7 @@ abstract class AbstractGenerateProduct
         new FloatType(name: "@en"),
         new FloatType(name: "@sk")
     ], name: "test2")]
-    #[ObjectType(keyResolver: true, properties: [
+    #[ObjectType(keyResolver: LangKeyResolver::class, properties: [
         new ObjectType(properties: [
             new ObjectType(properties: [
                 new FloatType(name: "@en"),
@@ -92,7 +94,7 @@ abstract class AbstractGenerateProduct
         ], name: "second")
     ], name: "test4")]
     #[ObjectType(
-        keyResolver: true,
+        keyResolver: LangKeyResolver::class,
         fieldsTemplate: new TextType(analyzer: 'standard', name: 'name', fields: [
             new KeywordType(name: 'sort_name'),
             new TextType(analyzer: 'autocomplete_analyzer', name: 'autocomplete'),
@@ -101,7 +103,7 @@ abstract class AbstractGenerateProduct
     )]
     protected ArrayCollection $translations;
 
-    #[NestedType(keyResolver: true, fieldsTemplate: new NestedType(mappedBy: Book::class), name: "books")]
+    #[NestedType(keyResolver: LangKeyResolver::class, fieldsTemplate: new NestedType(mappedBy: Book::class), name: "books")]
     protected ArrayCollection $anotherBooks;
 
     public function __construct()
@@ -211,5 +213,10 @@ abstract class AbstractGenerateProduct
     public function getAnotherBooks(): ArrayCollection
     {
         return $this->anotherBooks;
+    }
+
+    public function getPostEventName(): string
+    {
+        return 'test';
     }
 }

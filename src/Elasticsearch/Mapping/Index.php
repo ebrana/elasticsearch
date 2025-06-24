@@ -32,7 +32,9 @@ final class Index
 
     public function __construct(
         ?string $name = null,
-        private readonly int $max_result_window = 10000
+        private readonly int $max_result_window = 10000,
+        /** @var class-string|null */
+        private readonly ?string $postEventClass = null,
     ) {
         $this->properties = new ArrayCollection();
         $this->name = $name ? strtolower($name) : $name;
@@ -109,5 +111,13 @@ final class Index
         }
 
         return $prefix . $name;
+    }
+
+    /**
+     * @return class-string|null
+     */
+    public function getPostEventClass(): ?string
+    {
+        return $this->postEventClass;
     }
 }

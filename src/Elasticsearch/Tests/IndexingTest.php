@@ -22,8 +22,10 @@ class IndexingTest extends TestCase
     {
         $product = Product::create();
 
-        $driver = new AnnotationDriver([CustomKeyResolver::class => new CustomKeyResolver()]);
-        $driver->setDefaultKeyResolver(new LangKeyResolver());
+        $driver = new AnnotationDriver([
+            LangKeyResolver::class => new LangKeyResolver(),
+            CustomKeyResolver::class => new CustomKeyResolver(),
+        ], [PostEventSample::class => new PostEventSample()]);
         $factory = new MappingMetadataFactory($driver, [Product::class]);
         $provider = new MappingMetadataProvider($factory);
 
@@ -42,8 +44,10 @@ class IndexingTest extends TestCase
     {
         $author = Author::create();
 
-        $driver = new AnnotationDriver([CustomKeyResolver::class => new CustomKeyResolver()]);
-        $driver->setDefaultKeyResolver(new LangKeyResolver());
+        $driver = new AnnotationDriver([
+            LangKeyResolver::class => new LangKeyResolver(),
+            CustomKeyResolver::class => new CustomKeyResolver(),
+        ], [PostEventSample::class => new PostEventSample()]);
         $factory = new MappingMetadataFactory($driver, [Author::class]);
         $provider = new MappingMetadataProvider($factory);
 
@@ -65,8 +69,10 @@ class IndexingTest extends TestCase
     {
         $author = Author::create();
 
-        $driver = new AnnotationDriver([CustomKeyResolver::class => new CustomKeyResolver()]);
-        $driver->setDefaultKeyResolver(new LangKeyResolver());
+        $driver = new AnnotationDriver([
+            LangKeyResolver::class => new LangKeyResolver(),
+            CustomKeyResolver::class => new CustomKeyResolver(),
+        ], [PostEventSample::class => new PostEventSample()]);
         $factory = new MappingMetadataFactory($driver, [Author::class]);
         $provider = new MappingMetadataProvider($factory);
 
