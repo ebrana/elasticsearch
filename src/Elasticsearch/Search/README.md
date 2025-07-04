@@ -207,6 +207,20 @@ $builder
     );
 ```
 
+##### Nested sorting
+```php
+$sort = new Sort('parameters', SortDirection::ASC);
+$sort->setMode(SortMode::SUM);
+$sort->setNestedSort(
+    new NestedSort('sellingPrice', $query, new NestedSort('sellingPrice.@cz'))
+);
+$builder->addSort($sort);
+```
+
+Řazení podporuje Geo sorting (GeoDistanceSort.php) a Script sorting (ScriptSort.php).
+https://www.elastic.co/docs/reference/elasticsearch/rest-apis/sort-search-results#geo-sorting
+https://www.elastic.co/docs/reference/elasticsearch/rest-apis/sort-search-results#script-based-sorting
+
 ## Retrieve specific fields
 
 The `fields()` method can be used to request specific fields from the resulting documents without returning the entire `_source` entry. You can read more about the specifics of the fields parameter in [the ElasticSearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-fields.html).

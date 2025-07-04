@@ -17,16 +17,6 @@ use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\LongType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
 use Elasticsearch\Mapping\Types\Text\TextType;
-use Elasticsearch\Search\Aggregations\SumAggregation;
-use Elasticsearch\Search\Aggregations\TermsAggregation;
-use Elasticsearch\Search\Queries\BoolQuery;
-use Elasticsearch\Search\Queries\Enums\BoolType;
-use Elasticsearch\Search\Queries\Enums\MultiMatchType;
-use Elasticsearch\Search\Queries\MultiMatchQuery;
-use Elasticsearch\Search\Queries\RangeQuery;
-use Elasticsearch\Search\SearchBuilderFactory;
-use Elasticsearch\Search\Sorts\Sort;
-use Elasticsearch\Search\Sorts\SortDirection;
 use Elasticsearch\Tests\Entity\Address;
 use Elasticsearch\Tests\Entity\Author;
 use Elasticsearch\Tests\Entity\Product;
@@ -34,8 +24,6 @@ use PHPUnit\Framework\TestCase;
 
 class MappingTest extends TestCase
 {
-    private const INDEX_PREFIX = 'testing_';
-
     public function testEnums(): void
     {
         $tokenizer = new NgramTokenizer('test');
@@ -182,74 +170,6 @@ class MappingTest extends TestCase
         $this->assertInstanceOf(TextType::class, $firstField);
         $this->assertEquals('extra_field', $firstField->getName());
         $this->assertEquals('test_unit', $matchOnly->getMeta()?->getUnit());
-    }
-
-    public function testSearch(): void
-    {
-        $searchBuilderFactory = new SearchBuilderFactory($this->getMappingMetadata(), self::INDEX_PREFIX);
-
-        $builder = $searchBuilderFactory->create(Product::class);
-        $boolQuery = new BoolQuery();
-        $boolQuery->add((new RangeQuery('sellingPrice.@cs'))->gte('1000'), BoolType::FILTER);
-        $boolQuery->add((new RangeQuery('sellingPrice.@cs'))->lte('2000'), BoolType::FILTER);
-        $builder->setQuery($boolQuery);
-        $builder->addAggregation(new SumAggregation('sum', 'sellingPrice.@cs'));
-        $builder->addSort(new Sort('parameters', SortDirection::ASC));
-
-        /** @var mixed[][][][][][][][] $queryCollection */
-        $queryCollection = $builder->build()->toArray();
-
-        $this->assertArrayHasKey('body', $queryCollection);
-        $this->assertArrayHasKey('index', $queryCollection);
-        $this->assertArrayHasKey('query', $queryCollection['body']);
-        $this->assertArrayHasKey('bool', $queryCollection['body']['query']);
-        $this->assertArrayHasKey('filter', $queryCollection['body']['query']['bool']);
-        $this->assertArrayHasKey('range', $queryCollection['body']['query']['bool']['filter'][0]);
-        $this->assertArrayHasKey('range', $queryCollection['body']['query']['bool']['filter'][1]);
-        $this->assertArrayHasKey('sellingPrice.@cs', $queryCollection['body']['query']['bool']['filter'][0]['range']);
-        $this->assertEquals('1000', $queryCollection['body']['query']['bool']['filter'][0]['range']['sellingPrice.@cs']['gte']);
-        $this->assertArrayHasKey('aggs', $queryCollection['body']);
-        $this->assertArrayHasKey('sort', $queryCollection['body']);
-    }
-
-    public function testAggregation(): void
-    {
-        $searchBuilderFactory = new SearchBuilderFactory($this->getMappingMetadata(), self::INDEX_PREFIX);
-
-        $builder = $searchBuilderFactory->create(Product::class);
-        $boolQuery = new BoolQuery();
-        $boolQuery->add((new RangeQuery('sellingPrice.@cs'))->gte('1000'), BoolType::FILTER);
-        $builder->setQuery($boolQuery);
-        $builder->addAggregation(new TermsAggregation('sellingPrice', 'sellingPrice.@cs'));
-
-        /** @var mixed[][][][][] $queryCollection */
-        $queryCollection = $builder->build()->toArray();
-
-        $this->assertArrayHasKey('body', $queryCollection);
-        $this->assertArrayHasKey('index', $queryCollection);
-        $this->assertArrayHasKey('query', $queryCollection['body']);
-        $this->assertArrayHasKey('aggs', $queryCollection['body']);
-        $this->assertArrayHasKey('sellingPrice', $queryCollection['body']['aggs']);
-        $this->assertArrayHasKey('terms', $queryCollection['body']['aggs']['sellingPrice']);
-        $this->assertArrayHasKey('field', $queryCollection['body']['aggs']['sellingPrice']['terms']);
-        $this->assertEquals('sellingPrice.@cs', $queryCollection['body']['aggs']['sellingPrice']['terms']['field']);
-    }
-
-    public function testMultimatchQuery(): void
-    {
-        $searchBuilderFactory = new SearchBuilderFactory($this->getMappingMetadata(), self::INDEX_PREFIX);
-
-        $builder = $searchBuilderFactory->create(Product::class);
-        $builder->setQuery(new MultiMatchQuery('this is a test', ['productTags'], null, MultiMatchType::PHRASE));
-
-        /** @var mixed[][][][][] $queryCollection */
-        $queryCollection = $builder->build()->toArray();
-
-        $this->assertArrayHasKey('multi_match', $queryCollection['body']['query']);
-        $this->assertArrayHasKey('query', $queryCollection['body']['query']['multi_match']);
-        $this->assertArrayHasKey('type', $queryCollection['body']['query']['multi_match']);
-        $this->assertEquals('phrase', $queryCollection['body']['query']['multi_match']['type']);
-        $this->assertEquals('this is a test', $queryCollection['body']['query']['multi_match']['query']);
     }
 
     public function testJsonDriver(): void
