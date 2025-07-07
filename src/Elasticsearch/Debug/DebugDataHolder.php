@@ -54,6 +54,8 @@ class DebugDataHolder
                 $typedData = call_user_func($data['result']);
                 $returnData[$idx]['result'] = $typedData;
             }
+            $returnData[$idx]['query'] = $data['query'];
+            $returnData[$idx]['body'] = $data['body'];
         }
 
         return $returnData;
