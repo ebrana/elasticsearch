@@ -8,15 +8,15 @@ use Generator;
 
 class SortCollection
 {
-    /** @var Sort[] */
+    /** @var SortInterface[] */
     private array $sorts;
 
-    public function __construct(Sort ...$sorts)
+    public function __construct(SortInterface ...$sorts)
     {
         $this->sorts = $sorts;
     }
 
-    public function add(Sort $sort): self
+    public function add(SortInterface $sort): self
     {
         $this->sorts[] = $sort;
 

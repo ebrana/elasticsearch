@@ -17,12 +17,19 @@ use Elasticsearch\Search\Queries\RangeQuery;
 use Elasticsearch\Search\SearchBuilderFactory;
 use Elasticsearch\Search\Sorts\Sort;
 use Elasticsearch\Search\Sorts\SortDirection;
+use Elasticsearch\Tests\CustomKeyResolver;
 use Elasticsearch\Tests\Entity\Author;
 use Elasticsearch\Tests\Entity\Product;
 use Elasticsearch\Tests\LangKeyResolver;
+use Elasticsearch\Search\Sorts\NestedSort;
+use Elasticsearch\Tests\PostEventSample;
 
-$driver = new AnnotationDriver();
-$driver->setDefaultKeyResolver(new LangKeyResolver());
+$driver = new AnnotationDriver([
+    LangKeyResolver::class => new LangKeyResolver(),
+    CustomKeyResolver::class => new CustomKeyResolver(),
+], [
+    PostEventSample::class => new PostEventSample(),
+]);
 $factory = new MappingMetadataFactory($driver, [Product::class, Author::class]);
 $provider = new MappingMetadataProvider($factory);
 $metadata = $provider->getMappingMetadata();
@@ -40,6 +47,9 @@ $builder->setQuery($nestedPath);
 
 $builder->addAggregation(new SumAggregation('sum', 'sellingPrice.@cs'));
 $builder->addSort(new Sort('parameters', SortDirection::ASC));
+$nestedSort = new Sort('sellingPrice.@cs', SortDirection::ASC);
+$nestedSort->setNestedSort(new NestedSort('sellingPrice'));
+$builder->addSort($nestedSort);
 
 $client = new Connection(ClientBuilder::create()->setHosts(['ebr-elasticsearch:9200']), 'testing_');
 echo 'Document count: ' . $client->count($searchBuilderFactory->create(Product::class)) . PHP_EOL;

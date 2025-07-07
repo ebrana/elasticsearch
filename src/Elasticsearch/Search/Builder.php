@@ -9,8 +9,8 @@ use Elasticsearch\Mapping\Index;
 use Elasticsearch\Search\Aggregations\AbstractAggregation;
 use Elasticsearch\Search\Aggregations\AggregationCollection;
 use Elasticsearch\Search\Queries\Query;
-use Elasticsearch\Search\Sorts\Sort;
 use Elasticsearch\Search\Sorts\SortCollection;
+use Elasticsearch\Search\Sorts\SortInterface;
 
 final class Builder
 {
@@ -52,7 +52,7 @@ final class Builder
         return $this;
     }
 
-    public function addSort(Sort $sort): self
+    public function addSort(SortInterface $sort): self
     {
         if (!$this->sorts) {
             $this->sorts = new SortCollection();

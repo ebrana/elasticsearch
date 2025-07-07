@@ -7,14 +7,20 @@ use Elasticsearch\Connection\Connection;
 use Elasticsearch\Mapping\Drivers\AnnotationDriver;
 use Elasticsearch\Mapping\MappingMetadataFactory;
 use Elasticsearch\Mapping\MappingMetadataProvider;
+use Elasticsearch\Tests\CustomKeyResolver;
 use Elasticsearch\Tests\Entity\Author;
 use Elasticsearch\Tests\Entity\Product;
 use Elasticsearch\Tests\LangKeyResolver;
+use Elasticsearch\Tests\PostEventSample;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$driver = new AnnotationDriver();
-$driver->setDefaultKeyResolver(new LangKeyResolver());
+$driver = new AnnotationDriver([
+    LangKeyResolver::class => new LangKeyResolver(),
+    CustomKeyResolver::class => new CustomKeyResolver(),
+], [
+    PostEventSample::class => new PostEventSample(),
+]);
 $factory = new MappingMetadataFactory($driver, [Product::class, Author::class]);
 $provider = new MappingMetadataProvider($factory);
 $metadata = $provider->getMappingMetadata()->getMetadata();
