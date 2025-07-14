@@ -8,20 +8,21 @@ use Generator;
 
 class DisMaxQuery implements Query
 {
+    /**
+     * @param Query[] $queries
+     */
     public function __construct(
         private array $queries = [],
         private ?float $tie_breaker = null,
     ) {
     }
 
+    /**
+     * @return Query[]
+     */
     public function getQueries(): array
     {
         return $this->queries;
-    }
-
-    public function setQueries(array $queries): void
-    {
-        $this->queries = $queries;
     }
 
     public function addQuery(Query $query): void

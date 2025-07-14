@@ -6,15 +6,15 @@ namespace Elasticsearch\Search\Queries;
 
 use Generator;
 
-readonly class MatchQuery implements Query
+class MatchQuery implements Query
 {
     use MatchQueryTrait {
         MatchQueryTrait::toArray as traitToArray;
     }
 
     public function __construct(
-        private string $field,
-        private string $query,
+        private readonly string $field,
+        private readonly string $query,
     ) {
     }
 

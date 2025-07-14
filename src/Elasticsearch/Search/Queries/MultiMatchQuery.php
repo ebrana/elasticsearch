@@ -7,20 +7,20 @@ namespace Elasticsearch\Search\Queries;
 use Elasticsearch\Search\Queries\Enums\MultiMatchType;
 use Generator;
 
-readonly class MultiMatchQuery implements Query
+class MultiMatchQuery implements Query
 {
     use MatchQueryTrait {
         MatchQueryTrait::toArray as traitToArray;
     }
 
     /**
-     * @param string[]    $fields
+     * @param string[] $fields
      */
     public function __construct(
-        private string $query,
-        private array $fields,
-        private ?MultiMatchType $type = null,
-        private ?float $tie_breaker = null,
+        private readonly string $query,
+        private readonly array $fields,
+        private readonly ?MultiMatchType $type = null,
+        private readonly ?float $tie_breaker = null,
     ) {
     }
 
