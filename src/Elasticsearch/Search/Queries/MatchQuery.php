@@ -6,12 +6,15 @@ namespace Elasticsearch\Search\Queries;
 
 use Generator;
 
-readonly class MatchQuery implements Query
+class MatchQuery implements Query
 {
+    use MatchQueryTrait {
+        MatchQueryTrait::toArray as traitToArray;
+    }
+
     public function __construct(
-        private string $field,
-        private string $query,
-        private ?int $fuzziness = null
+        private readonly string $field,
+        private readonly string $query,
     ) {
     }
 
@@ -26,6 +29,8 @@ readonly class MatchQuery implements Query
         if ($this->fuzziness) {
             $match[$this->field]['fuzziness'] = $this->fuzziness;
         }
+
+        $match = array_merge($match, iterator_to_array($this->traitToArray()));
 
         yield 'match' => $match;
     }

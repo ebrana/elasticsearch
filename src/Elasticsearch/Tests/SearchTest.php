@@ -156,7 +156,7 @@ class SearchTest extends TestCase
         $searchBuilderFactory = new SearchBuilderFactory($this->getMappingMetadata(), self::INDEX_PREFIX);
 
         $builder = $searchBuilderFactory->create(Product::class);
-        $builder->setQuery(new MultiMatchQuery('this is a test', ['productTags'], null, MultiMatchType::PHRASE));
+        $builder->setQuery(new MultiMatchQuery('this is a test', ['productTags'], MultiMatchType::PHRASE));
 
         /** @var mixed[][][][][] $queryCollection */
         $queryCollection = $builder->build()->toArray();

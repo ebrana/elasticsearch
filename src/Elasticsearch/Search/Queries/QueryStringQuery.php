@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Elasticsearch\Search\Queries\Fulltext;
+namespace Elasticsearch\Search\Queries;
 
-use Elasticsearch\Search\Queries\Fulltext\Enums\Operator;
-use Elasticsearch\Search\Queries\Query;
+use Elasticsearch\Search\Queries\Enums\Operator;
 use Generator;
 
 class QueryStringQuery implements Query
