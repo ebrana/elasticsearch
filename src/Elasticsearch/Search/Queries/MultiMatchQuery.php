@@ -40,7 +40,7 @@ class MultiMatchQuery implements Query
         }
 
         if (MultiMatchType::BEST_FIELDS === $this->type) {
-            $multiMatch = array_merge($multiMatch, iterator_to_array($this->traitToArray()));
+            $multiMatch = array_merge($multiMatch, ...iterator_to_array($this->traitToArray()));
         }
 
         yield 'multi_match' => $multiMatch;
