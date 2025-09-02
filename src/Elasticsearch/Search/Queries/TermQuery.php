@@ -10,7 +10,7 @@ readonly class TermQuery implements Query
 {
     public function __construct(
         private string $field,
-        private string $value
+        private string|bool|int|float $value
     ) {
     }
 
