@@ -8,9 +8,12 @@ use Generator;
 
 readonly class TermQuery implements Query
 {
+    /**
+     * @param string|bool|int|float|string[] $value
+     */
     public function __construct(
         private string $field,
-        private string $value
+        private string|bool|int|float|array $value
     ) {
     }
 

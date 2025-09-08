@@ -6,9 +6,12 @@ namespace Elasticsearch\Search\Aggregations;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Sorts\Sort;
+use Elasticsearch\Search\SourceTrait;
 
 class TopHitsAggregation extends AbstractAggregation
 {
+    use SourceTrait;
+
     public function __construct(
         string $name,
         private readonly int $size,
@@ -25,6 +28,10 @@ class TopHitsAggregation extends AbstractAggregation
 
         if ($this->sort) {
             $parameters['sort'] = [$this->sort->toArray()->current()];
+        }
+
+        if ($this->source) {
+            $parameters['_source'] = $this->source;
         }
 
         return new ArrayCollection(['top_hits' => $parameters]);
