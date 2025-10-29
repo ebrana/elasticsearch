@@ -8,6 +8,9 @@ use Generator;
 
 readonly class InnerHits
 {
+    /**
+     * @param array<string, string>|null $sort
+     */
     public function __construct(
         private string $name,
         private int $size,
