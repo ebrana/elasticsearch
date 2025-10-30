@@ -14,6 +14,7 @@ readonly class InnerHits
     public function __construct(
         private string $name,
         private int $size,
+        private ?string $collapseField = null,
         private ?int $from = null,
         private ?array $sort = null,
     ) {}
@@ -36,6 +37,12 @@ readonly class InnerHits
 
         if ($this->sort) {
             $data['sort'] = $this->sort;
+        }
+
+        if ($this->collapseField) {
+            $data['collapse'] = [
+                'field' => $this->collapseField,
+            ];
         }
 
         yield $data;

@@ -176,7 +176,7 @@ class SearchTest extends TestCase
         $searchBuilderFactory = new SearchBuilderFactory($this->getMappingMetadata(), self::INDEX_PREFIX);
 
         $builder = $searchBuilderFactory->create(Product::class);
-        $innerHits = new InnerHits('innerHits', 10);
+        $innerHits = new InnerHits('innerHits', 10, 'user.id');
         $innerHitsCollection = new InnerHitsCollection();
         $innerHitsCollection->add($innerHits);
         $collapse = new Collapse('categories', $innerHitsCollection);
@@ -189,8 +189,11 @@ class SearchTest extends TestCase
         $this->assertArrayHasKey('innerHits', $queryCollection['body']['collapse']['inner_hits']);
         $this->assertArrayHasKey('name', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
         $this->assertArrayHasKey('size', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
+        $this->assertArrayHasKey('collapse', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
+        $this->assertArrayHasKey('field', $queryCollection['body']['collapse']['inner_hits']['innerHits']['collapse']);
         $this->assertArrayNotHasKey('from', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
         $this->assertEquals('categories', $queryCollection['body']['collapse']['field']);
+        $this->assertEquals('user.id', $queryCollection['body']['collapse']['inner_hits']['innerHits']['collapse']['field']);
     }
 
     private function getMappingMetadata(): MetadataProviderInterface
