@@ -183,7 +183,7 @@ class Connection
          *     explain?: bool,
          *     track_total_hits?: bool|int,
          *     highlight?: string,
-         *     collapse?: string,
+         *     lenient?: bool,
          *     from_seq_no?: int,
          *     max_concurrent_shard_requests?: int,
          *     stored_fields?: string,

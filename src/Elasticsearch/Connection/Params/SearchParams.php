@@ -22,7 +22,7 @@ final class SearchParams extends AbstractParams
         protected ?bool $ignore_throttled = null,
         protected ?bool $include_named_queries_score = null,
         protected ?bool $ignore_unavailable = null,
-        protected ?bool $lanient = null,
+        protected ?bool $lenient = null,
         protected ?int $max_concurrent_shard_requests = null,
         protected ?int $pre_filter_shard_size = null,
         protected ?string $preference = null,

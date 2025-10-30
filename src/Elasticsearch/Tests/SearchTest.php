@@ -10,6 +10,9 @@ use Elasticsearch\Mapping\MappingMetadataProvider;
 use Elasticsearch\Mapping\MetadataProviderInterface;
 use Elasticsearch\Search\Aggregations\SumAggregation;
 use Elasticsearch\Search\Aggregations\TermsAggregation;
+use Elasticsearch\Search\Collapse\Collapse;
+use Elasticsearch\Search\Collapse\InnerHits;
+use Elasticsearch\Search\Collapse\InnerHitsCollection;
 use Elasticsearch\Search\Queries\BoolQuery;
 use Elasticsearch\Search\Queries\Enums\BoolType;
 use Elasticsearch\Search\Queries\Enums\MultiMatchType;
@@ -166,6 +169,31 @@ class SearchTest extends TestCase
         $this->assertArrayHasKey('type', $queryCollection['body']['query']['multi_match']);
         $this->assertEquals('phrase', $queryCollection['body']['query']['multi_match']['type']);
         $this->assertEquals('this is a test', $queryCollection['body']['query']['multi_match']['query']);
+    }
+
+    public function testCollapseTest(): void
+    {
+        $searchBuilderFactory = new SearchBuilderFactory($this->getMappingMetadata(), self::INDEX_PREFIX);
+
+        $builder = $searchBuilderFactory->create(Product::class);
+        $innerHits = new InnerHits('innerHits', 10, 'user.id');
+        $innerHitsCollection = new InnerHitsCollection();
+        $innerHitsCollection->add($innerHits);
+        $collapse = new Collapse('categories', $innerHitsCollection);
+        $builder->setCollapse($collapse);
+
+        /** @var mixed[][][][][] $queryCollection */
+        $queryCollection = $builder->build()->toArray();
+        $this->assertArrayHasKey('collapse', $queryCollection['body']);
+        $this->assertArrayHasKey('inner_hits', $queryCollection['body']['collapse']);
+        $this->assertArrayHasKey('innerHits', $queryCollection['body']['collapse']['inner_hits']);
+        $this->assertArrayHasKey('name', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
+        $this->assertArrayHasKey('size', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
+        $this->assertArrayHasKey('collapse', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
+        $this->assertArrayHasKey('field', $queryCollection['body']['collapse']['inner_hits']['innerHits']['collapse']);
+        $this->assertArrayNotHasKey('from', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
+        $this->assertEquals('categories', $queryCollection['body']['collapse']['field']);
+        $this->assertEquals('user.id', $queryCollection['body']['collapse']['inner_hits']['innerHits']['collapse']['field']);
     }
 
     private function getMappingMetadata(): MetadataProviderInterface
