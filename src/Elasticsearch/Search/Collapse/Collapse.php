@@ -6,6 +6,9 @@ namespace Elasticsearch\Search\Collapse;
 
 use Generator;
 
+/**
+ * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-collapse.html
+ */
 readonly class Collapse
 {
     public function __construct(
