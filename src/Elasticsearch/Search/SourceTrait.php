@@ -20,7 +20,7 @@ trait SourceTrait
     }
 
     /**
-     * @param bool|string[]|string|null $source
+     * @param bool|string[]|string|null|array<string, array<int, string>> $source
      * @return void
      */
     public function setSource(bool|array|string|null $source): void
