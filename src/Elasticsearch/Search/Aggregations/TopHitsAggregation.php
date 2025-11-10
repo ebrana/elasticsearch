@@ -27,7 +27,7 @@ class TopHitsAggregation extends AbstractAggregation
         ];
 
         if ($this->sort) {
-            $parameters['sort'] = iterator_to_array($this->sort->toArray());
+            $parameters['sort'] = [iterator_to_array($this->sort->toArray())];
         }
 
         if ($this->source) {
