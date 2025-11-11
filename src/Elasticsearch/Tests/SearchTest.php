@@ -8,6 +8,7 @@ use Elasticsearch\Mapping\Drivers\AnnotationDriver;
 use Elasticsearch\Mapping\MappingMetadataFactory;
 use Elasticsearch\Mapping\MappingMetadataProvider;
 use Elasticsearch\Mapping\MetadataProviderInterface;
+use Elasticsearch\Search\Aggregations\GlobalAggregation;
 use Elasticsearch\Search\Aggregations\SumAggregation;
 use Elasticsearch\Search\Aggregations\TermsAggregation;
 use Elasticsearch\Search\Collapse\Collapse;
@@ -152,6 +153,26 @@ class SearchTest extends TestCase
         $this->assertArrayHasKey('terms', $queryCollection['body']['aggs']['sellingPrice']);
         $this->assertArrayHasKey('field', $queryCollection['body']['aggs']['sellingPrice']['terms']);
         $this->assertEquals('sellingPrice.@cs', $queryCollection['body']['aggs']['sellingPrice']['terms']['field']);
+    }
+
+    public function testAggregation2(): void
+    {
+        $searchBuilderFactory = new SearchBuilderFactory($this->getMappingMetadata(), self::INDEX_PREFIX);
+
+        $builder = $searchBuilderFactory->create(Product::class);
+        $boolQuery = new BoolQuery();
+        $boolQuery->add((new RangeQuery('sellingPrice.@cs'))->gte('1000'), BoolType::FILTER);
+        $builder->setQuery($boolQuery);
+
+        $globalAggregation = new GlobalAggregation('all_docs');
+        $globalAggregation->aggregation(new TermsAggregation('sellingPrice', 'sellingPrice.@cs'));
+
+        $builder->addAggregation($globalAggregation);
+
+        /** @var mixed[][][][][] $queryCollection */
+        $queryCollection = $builder->build()->toArray();
+
+        $this->assertEquals(json_encode($queryCollection['body']['aggs']), '{"all_docs":{"global":{},"aggs":{"sellingPrice":{"terms":{"field":"sellingPrice.@cs"}}}}}');
     }
 
     public function testMultimatchQuery(): void
