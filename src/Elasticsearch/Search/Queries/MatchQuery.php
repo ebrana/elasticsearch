@@ -30,7 +30,7 @@ class MatchQuery implements Query
             $match[$this->field]['fuzziness'] = $this->fuzziness;
         }
 
-        $match = array_merge($match, iterator_to_array($this->traitToArray()));
+        $match[$this->field] = array_merge($match[$this->field], ...iterator_to_array($this->traitToArray()));
 
         yield 'match' => $match;
     }
