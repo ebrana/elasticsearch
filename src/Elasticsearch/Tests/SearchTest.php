@@ -8,6 +8,7 @@ use Elasticsearch\Mapping\Drivers\AnnotationDriver;
 use Elasticsearch\Mapping\MappingMetadataFactory;
 use Elasticsearch\Mapping\MappingMetadataProvider;
 use Elasticsearch\Mapping\MetadataProviderInterface;
+use Elasticsearch\Search\Aggregations\FilterAggregation;
 use Elasticsearch\Search\Aggregations\GlobalAggregation;
 use Elasticsearch\Search\Aggregations\SumAggregation;
 use Elasticsearch\Search\Aggregations\TermsAggregation;
@@ -169,10 +170,35 @@ class SearchTest extends TestCase
 
         $builder->addAggregation($globalAggregation);
 
-        /** @var mixed[][][][][] $queryCollection */
+        /** @var mixed[][] $queryCollection */
         $queryCollection = $builder->build()->toArray();
 
         $this->assertEquals(json_encode($queryCollection['body']['aggs']), '{"all_docs":{"global":{},"aggs":{"sellingPrice":{"terms":{"field":"sellingPrice.@cs"}}}}}');
+    }
+
+    public function testAggregation3(): void
+    {
+        $searchBuilderFactory = new SearchBuilderFactory($this->getMappingMetadata(), self::INDEX_PREFIX);
+
+        $builder = $searchBuilderFactory->create(Product::class);
+        $boolQuery = new BoolQuery();
+        $boolQuery->add((new RangeQuery('sellingPrice.@cs'))->gte('1000'), BoolType::FILTER);
+        $builder->setQuery($boolQuery);
+
+        $globalAggregation = new GlobalAggregation('all_docs');
+        $termAggregation = new TermsAggregation('sellingPrice', 'sellingPrice.@cs');
+        $filterAggregation = new FilterAggregation('filter', $boolQuery);
+        $termAggregation->aggregation($filterAggregation);
+        $minAggregation = new SumAggregation('min', 'sellingPrice.@cs');
+        $filterAggregation->aggregation($minAggregation);
+        $globalAggregation->aggregation($termAggregation);
+
+        $builder->addAggregation($globalAggregation);
+
+        /** @var mixed[][] $queryCollection */
+        $queryCollection = $builder->build()->toArray();
+
+        $this->assertEquals(json_encode($queryCollection['body']['aggs']), '{"all_docs":{"global":{},"aggs":{"sellingPrice":{"terms":{"field":"sellingPrice.@cs"},"aggs":{"filter":{"filter":{"bool":{"filter":[{"range":{"sellingPrice.@cs":{"gte":"1000"}}}]}},"aggs":{"min":{"sum":{"field":"sellingPrice.@cs"}}}}}}}}}');
     }
 
     public function testMultimatchQuery(): void
