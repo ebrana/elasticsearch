@@ -23,9 +23,14 @@ class FilterAggregation extends AbstractAggregation
 
     public function payload(): ArrayCollection
     {
-        return new ArrayCollection([
+        $data = [
             'filter' => iterator_to_array($this->filter->toArray()),
-            'aggs'   => iterator_to_array($this->aggregations->toArray()),
-        ]);
+        ];
+
+        if (!$this->aggregations->isEmpty()) {
+            $data['aggs'] = iterator_to_array($this->aggregations->toArray());
+        }
+
+        return new ArrayCollection($data);
     }
 }
