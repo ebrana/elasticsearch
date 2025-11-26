@@ -234,13 +234,14 @@ class SearchTest extends TestCase
         $this->assertArrayHasKey('collapse', $queryCollection['body']);
         $this->assertArrayHasKey('inner_hits', $queryCollection['body']['collapse']);
         $this->assertArrayHasKey('innerHits', $queryCollection['body']['collapse']['inner_hits']);
-        $this->assertArrayHasKey('name', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
-        $this->assertArrayHasKey('size', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
-        $this->assertArrayHasKey('collapse', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
-        $this->assertArrayHasKey('field', $queryCollection['body']['collapse']['inner_hits']['innerHits']['collapse']);
-        $this->assertArrayNotHasKey('from', $queryCollection['body']['collapse']['inner_hits']['innerHits']);
+        $this->assertArrayHasKey('name', $queryCollection['body']['collapse']['inner_hits'][0]);
+        $this->assertArrayHasKey('size', $queryCollection['body']['collapse']['inner_hits'][0]);
+        $this->assertArrayHasKey('collapse', $queryCollection['body']['collapse']['inner_hits'][0]);
+        $this->assertArrayHasKey('field', $queryCollection['body']['collapse']['inner_hits'][0]['collapse']);
+        $this->assertArrayNotHasKey('from', $queryCollection['body']['collapse']['inner_hits'][0]);
         $this->assertEquals('categories', $queryCollection['body']['collapse']['field']);
-        $this->assertEquals('user.id', $queryCollection['body']['collapse']['inner_hits']['innerHits']['collapse']['field']);
+        $this->assertEquals('user.id', $queryCollection['body']['collapse']['inner_hits'][0]['collapse']['field']);
+        $this->assertEquals('innerHits', $queryCollection['body']['collapse']['inner_hits'][0]['name']);
     }
 
     private function getMappingMetadata(): MetadataProviderInterface
