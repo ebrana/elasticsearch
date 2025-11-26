@@ -7,7 +7,7 @@ namespace Elasticsearch\Search\Collapse;
 use Elasticsearch\Search\SourceTrait;
 use Generator;
 
-readonly class InnerHits
+class InnerHits
 {
     use SourceTrait;
 
@@ -15,11 +15,11 @@ readonly class InnerHits
      * @param array<string, string>|null $sort
      */
     public function __construct(
-        private string $name,
-        private int $size,
-        private ?string $collapseField = null,
-        private ?int $from = null,
-        private ?array $sort = null,
+        private readonly string $name,
+        private readonly int $size,
+        private readonly ?string $collapseField = null,
+        private readonly ?int $from = null,
+        private readonly ?array $sort = null,
     ) {}
 
     public function getName(): string
