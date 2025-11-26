@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Collapse;
 
+use Elasticsearch\Search\SourceTrait;
 use Generator;
 
 readonly class InnerHits
 {
+    use SourceTrait;
+
     /**
      * @param array<string, string>|null $sort
      */
@@ -43,6 +46,10 @@ readonly class InnerHits
             $data['collapse'] = [
                 'field' => $this->collapseField,
             ];
+        }
+
+        if ($this->source) {
+            $data['_source'] = $this->source;
         }
 
         yield $data;
