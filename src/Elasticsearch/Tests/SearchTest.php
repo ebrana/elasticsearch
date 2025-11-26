@@ -233,7 +233,7 @@ class SearchTest extends TestCase
         $queryCollection = $builder->build()->toArray();
         $this->assertArrayHasKey('collapse', $queryCollection['body']);
         $this->assertArrayHasKey('inner_hits', $queryCollection['body']['collapse']);
-        $this->assertArrayHasKey('innerHits', $queryCollection['body']['collapse']['inner_hits']);
+        $this->assertArrayHasKey(0, $queryCollection['body']['collapse']['inner_hits']);
         $this->assertArrayHasKey('name', $queryCollection['body']['collapse']['inner_hits'][0]);
         $this->assertArrayHasKey('size', $queryCollection['body']['collapse']['inner_hits'][0]);
         $this->assertArrayHasKey('collapse', $queryCollection['body']['collapse']['inner_hits'][0]);
