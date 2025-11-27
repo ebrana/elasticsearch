@@ -31,7 +31,7 @@ class InnerHitsCollection
     public function toArray(): Generator
     {
         foreach ($this->innerHits as $innerHit) {
-            yield $innerHit->getName() => $innerHit->toArray()->current();
+            yield $innerHit->toArray()->current();
         }
     }
 }

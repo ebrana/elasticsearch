@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Collapse;
 
+use Elasticsearch\Search\SourceTrait;
 use Generator;
 
-readonly class InnerHits
+class InnerHits
 {
+    use SourceTrait;
+
     /**
      * @param array<string, string>|null $sort
      */
     public function __construct(
-        private string $name,
-        private int $size,
-        private ?string $collapseField = null,
-        private ?int $from = null,
-        private ?array $sort = null,
+        private readonly string $name,
+        private readonly int $size,
+        private readonly ?string $collapseField = null,
+        private readonly ?int $from = null,
+        private readonly ?array $sort = null,
     ) {}
 
     public function getName(): string
@@ -43,6 +46,10 @@ readonly class InnerHits
             $data['collapse'] = [
                 'field' => $this->collapseField,
             ];
+        }
+
+        if ($this->source) {
+            $data['_source'] = $this->source;
         }
 
         yield $data;
