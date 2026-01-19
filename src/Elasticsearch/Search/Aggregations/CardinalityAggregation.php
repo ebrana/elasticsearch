@@ -15,7 +15,7 @@ class CardinalityAggregation extends AbstractAggregation
     public function __construct(
         string $name,
         private readonly string $field,
-        private readonly int $precision_threshold = 3000
+        private readonly ?int $precision_threshold = null
     ) {
         $this->name = $name;
     }
@@ -30,7 +30,7 @@ class CardinalityAggregation extends AbstractAggregation
             $parameters['missing'] = $this->missing;
         }
 
-        if ($this->precision_threshold !== 3000) {
+        if (null !== $this->precision_threshold) {
             if ($this->precision_threshold <= 0) {
                 throw new InvalidArgumentException('Precision threshold must be greater than 0.');
             }
