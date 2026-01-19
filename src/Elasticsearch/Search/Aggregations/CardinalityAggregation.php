@@ -6,6 +6,7 @@ namespace Elasticsearch\Search\Aggregations;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithMissing;
+use InvalidArgumentException;
 
 class CardinalityAggregation extends AbstractAggregation
 {
@@ -13,7 +14,8 @@ class CardinalityAggregation extends AbstractAggregation
 
     public function __construct(
         string $name,
-        private readonly string $field
+        private readonly string $field,
+        private readonly int $precision_threshold = 3000
     ) {
         $this->name = $name;
     }
@@ -26,6 +28,16 @@ class CardinalityAggregation extends AbstractAggregation
 
         if ($this->missing) {
             $parameters['missing'] = $this->missing;
+        }
+
+        if ($this->precision_threshold !== 3000) {
+            if ($this->precision_threshold <= 0) {
+                throw new InvalidArgumentException('Precision threshold must be greater than 0.');
+            }
+            if ($this->precision_threshold > 40000) {
+                throw new InvalidArgumentException('Precision threshold must be less than 40000.');
+            }
+            $parameters['precision_threshold'] = $this->precision_threshold;
         }
 
         return new ArrayCollection(['cardinality' => $parameters]);
