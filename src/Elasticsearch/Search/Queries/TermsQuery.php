@@ -9,19 +9,25 @@ use Generator;
 readonly class TermsQuery implements Query
 {
     /**
-     * @param string   $field
      * @param string[] $value
      */
     public function __construct(
         private string $field,
-        private array $value
+        private array $value,
+        private ?float $boost = null,
     ) {
     }
 
     public function toArray(): Generator
     {
-        yield 'terms' => [
+        $data = [
             $this->field => $this->value,
         ];
+
+        if ($this->boost) {
+            $data['boost'] = $this->boost;
+        }
+
+        yield 'terms' => $data;
     }
 }

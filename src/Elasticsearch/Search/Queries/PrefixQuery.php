@@ -10,16 +10,27 @@ readonly class PrefixQuery implements Query
 {
     public function __construct(
         private string $field,
-        private string $query
+        private string $value,
+        private ?string $rewrite = null,
+        private ?bool $case_insensitive = null
     ) {
     }
 
     public function toArray(): Generator
     {
-        yield 'prefix' => [
+        $data = [
             $this->field => [
-                'value' => $this->query,
-            ],
+                'value' => $this->value,
+            ]
         ];
+
+        if ($this->rewrite) {
+            $data['rewrite'] = $this->rewrite;
+        }
+        if ($this->case_insensitive) {
+            $data['case_insensitive'] = $this->case_insensitive;
+        }
+
+        yield 'prefix' => $data;
     }
 }
