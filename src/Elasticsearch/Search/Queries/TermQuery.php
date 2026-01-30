@@ -13,14 +13,21 @@ readonly class TermQuery implements Query
      */
     public function __construct(
         private string $field,
-        private string|bool|int|float|array $value
+        private string|bool|int|float|array $value,
+        private ?float $boost = null,
     ) {
     }
 
     public function toArray(): Generator
     {
-        yield 'term' => [
+        $data = [
             $this->field => $this->value,
         ];
+
+        if ($this->boost) {
+            $data['boost'] = $this->boost;
+        }
+
+        yield 'term' => $data;
     }
 }
