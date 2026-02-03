@@ -22,7 +22,7 @@ class ReverseNestedAggregation extends AbstractAggregation
     public function payload(): ArrayCollection
     {
         return new ArrayCollection([
-            'reverse_nested' => [],
+            'reverse_nested' => (object)[],
             'aggs' => iterator_to_array($this->aggregations->toArray())
         ]);
     }
