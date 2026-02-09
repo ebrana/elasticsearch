@@ -10,7 +10,7 @@ final class IndexDocumentParams extends AbstractParams
 {
     public function __construct(
         protected ?string $wait_for_active_shards = null,
-        protected ?bool $refresh = null,
+        protected null|bool|string $refresh = null,
         protected ?string $routing = null,
         protected ?string $timeout = null,
         protected ?int $version = null,
