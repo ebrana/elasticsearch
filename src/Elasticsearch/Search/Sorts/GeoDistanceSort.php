@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Sorts;
 
-use Generator;
-
 class GeoDistanceSort implements SortInterface
 {
     private const string FIELD = '_geo_distance';
@@ -23,7 +21,7 @@ class GeoDistanceSort implements SortInterface
     ) {
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $payload = [];
 
@@ -40,7 +38,7 @@ class GeoDistanceSort implements SortInterface
         $payload['unit'] = $this->unit;
         $payload['ignore_unmapped'] = $this->ignore_unmapped;
 
-        yield self::FIELD => $payload;
+        return [self::FIELD => $payload];
     }
 
 }

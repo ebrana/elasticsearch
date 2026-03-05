@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Aggregations;
 
-use Generator;
-
 class AggregationCollection
 {
     /** @var AbstractAggregation[] */
@@ -28,10 +26,16 @@ class AggregationCollection
         return empty($this->aggregations);
     }
 
-    public function toArray(): Generator
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function toArray(): array
     {
+        $result = [];
         foreach ($this->aggregations as $aggregation) {
-            yield $aggregation->getName() => $aggregation->toArray()->current();
+            $result[$aggregation->getName()] = $aggregation->toArray();
         }
+
+        return $result;
     }
 }

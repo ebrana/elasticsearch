@@ -26,7 +26,7 @@ class NestedAggregation extends AbstractAggregation
             'nested' => [
                 'path' => $this->path,
             ],
-            'aggs'   => iterator_to_array($this->aggregations->toArray()),
+            'aggs'   => $this->aggregations->toArray(),
         ]);
     }
 }

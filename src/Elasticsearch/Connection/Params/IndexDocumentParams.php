@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Connection\Params;
 
-use Generator;
-
 final class IndexDocumentParams extends AbstractParams
 {
     public function __construct(
@@ -27,9 +25,9 @@ final class IndexDocumentParams extends AbstractParams
     ) {
     }
 
-    protected function getParams(): Generator
+    protected function getParams(): array
     {
-        yield from [
+        return [
             'wait_for_active_shards',
             'op_type',
             'refresh',

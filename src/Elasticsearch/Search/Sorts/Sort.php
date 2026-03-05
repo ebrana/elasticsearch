@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Sorts;
 
-use Generator;
-
 class Sort implements SortInterface
 {
     private ?string $missing = null;
@@ -83,7 +81,7 @@ class Sort implements SortInterface
         return $this;
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $payload = [];
 
@@ -112,9 +110,9 @@ class Sort implements SortInterface
         }
 
         if ($this->nestedSort) {
-            $payload = array_merge($payload, iterator_to_array($this->nestedSort->toArray()));
+            $payload = array_merge($payload, $this->nestedSort->toArray());
         }
 
-        yield $this->field => $payload;
+        return [$this->field => $payload];
     }
 }

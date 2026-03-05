@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Queries;
 
-use Generator;
-
 readonly class MatchAllQuery implements Query
 {
-    public function toArray(): Generator
+    public function toArray(): array
     {
-        // return 'match_all' => {}
-        yield 'match_all' => new \stdClass();
+        return ['match_all' => new \stdClass()];
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Sorts;
 
 use Elasticsearch\Search\Queries\Query;
-use Generator;
 
 readonly class NestedSort
 {
@@ -16,20 +15,23 @@ readonly class NestedSort
     ) {
     }
 
-    public function toArray(): Generator
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
     {
         $payload = [
             'path' => $this->path,
         ];
 
         if ($this->query) {
-            $payload['filter'] = iterator_to_array($this->query->toArray());
+            $payload['filter'] = $this->query->toArray();
         }
 
         if ($this->nestedSort) {
-            $payload = array_merge($payload, iterator_to_array($this->nestedSort->toArray()));
+            $payload = array_merge($payload, $this->nestedSort->toArray());
         }
 
-        yield 'nested' => $payload;
+        return ['nested' => $payload];
     }
 }

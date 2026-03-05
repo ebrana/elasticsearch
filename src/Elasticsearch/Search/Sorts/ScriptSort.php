@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Sorts;
 
-use Generator;
-
 class ScriptSort implements SortInterface
 {
     private const string FIELD = '_script';
@@ -21,7 +19,7 @@ class ScriptSort implements SortInterface
     ) {
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $payload = [];
 
@@ -38,6 +36,6 @@ class ScriptSort implements SortInterface
             $payload['script']['params'] = $this->params;
         }
 
-        yield self::FIELD => $payload;
+        return [self::FIELD => $payload];
     }
 }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Queries;
 
-use Generator;
-
 readonly class PrefixQuery implements Query
 {
     public function __construct(
@@ -16,7 +14,7 @@ readonly class PrefixQuery implements Query
     ) {
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $data = [
             $this->field => [
@@ -31,6 +29,6 @@ readonly class PrefixQuery implements Query
             $data['case_insensitive'] = $this->case_insensitive;
         }
 
-        yield 'prefix' => $data;
+        return ['prefix' => $data];
     }
 }

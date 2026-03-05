@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Sorts;
 
-use Generator;
-
 class SortCollection
 {
     /** @var SortInterface[] */
@@ -28,10 +26,18 @@ class SortCollection
         return empty($this->sorts);
     }
 
-    public function toArray(): Generator
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
     {
+        $result = [];
         foreach ($this->sorts as $sort) {
-            yield from $sort->toArray();
+            foreach ($sort->toArray() as $key => $value) {
+                $result[(string) $key] = $value;
+            }
         }
+
+        return $result;
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries;
 
 use Elasticsearch\Search\Queries\Enums\Operator;
-use Generator;
 
 class QueryStringQuery implements Query
 {
@@ -184,7 +183,7 @@ class QueryStringQuery implements Query
         return $this;
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $body = [
             'query' => $this->query,
@@ -274,6 +273,6 @@ class QueryStringQuery implements Query
             $body['time_zone'] = $this->time_zone;
         }
 
-        yield 'query_string' => $body;
+        return ['query_string' => $body];
     }
 }
