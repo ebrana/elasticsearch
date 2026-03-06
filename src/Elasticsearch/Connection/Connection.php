@@ -143,7 +143,19 @@ class Connection
             $request = array_merge($request, $params->toArray());
         }
 
-        /** @var array{index?: string|array<string>, query: string|null, ignore_unavailable?: bool, allow_no_indices?: bool, expand_wildcards?: string, min_score?: int, preference?: string, routing?: string, terminate_after?: int, timeout?: string} $typedData */
+        /** @var array{
+         *     index?: string|array<string>,
+         *     body?: array<string, mixed>,
+         *     ignore_unavailable?: bool,
+         *     allow_no_indices?: bool,
+         *     expand_wildcards?: string,
+         *     min_score?: int,
+         *     preference?: string,
+         *     routing?: string,
+         *     terminate_after?: int,
+         *     timeout?: string,
+         * } $typedData
+         */
         $typedData = $request;
 
         $response = $this->getClient()->count($typedData);
