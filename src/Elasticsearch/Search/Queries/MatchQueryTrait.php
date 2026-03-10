@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries;
 
 use Elasticsearch\Search\Queries\Enums\Operator;
-use Generator;
 
 trait MatchQueryTrait
 {
@@ -142,7 +141,10 @@ trait MatchQueryTrait
         $this->fuzzy_transpositions = $fuzzy_transpositions;
     }
 
-    protected function toArray(): Generator
+    /**
+     * @return array<string, mixed>
+     */
+    protected function toArray(): array
     {
         $body = [];
 
@@ -183,6 +185,6 @@ trait MatchQueryTrait
         $body['auto_generate_synonyms_phrase_query'] = $this->auto_generate_synonyms_phrase_query;
         $body['fuzzy_transpositions'] = $this->fuzzy_transpositions;
 
-        yield $body;
+        return $body;
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries;
 
 use Elasticsearch\Search\Queries\Enums\MultiMatchType;
-use Generator;
 
 class MultiMatchQuery implements Query
 {
@@ -24,7 +23,7 @@ class MultiMatchQuery implements Query
     ) {
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $multiMatch = [
             'query'  => $this->query,
@@ -40,9 +39,9 @@ class MultiMatchQuery implements Query
         }
 
         if (MultiMatchType::BEST_FIELDS === $this->type) {
-            $multiMatch = array_merge($multiMatch, ...iterator_to_array($this->traitToArray()));
+            $multiMatch = array_merge($multiMatch, $this->traitToArray());
         }
 
-        yield 'multi_match' => $multiMatch;
+        return ['multi_match' => $multiMatch];
     }
 }

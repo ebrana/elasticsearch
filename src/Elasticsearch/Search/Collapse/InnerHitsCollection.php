@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Collapse;
 
-use Generator;
-
 class InnerHitsCollection
 {
     /** @var InnerHits[] */
@@ -28,10 +26,16 @@ class InnerHitsCollection
         return empty($this->aggregations);
     }
 
-    public function toArray(): Generator
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function toArray(): array
     {
+        $result = [];
         foreach ($this->innerHits as $innerHit) {
-            yield $innerHit->toArray()->current();
+            $result[] = $innerHit->toArray();
         }
+
+        return $result;
     }
 }

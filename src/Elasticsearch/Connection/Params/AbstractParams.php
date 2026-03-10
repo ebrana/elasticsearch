@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Connection\Params;
 
-use Generator;
-
 abstract class AbstractParams
 {
     /**
-     * @return Generator<string>
+     * @return string[]
      */
-    abstract protected function getParams(): Generator;
+    abstract protected function getParams(): array;
 
     /**
-     * @return array<string, string|int|null>
+     * @return array<string, string|int|bool|null>
      */
     public function toArray(): array
     {
@@ -26,9 +24,8 @@ abstract class AbstractParams
                 if (is_object($value) && method_exists($value, 'toString')) {
                     $value = $value->toString();
                 }
-                /** @var string|int|null $value */
-                $typedValude = $value;
-                $result[$param] = $typedValude;
+                /** @var string|int|bool|null $value */
+                $result[$param] = $value;
             }
         }
 

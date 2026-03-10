@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries;
 
 use Elasticsearch\Search\Queries\Enums\BoolType;
-use Generator;
 
 class BoolQuery implements Query
 {
@@ -42,20 +41,20 @@ class BoolQuery implements Query
         return $this;
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $bool = [
             BoolType::MUST->value     => array_map(static function (Query $query) {
-                return iterator_to_array($query->toArray());
+                return $query->toArray();
             }, $this->must),
             BoolType::FILTER->value   => array_map(static function (Query $query) {
-                return iterator_to_array($query->toArray());
+                return $query->toArray();
             }, $this->filter),
             BoolType::SHOULD->value   => array_map(static function (Query $query) {
-                return iterator_to_array($query->toArray());
+                return $query->toArray();
             }, $this->should),
             BoolType::MUST_NOT->value => array_map(static function (Query $query) {
-                return iterator_to_array($query->toArray());
+                return $query->toArray();
             }, $this->must_not),
         ];
 
@@ -67,6 +66,6 @@ class BoolQuery implements Query
             $bool['boost'] = $this->boost;
         }
 
-        yield 'bool' => array_filter($bool);
+        return ['bool' => array_filter($bool)];
     }
 }

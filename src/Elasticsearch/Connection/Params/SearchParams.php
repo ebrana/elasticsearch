@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Connection\Params;
 
-use Generator;
-
 final class SearchParams extends AbstractParams
 {
     public function __construct(
@@ -55,9 +53,9 @@ final class SearchParams extends AbstractParams
     ) {
     }
 
-    protected function getParams(): Generator
+    protected function getParams(): array
     {
-        yield from [
+        return [
             'analyzer',
             'analyze_wildcard',
             'ccs_minimize_roundtrips',

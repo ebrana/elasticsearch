@@ -21,12 +21,12 @@ class GlobalAggregation extends AbstractAggregation
     public function payload(): ArrayCollection
     {
         if (!$this->aggregations->isEmpty()) {
-            $aggregation['aggs'] = iterator_to_array($this->aggregations->toArray());
+            $aggregation['aggs'] = $this->aggregations->toArray();
         }
 
         return new ArrayCollection([
             'global' => (object)[],
-            'aggs' => iterator_to_array($this->aggregations->toArray())
+            'aggs' => $this->aggregations->toArray()
         ]);
     }
 }

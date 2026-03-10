@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Connection\Params;
 
-use Generator;
-
 final class DeleteIndexParams extends AbstractParams
 {
     public function __construct(
@@ -22,9 +20,9 @@ final class DeleteIndexParams extends AbstractParams
     ) {
     }
 
-    protected function getParams(): Generator
+    protected function getParams(): array
     {
-        yield from [
+        return [
             'timeout',
             'master_timeout',
             'ignore_unavailable',

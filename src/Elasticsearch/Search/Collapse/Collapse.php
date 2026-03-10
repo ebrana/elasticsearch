@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Collapse;
 
-use Generator;
-
 /**
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-collapse.html
  */
@@ -17,17 +15,20 @@ readonly class Collapse
         private ?int $max_concurrent_group_searches = null,
     ) {}
 
-    public function toArray(): Generator
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
     {
         $result = [
             'field' => $this->field,
-            'inner_hits' => iterator_to_array($this->innerHits->toArray()),
+            'inner_hits' => $this->innerHits->toArray(),
         ];
 
         if ($this->max_concurrent_group_searches) {
             $result['max_concurrent_group_searches'] = $this->max_concurrent_group_searches;
         }
 
-        yield $result;
+        return $result;
     }
 }

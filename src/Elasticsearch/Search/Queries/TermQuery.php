@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Queries;
 
-use Generator;
-
 readonly class TermQuery implements Query
 {
     /**
@@ -18,7 +16,7 @@ readonly class TermQuery implements Query
     ) {
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $data = [
             $this->field => $this->value,
@@ -28,6 +26,6 @@ readonly class TermQuery implements Query
             $data['boost'] = $this->boost;
         }
 
-        yield 'term' => $data;
+        return ['term' => $data];
     }
 }

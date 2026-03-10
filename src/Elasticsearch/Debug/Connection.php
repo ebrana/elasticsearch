@@ -111,6 +111,9 @@ class Connection extends \Elasticsearch\Connection\Connection
         }
         $this->addParamsIntoQuery($url, $params);
         $query = new Query($method . $url);
+        if (!empty($data['body'])) {
+            $query->setBody(json_encode($data['body'], JSON_THROW_ON_ERROR));
+        }
         $this->debugDataHolder->addQuery($query);
         $query->start();
 

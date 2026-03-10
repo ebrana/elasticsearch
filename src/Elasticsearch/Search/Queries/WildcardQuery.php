@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Queries;
 
-use Generator;
-
 readonly class WildcardQuery implements Query
 {
     public function __construct(
@@ -17,7 +15,7 @@ readonly class WildcardQuery implements Query
     ) {
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $data = [
             $this->field => [
@@ -34,6 +32,6 @@ readonly class WildcardQuery implements Query
             $data['case_insensitive'] = $this->case_insensitive;
         }
 
-        yield 'wildcard' => $data;
+        return ['wildcard' => $data];
     }
 }

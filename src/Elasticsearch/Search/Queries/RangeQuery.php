@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Queries;
 
-use Generator;
-
 class RangeQuery implements Query
 {
     private string|int|float|null $gte = null;
@@ -47,7 +45,7 @@ class RangeQuery implements Query
         return $this;
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $parameters = [];
 
@@ -71,8 +69,8 @@ class RangeQuery implements Query
             $parameters['boost'] = $this->boost;
         }
 
-        yield 'range' => [
+        return ['range' => [
             $this->field => $parameters,
-        ];
+        ]];
     }
 }

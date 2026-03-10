@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Queries;
 
-use Generator;
-
 class DisMaxQuery implements Query
 {
     /**
@@ -40,20 +38,20 @@ class DisMaxQuery implements Query
         $this->tie_breaker = $tie_breaker;
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $body = [
             'queries' => [],
         ];
 
         foreach ($this->queries as $query) {
-            $body['queries'][] = iterator_to_array($query->toArray());
+            $body['queries'][] = $query->toArray();
         }
 
         if ($this->tie_breaker) {
             $body['tie_breaker'] = $this->tie_breaker;
         }
 
-        yield 'dis_max' => $body;
+        return ['dis_max' => $body];
     }
 }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Queries;
 
-use Generator;
-
 readonly class NestedQuery implements Query
 {
     public function __construct(
@@ -14,11 +12,11 @@ readonly class NestedQuery implements Query
     ) {
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
-        yield 'nested' => [
+        return ['nested' => [
             'path'  => $this->path,
-            'query' => iterator_to_array($this->query->toArray()),
-        ];
+            'query' => $this->query->toArray(),
+        ]];
     }
 }

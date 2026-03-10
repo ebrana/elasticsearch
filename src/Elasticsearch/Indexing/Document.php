@@ -8,7 +8,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Indexing\Exceptions\DocumentToJsonException;
 use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
-use Generator;
 use JsonException;
 
 final class Document implements DocumentInterface
@@ -45,17 +44,14 @@ final class Document implements DocumentInterface
     }
 
     /**
-     * @return Generator
+     * @return array<string, scalar|array<string|int,scalar|null>|null>
      */
-    public function toArray(): Generator
+    public function toArray(): array
     {
-        /**
-         * @var string               $key
-         * @var scalar|string[]|null $item
-         */
-        foreach ($this->data as $key => $item) {
-            yield $key => $item;
-        }
+        /** @var array<string, scalar|array<string|int,scalar|null>|null> $result */
+        $result = $this->data->toArray();
+
+        return $result;
     }
 
     /**
@@ -64,7 +60,7 @@ final class Document implements DocumentInterface
      */
     public function toJson(): string
     {
-        $json = json_encode(iterator_to_array($this->toArray()), JSON_THROW_ON_ERROR);
+        $json = json_encode($this->toArray(), JSON_THROW_ON_ERROR);
 
         if (empty($json)) {
             throw new DocumentToJsonException();

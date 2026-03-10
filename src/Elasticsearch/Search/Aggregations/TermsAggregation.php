@@ -67,7 +67,7 @@ class TermsAggregation extends AbstractAggregation
         ];
 
         if (!$this->aggregations->isEmpty()) {
-            $aggregation['aggs'] = iterator_to_array($this->aggregations->toArray());
+            $aggregation['aggs'] = $this->aggregations->toArray();
         }
 
         return new ArrayCollection($aggregation);

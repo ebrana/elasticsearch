@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Search\Queries;
 
-use Generator;
-
 class MatchQuery implements Query
 {
     use MatchQueryTrait {
@@ -18,7 +16,7 @@ class MatchQuery implements Query
     ) {
     }
 
-    public function toArray(): Generator
+    public function toArray(): array
     {
         $match = [
             $this->field => [
@@ -30,8 +28,8 @@ class MatchQuery implements Query
             $match[$this->field]['fuzziness'] = $this->fuzziness;
         }
 
-        $match[$this->field] = array_merge($match[$this->field], ...iterator_to_array($this->traitToArray()));
+        $match[$this->field] = array_merge($match[$this->field], $this->traitToArray());
 
-        yield 'match' => $match;
+        return ['match' => $match];
     }
 }

@@ -132,15 +132,15 @@ final class Builder
         $collection = new ArrayCollection();
 
         if ($this->query) {
-            $collection->set('query', iterator_to_array($this->query->toArray()));
+            $collection->set('query', $this->query->toArray());
         }
 
         if ($withAggregation && $this->aggregations) {
-            $collection->set('aggs', iterator_to_array($this->aggregations->toArray()));
+            $collection->set('aggs', $this->aggregations->toArray());
         }
 
         if ($withSort && $this->sorts) {
-            $collection->set('sort', iterator_to_array($this->sorts->toArray()));
+            $collection->set('sort', $this->sorts->toArray());
         }
 
         if ($this->fields) {
@@ -159,7 +159,7 @@ final class Builder
         }
 
         if ($this->collapse) {
-            $collection->set('collapse', ...iterator_to_array($this->collapse->toArray()));
+            $collection->set('collapse', $this->collapse->toArray());
         }
 
         return $collection;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Aggregations;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Generator;
 
 abstract class AbstractAggregation
 {
@@ -32,14 +31,17 @@ abstract class AbstractAggregation
         return $this;
     }
 
-    public function toArray(): Generator
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
     {
-        $payload = iterator_to_array($this->payload());
+        $payload = $this->payload()->toArray();
 
         if (count($this->meta) > 0) {
             $payload['meta'] = $this->meta;
         }
 
-        yield $payload;
+        return $payload;
     }
 }

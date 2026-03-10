@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Collapse;
 
 use Elasticsearch\Search\SourceTrait;
-use Generator;
 
 class InnerHits
 {
@@ -27,7 +26,10 @@ class InnerHits
         return $this->name;
     }
 
-    public function toArray(): Generator
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
     {
         $data = [
             'name' => $this->name,
@@ -52,6 +54,6 @@ class InnerHits
             $data['_source'] = $this->source;
         }
 
-        yield $data;
+        return $data;
     }
 }

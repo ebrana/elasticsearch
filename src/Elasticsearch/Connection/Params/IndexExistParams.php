@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Connection\Params;
 
-use Generator;
-
 final class IndexExistParams extends AbstractParams
 {
     public function __construct(
@@ -23,9 +21,9 @@ final class IndexExistParams extends AbstractParams
     ) {
     }
 
-    protected function getParams(): Generator
+    protected function getParams(): array
     {
-        yield from [
+        return [
             'local',
             'ignore_unavailable',
             'allow_no_indices',
