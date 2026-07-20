@@ -29,7 +29,7 @@ final class Builder
     /** @var null|array<string, string> */
     private ?array $fields = null;
 
-    public function __construct(readonly private Index $index)
+    public function __construct(private readonly Index $index)
     {
     }
 
