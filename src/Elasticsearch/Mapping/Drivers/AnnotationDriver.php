@@ -35,8 +35,8 @@ class AnnotationDriver implements DriverInterface
      * @param array<PostEventInterface|null>|null $postEvents
      */
     public function __construct(
-        readonly private ?array $keyResolvers = null,
-        readonly private ?array $postEvents = null,
+        private readonly ?array $keyResolvers = null,
+        private readonly ?array $postEvents = null,
     ) {
     }
 
