@@ -83,7 +83,7 @@ class MetadataRequestFactory
     {
         $analyzers = $analysis->getAnalyzers();
 
-        /** @var \Elasticsearch\Mapping\Settings\Analyzer $analyzer */
+        /** @var \Elasticsearch\Mapping\Settings\AnalyzerInterface $analyzer */
         foreach ($analyzers as $analyzer) {
             $settings['analysis']['analyzer'][$analyzer->getName()] = $analyzer->toArray();
         }

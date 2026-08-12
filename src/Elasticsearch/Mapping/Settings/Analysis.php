@@ -18,7 +18,7 @@ final readonly class Analysis
     ) {
     }
 
-    public function addAnalyzer(Analyzer $analyzer): void
+    public function addAnalyzer(AnalyzerInterface $analyzer): void
     {
         $this->analyzers->set($analyzer->getName(), $analyzer);
     }

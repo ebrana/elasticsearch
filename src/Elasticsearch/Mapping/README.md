@@ -62,6 +62,75 @@ abstract class AbstractGenerateProduct
     protected ArrayCollection $sellingPriceWithVat;
 `````
 
+### Vestavěné analyzery
+
+Vedle vlastního (custom) analyzeru skládaného z tokenizeru a filtrů (`Analyzer`) lze použít
+analyzery, které má Elasticsearch zabudované. Definují se atributem na úrovni třídy stejně
+jako `Analyzer` a nemají tokenizer ani filtry — jazykový analyzer už v sobě má tokenizer,
+lowercase, stopwords i stemmer pro daný jazyk.
+
+| Atribut | ES typ | Parametry |
+|---|---|---|
+| `LanguageAnalyzer(name, language)` | `czech`, `english`, … | `stopwords`, `stopwords_path`, `stem_exclusion` |
+| `StandardAnalyzer(name)` | `standard` | `max_token_length`, `stopwords`, `stopwords_path` |
+| `StopAnalyzer(name)` | `stop` | `stopwords`, `stopwords_path` |
+| `PatternAnalyzer(name)` | `pattern` | `pattern`, `flags`, `lowercase`, `stopwords`, `stopwords_path` |
+| `FingerprintAnalyzer(name)` | `fingerprint` | `separator`, `max_output_size`, `stopwords`, `stopwords_path` |
+| `KeywordAnalyzer(name)` | `keyword` | `buffer_size` |
+| `SimpleAnalyzer(name)` | `simple` | — |
+| `WhitespaceAnalyzer(name)` | `whitespace` | — |
+
+`````
+#[LanguageAnalyzer(
+    name: "czech_fulltext",
+    language: AnalyzerLanguage::CZECH,
+    stopwords: "_czech_",
+    stem_exclusion: ["akce"]
+)]
+`````
+
+Jazyky jsou v enumu `Settings\Analyzers\Enums\AnalyzerLanguage` — je to užší seznam než
+u stemmer filtru, protože ne pro každý jazyk má Elasticsearch hotový analyzer.
+
+V JSON driveru se analyzer pozná podle klíče `type`: chybí-li, nebo je `custom`, jde o vlastní
+analyzer skládaný z tokenizeru a filtrů; jinak se použije odpovídající vestavěný analyzer.
+Nerozpoznaný `type` se stejně jako dřív zpracuje jako custom analyzer.
+
+`````json
+{
+    "analyzer": {
+        "czech_builtin": { "type": "czech", "stopwords": "_czech_" },
+        "vlastni":       { "tokenizer": "keep_special_chars", "filter": ["lowercase"] }
+    }
+}
+`````
+
+### Ladění analyzerů (`_analyze`)
+
+`Connection::analyze()` ukáže, na jaké tokeny Elasticsearch rozpadne zadaný text.
+Bez indexu lze zkoušet jen vestavěné analyzery, s indexem i ty z jeho mappingu.
+
+`````php
+// analyzer z indexu
+$result = $connection->analyze(
+    new AnalyzeRequest('Nové knihy a akce v prodeji', analyzer: 'czech_fulltext'),
+    $index
+);
+$result->getTokenValues();  // ['knih', 'akce', 'prodj']
+
+// ad-hoc složení; filtr lze zadat i inline definicí, takže se dá otestovat
+// dřív, než se dostane do indexu
+$connection->analyze(new AnalyzeRequest(
+    '<b>12.34</b>',
+    tokenizer: 'whitespace',
+    charFilter: ['html_strip'],
+    filter: [['type' => 'stemmer', 'language' => 'danish']]
+));
+`````
+
+Při `explain: true` vrací Elasticsearch místo `tokens` podrobný rozpad po jednotlivých krocích —
+je pak v `AnalyzeResult::getDetail()`, ne v `getTokens()`.
+
 ### Character filtry
 
 Character filtry (`analysis.char_filter`) upravují text ještě před tokenizací.

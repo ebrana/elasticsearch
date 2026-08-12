@@ -8,6 +8,8 @@ use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Endpoints\Indices;
 use Elastic\Elasticsearch\Response\Elasticsearch;
+use Elasticsearch\Connection\Analyze\AnalyzeRequest;
+use Elasticsearch\Connection\Analyze\AnalyzeResult;
 use Elasticsearch\Connection\Params\CountParams;
 use Elasticsearch\Connection\Params\CreateIndexParams;
 use Elasticsearch\Connection\Params\DeleteIndexParams;
@@ -218,6 +220,40 @@ class Connection
         $response = $this->getClient()->search($typedData);
         if ($response instanceof Elasticsearch) {
             return new Result($response->asArray());
+        }
+
+        throw new RuntimeException('Wrong data format');
+    }
+
+    /**
+     * Ladeni analyzeru: vrati tokeny, na ktere Elasticsearch rozpadne zadany text.
+     * Bez indexu lze testovat jen vestavene analyzery; s indexem i ty definovane v jeho mappingu.
+     *
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
+     */
+    public function analyze(AnalyzeRequest $request, ?Index $index = null): AnalyzeResult
+    {
+        $data = [
+            'body' => $request->toArray(),
+        ];
+
+        if (null !== $index) {
+            $data['index'] = $index->getNameWithPrefix($this->indexPrefix);
+        }
+
+        /** @var array{index?: string, body: array<string, mixed>} $typedData */
+        $typedData = $data;
+
+        $response = $this->indices()->analyze($typedData);
+        if ($response instanceof Elasticsearch) {
+            /** @var array<string, mixed> $result */
+            $result = $response->asArray();
+
+            return new AnalyzeResult($result);
         }
 
         throw new RuntimeException('Wrong data format');

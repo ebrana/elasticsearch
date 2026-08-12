@@ -99,6 +99,18 @@
                         "char_filter": [
                             "dots_replace_filter"
                         ]
+                    },
+                    "czech_builtin": {
+                        "type": "czech",
+                        "stopwords": "_czech_",
+                        "stem_exclusion": ["akce"]
+                    },
+                    "standard_limited": {
+                        "type": "standard",
+                        "max_token_length": 20
+                    },
+                    "catnum_keyword": {
+                        "type": "keyword"
                     }
                 },
                 "char_filter": {

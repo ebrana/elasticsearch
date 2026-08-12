@@ -7,6 +7,9 @@ namespace Elasticsearch\Tests\Entity\Abstracted;
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analyzer;
+use Elasticsearch\Mapping\Settings\Analyzers\Enums\AnalyzerLanguage;
+use Elasticsearch\Mapping\Settings\Analyzers\LanguageAnalyzer;
+use Elasticsearch\Mapping\Settings\Analyzers\StandardAnalyzer;
 use Elasticsearch\Mapping\Settings\CharacterFilters\HtmlStripCharacterFilter;
 use Elasticsearch\Mapping\Settings\CharacterFilters\PatternReplaceCharacterFilter;
 use Elasticsearch\Mapping\Settings\Filters\NgramFilter;
@@ -37,6 +40,8 @@ use Elasticsearch\Tests\PostEventSample;
 #[NgramFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
 #[PatternReplaceCharacterFilter(name: "dots_replace_filter", pattern: "\.", replacement: "")]
 #[HtmlStripCharacterFilter(name: "html_strip_filter")]
+#[LanguageAnalyzer(name: "czech_fulltext", language: AnalyzerLanguage::CZECH, stopwords: "_czech_", stem_exclusion: ["akce"])]
+#[StandardAnalyzer(name: "standard_limited", max_token_length: 20)]
 abstract class AbstractGenerateProduct
 {
     #[TextType]

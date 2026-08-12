@@ -186,9 +186,19 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('settings', $mapping);
         $this->assertArrayHasKey('analysis', $mapping['settings']);
         $this->assertArrayHasKey('analyzer', $mapping['settings']['analysis']);
-        $this->assertCount(2, $mapping['settings']['analysis']['analyzer']);
+        $this->assertCount(4, $mapping['settings']['analysis']['analyzer']);
         $this->assertArrayHasKey('standard', $mapping['settings']['analysis']['analyzer']);
         $this->assertArrayHasKey('autocomplete_analyzer', $mapping['settings']['analysis']['analyzer']);
+        // vestavene analyzery pres atributy: nemaji tokenizer/filter a type neni "custom"
+        $this->assertSame([
+            'type'           => 'czech',
+            'stopwords'      => '_czech_',
+            'stem_exclusion' => ['akce'],
+        ], $mapping['settings']['analysis']['analyzer']['czech_fulltext']);
+        $this->assertSame([
+            'type'             => 'standard',
+            'max_token_length' => 20,
+        ], $mapping['settings']['analysis']['analyzer']['standard_limited']);
         $this->assertArrayHasKey('filter', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('tokenizer', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('ngram', $mapping['settings']['analysis']['tokenizer']);
@@ -292,6 +302,19 @@ class MappingTest extends TestCase
         // index: false na keyword property se musi propsat
         $breadcrumb = $mapping['mappings']['properties']['breadcrumb']['properties'];
         $this->assertSame('keyword', $breadcrumb['slug']['type']);
+
+        // vestavene analyzery z JSONu (dokud se `type` ignoroval, vznikl z nich custom analyzer)
+        $analyzers = $mapping['settings']['analysis']['analyzer'];
+        $this->assertSame([
+            'type'           => 'czech',
+            'stopwords'      => '_czech_',
+            'stem_exclusion' => ['akce'],
+        ], $analyzers['czech_builtin']);
+        $this->assertSame(['type' => 'standard', 'max_token_length' => 20], $analyzers['standard_limited']);
+        $this->assertSame(['type' => 'keyword'], $analyzers['catnum_keyword']);
+        // analyzer bez `type` zustava custom se svym tokenizerem
+        $this->assertSame('custom', $analyzers['full_with_diacritic']['type']);
+        $this->assertSame('keep_special_chars', $analyzers['full_with_diacritic']['tokenizer']);
         $this->assertCount(53, $mapping['mappings']['properties']);
         $this->assertCount(53, $mapping2['testing_amproductsmodule']['mappings']['properties']);
     }

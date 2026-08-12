@@ -16,7 +16,7 @@ use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Analysis;
-use Elasticsearch\Mapping\Settings\Analyzer;
+use Elasticsearch\Mapping\Settings\AnalyzerInterface;
 use Elasticsearch\Mapping\Settings\AbstractTokenizer;
 use Elasticsearch\Mapping\Types\AbstractType;
 use Elasticsearch\Mapping\Types\MappingInterface;
@@ -76,8 +76,8 @@ class AnnotationDriver implements DriverInterface
             $indexMetadata = $index[0]->newInstance();
         }
 
-        // hledej filtry a analyzery
-        $analyzers = $reflection->getAttributes(Analyzer::class);
+        // hledej filtry a analyzery (custom Analyzer i vestavene analyzery)
+        $analyzers = $reflection->getAttributes(AnalyzerInterface::class, ReflectionAttribute::IS_INSTANCEOF);
         $analysis = null;
 
         if (!empty($analyzers)) {
