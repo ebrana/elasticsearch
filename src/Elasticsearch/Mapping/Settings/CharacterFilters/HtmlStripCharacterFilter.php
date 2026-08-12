@@ -7,7 +7,7 @@ namespace Elasticsearch\Mapping\Settings\CharacterFilters;
 use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
 
-#[Attribute(Attribute::TARGET_CLASS)]
+#[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
 class HtmlStripCharacterFilter extends AbstractCharactedFilter
 {
     /**

@@ -29,11 +29,7 @@ class PatternReplaceCharacterFilterFactory implements CharacterFilterFactoryInte
 
         if (isset($configuration->flags)) {
             foreach (explode('|', $configuration->flags) as $flag) {
-                $flagEnum = match ($flag) {
-                    'COMMENTS' => Flags::COMMENTS,
-                    'CASE_INSENSITIVE' => Flags::CASE_INSENSITIVE,
-                    default => null
-                };
+                $flagEnum = Flags::tryFrom(trim($flag));
                 if ($flagEnum) {
                     $filter->addFlag($flagEnum);
                 }

@@ -11,11 +11,13 @@ final readonly class Analyzer
 {
     /**
      * @param string[] $filters
+     * @param string[] $charFilters
      */
     public function __construct(
         private string $name,
         private string $tokenizer,
-        private array $filters
+        private array $filters,
+        private array $charFilters = []
     ) {
     }
 
@@ -43,14 +45,28 @@ final readonly class Analyzer
     }
 
     /**
+     * @return string[]
+     */
+    public function getCharFilters(): array
+    {
+        return $this->charFilters;
+    }
+
+    /**
      * @return array<string, string|string[]>
      */
     public function toArray(): array
     {
-        return [
+        $data = [
             'type'      => $this->getType(),
             'tokenizer' => $this->getTokenizer(),
             'filter'    => $this->getFilters(),
         ];
+
+        if ($this->charFilters) {
+            $data['char_filter'] = $this->getCharFilters();
+        }
+
+        return $data;
     }
 }

@@ -13,6 +13,7 @@ use Elasticsearch\Mapping\Exceptions\MissingKeyResolverException;
 use Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException;
 use Elasticsearch\Mapping\Exceptions\MissingPostEventException;
 use Elasticsearch\Mapping\Index;
+use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Analysis;
 use Elasticsearch\Mapping\Settings\Analyzer;
@@ -105,6 +106,20 @@ class AnnotationDriver implements DriverInterface
             foreach ($tokenizers as $tokenizer) {
                 $tokenizerInstance = $tokenizer->newInstance();
                 $analysis->addTokenizer($tokenizerInstance);
+            }
+        }
+
+        $characterFilters = $reflection->getAttributes(
+            AbstractCharactedFilter::class,
+            ReflectionAttribute::IS_INSTANCEOF
+        );
+        if (!empty($characterFilters)) {
+            if (null === $analysis) {
+                $analysis = new Analysis();
+            }
+            foreach ($characterFilters as $characterFilter) {
+                $characterFilterInstance = $characterFilter->newInstance();
+                $analysis->addCharacterFilter($characterFilterInstance);
             }
         }
 

@@ -7,6 +7,8 @@ namespace Elasticsearch\Tests\Entity\Abstracted;
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analyzer;
+use Elasticsearch\Mapping\Settings\CharacterFilters\HtmlStripCharacterFilter;
+use Elasticsearch\Mapping\Settings\CharacterFilters\PatternReplaceCharacterFilter;
 use Elasticsearch\Mapping\Settings\Filters\NgramFilter;
 use Elasticsearch\Mapping\Settings\Tokenizers\Enums\TokenChars;
 use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
@@ -24,10 +26,17 @@ use Elasticsearch\Tests\LangKeyResolver;
 use Elasticsearch\Tests\PostEventSample;
 
 #[Index(name: "AmproductsModule", postEventClass: PostEventSample::class)]
-#[Analyzer(name: "autocomplete_analyzer", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
+#[Analyzer(
+    name: "autocomplete_analyzer",
+    tokenizer: "ngram",
+    filters: ["lowercase", "trigrams_filter"],
+    charFilters: ["dots_replace_filter", "html_strip_filter"]
+)]
 #[Analyzer(name: "standard", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
 #[NgramFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
+#[PatternReplaceCharacterFilter(name: "dots_replace_filter", pattern: "\.", replacement: "")]
+#[HtmlStripCharacterFilter(name: "html_strip_filter")]
 abstract class AbstractGenerateProduct
 {
     #[TextType]

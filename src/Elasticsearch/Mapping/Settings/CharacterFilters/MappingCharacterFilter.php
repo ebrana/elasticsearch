@@ -8,7 +8,7 @@ use Attribute;
 use Elasticsearch\Mapping\Exceptions\AttributeMissingException;
 use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
 
-#[Attribute(Attribute::TARGET_CLASS)]
+#[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
 class MappingCharacterFilter extends AbstractCharactedFilter
 {
     /**

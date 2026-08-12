@@ -145,6 +145,22 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('filter', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('tokenizer', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('ngram', $mapping['settings']['analysis']['tokenizer']);
+        $this->assertArrayHasKey('char_filter', $mapping['settings']['analysis']);
+        $this->assertCount(2, $mapping['settings']['analysis']['char_filter']);
+        $this->assertEquals(
+            'pattern_replace',
+            $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['type']
+        );
+        $this->assertEquals('\.', $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['pattern']);
+        $this->assertEquals(
+            'html_strip',
+            $mapping['settings']['analysis']['char_filter']['html_strip_filter']['type']
+        );
+        $this->assertSame(
+            ['dots_replace_filter', 'html_strip_filter'],
+            $mapping['settings']['analysis']['analyzer']['autocomplete_analyzer']['char_filter']
+        );
+        $this->assertArrayNotHasKey('char_filter', $mapping['settings']['analysis']['analyzer']['standard']);
         $this->assertEquals('nested', $objectType->getType());
         $this->assertEquals('object', $objectType2->getType());
         $this->assertEquals('sellingPrice', $objectType->getName());
@@ -191,10 +207,20 @@ class MappingTest extends TestCase
         $mapping2 = json_decode((string)file_get_contents($jsonTestFile), true, 512, JSON_THROW_ON_ERROR);
 
         $this->assertEquals('text', $mapping['mappings']['properties']['searching_names']['type']);
-        $this->assertEquals('pattern_replace', $mapping['settings']['analysis']['character_filter']['dots_replace_filter']['type']);
-        $this->assertEquals('\.', $mapping['settings']['analysis']['character_filter']['dots_replace_filter']['pattern']);
+        $this->assertEquals('pattern_replace', $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['type']);
+        $this->assertEquals('\.', $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['pattern']);
         $this->assertEquals('custom', $mapping['settings']['analysis']['analyzer']['full_with_diacritic']['type']);
         $this->assertCount(1, $mapping['settings']['analysis']['analyzer']['full_with_diacritic']['filter']);
+        // char_filter zapsany jako skalar v JSONu musi vyjit jako pole (ES akceptuje obe varianty)
+        $this->assertSame(
+            ['html_strip'],
+            $mapping['settings']['analysis']['analyzer']['full_without_diacritic_html']['char_filter']
+        );
+        $this->assertSame(
+            ['dots_replace_filter'],
+            $mapping['settings']['analysis']['analyzer']['whitespace_without_dots']['char_filter']
+        );
+        $this->assertArrayNotHasKey('char_filter', $mapping['settings']['analysis']['analyzer']['stemming']);
         $this->assertCount(53, $mapping['mappings']['properties']);
         $this->assertCount(53, $mapping2['testing_amproductsmodule']['mappings']['properties']);
     }

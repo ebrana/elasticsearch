@@ -14,15 +14,22 @@ Je však celkem jednoduché si napsat vlastní driver a číst mapping třeba z 
 `````
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analyzer;
+use Elasticsearch\Mapping\Settings\CharacterFilters\PatternReplaceCharacterFilter;
 use Elasticsearch\Mapping\Settings\Filters\NgramFilter;
 use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
 use Elasticsearch\Mapping\Types\Text\TextType;
 
 #[Index(name: "AmproductsModule")]
-#[Analyzer(name: "trigrams", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
+#[Analyzer(
+    name: "trigrams",
+    tokenizer: "ngram",
+    filters: ["lowercase", "trigrams_filter"],
+    charFilters: ["dots_replace_filter"]
+)]
 #[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
 #[NgramAbstractFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
+#[PatternReplaceCharacterFilter(name: "dots_replace_filter", pattern: "\.", replacement: "")]
 abstract class AbstractGenerateProduct
 {
     #[TextType]
@@ -53,6 +60,54 @@ abstract class AbstractGenerateProduct
     ])]
     #[KeywordType(name: "sellingPriceWithVatKeyword")]
     protected ArrayCollection $sellingPriceWithVat;
+`````
+
+### Character filtry
+
+Character filtry (`analysis.char_filter`) upravují text ještě před tokenizací.
+Definují se atributem na úrovni třídy a analyzer se na ně odkazuje jménem přes `charFilters`.
+Atributy jsou repeatable, takže lze definovat víc char filtrů na jedné entitě.
+
+Dostupné:
+
+| Atribut | ES typ |
+|---|---|
+| `PatternReplaceCharacterFilter(name, pattern, replacement)` | `pattern_replace` |
+| `MappingCharacterFilter(name, mappings)` nebo `MappingCharacterFilter(name, mappings_path: ...)` | `mapping` |
+| `HtmlStripCharacterFilter(name, escaped_tags)` | `html_strip` |
+
+`````
+#[Analyzer(name: "catnum", tokenizer: "whitespace", filters: ["lowercase"], charFilters: ["dots_replace_filter"])]
+#[PatternReplaceCharacterFilter(name: "dots_replace_filter", pattern: "\.", replacement: "")]
+`````
+
+U `PatternReplaceCharacterFilter` lze přidat regexp flagy (enum `Flags`, hodnoty odpovídají
+`java.util.regex.Pattern`); ve vygenerovaném mappingu se spojí do `flags: "A|B"`:
+
+`````
+$filter = new PatternReplaceCharacterFilter('dots_replace_filter', '\.', '');
+$filter->addFlag(Flags::CASE_INSENSITIVE)->addFlag(Flags::DOTALL);
+`````
+
+V JSON driveru se čte `settings.analysis.char_filter` a odkaz z analyzeru
+(`analyzer.<name>.char_filter`) může být jak jedno jméno, tak pole jmen:
+
+`````json
+{
+    "analyzer": {
+        "whitespace_without_dots": {
+            "tokenizer": "whitespace",
+            "char_filter": ["dots_replace_filter"]
+        }
+    },
+    "char_filter": {
+        "dots_replace_filter": {
+            "type": "pattern_replace",
+            "pattern": "\\.",
+            "replacement": ""
+        }
+    }
+}
 `````
 
 ObjectType (NestedType) se používá hodně pro překladová pole a každý field má svůj index klíč (cs, en, atd.).
