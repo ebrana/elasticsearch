@@ -18,6 +18,8 @@ final class TextType extends AbstractType implements MultiFieldsInterface
     use MetadataTrait;
     use MultiFieldsTrait;
 
+    private const DEFAULT_POSITION_INCREMENT_GAP = 100;
+
     /**
      * @param AbstractType[]|null $fields
      */
@@ -29,7 +31,7 @@ final class TextType extends AbstractType implements MultiFieldsInterface
         private string $index_options = 'positions',
         private bool $index_phrases = false,
         private bool $norms = true,
-        private int $position_increment_gap = 100,
+        private int $position_increment_gap = self::DEFAULT_POSITION_INCREMENT_GAP,
         private bool $store = false,
         private ?string $search_analyzer = null,
         private ?string $search_quote_analyzer = null,
@@ -223,12 +225,54 @@ final class TextType extends AbstractType implements MultiFieldsInterface
         if ($this->getAnalyzer()) {
             $collection->set('analyzer', $this->getAnalyzer());
         }
+
+        if ($this->getSearchAnalyzer()) {
+            $collection->set('search_analyzer', $this->getSearchAnalyzer());
+        }
+
+        if ($this->getSearchQuoteAnalyzer()) {
+            $collection->set('search_quote_analyzer', $this->getSearchQuoteAnalyzer());
+        }
+
         if ($this->isEagerGlobalOrdinals()) {
             $collection->set('eager_global_ordinals', true);
         }
 
+        if ($this->isFielddata()) {
+            $collection->set('fielddata', true);
+        }
+
         if (false === $this->isIndex()) {
             $collection->set('index', $this->isIndex());
+        }
+
+        if ('positions' !== $this->getIndexOptions()) {
+            $collection->set('index_options', $this->getIndexOptions());
+        }
+
+        if ($this->isIndexPhrases()) {
+            $collection->set('index_phrases', true);
+        }
+
+        $indexPrefixes = $this->provideIndexPrefixes();
+        if (null !== $indexPrefixes) {
+            $collection->set('index_prefixes', $indexPrefixes);
+        }
+
+        if (false === $this->isNorms()) {
+            $collection->set('norms', false);
+        }
+
+        if (self::DEFAULT_POSITION_INCREMENT_GAP !== $this->getPositionIncrementGap()) {
+            $collection->set('position_increment_gap', $this->getPositionIncrementGap());
+        }
+
+        if ('BM25' !== $this->getSimilarity()) {
+            $collection->set('similarity', $this->getSimilarity());
+        }
+
+        if ('no' !== $this->getTermVector()) {
+            $collection->set('term_vector', $this->getTermVector());
         }
 
         if (true === $this->isStore()) {
@@ -245,5 +289,27 @@ final class TextType extends AbstractType implements MultiFieldsInterface
         }
 
         return $collection;
+    }
+
+    /**
+     * Elasticsearch ocekava index_prefixes jako objekt; nevyplnene hranice necha na svem defaultu.
+     *
+     * @return array<string, int>|null
+     */
+    private function provideIndexPrefixes(): ?array
+    {
+        if (null === $this->index_prefixes_min_chars && null === $this->index_prefixes_max_chars) {
+            return null;
+        }
+
+        $indexPrefixes = [];
+        if (null !== $this->index_prefixes_min_chars) {
+            $indexPrefixes['min_chars'] = $this->index_prefixes_min_chars;
+        }
+        if (null !== $this->index_prefixes_max_chars) {
+            $indexPrefixes['max_chars'] = $this->index_prefixes_max_chars;
+        }
+
+        return $indexPrefixes;
     }
 }

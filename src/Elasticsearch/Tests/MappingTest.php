@@ -33,6 +33,53 @@ class MappingTest extends TestCase
         $this->assertSame('digit', $data['token_chars'][0]);
     }
 
+    public function testTextTypeProvidesAllMappingParameters(): void
+    {
+        $textType = new TextType(
+            analyzer: 'edge_ngram_with_diacritic',
+            eager_global_ordinals: true,
+            fielddata: true,
+            index_options: 'offsets',
+            index_phrases: true,
+            norms: false,
+            position_increment_gap: 0,
+            store: true,
+            search_analyzer: 'full_with_diacritic',
+            search_quote_analyzer: 'full_without_diacritic',
+            similarity: 'boolean',
+            term_vector: 'with_positions_offsets',
+            index_prefixes_min_chars: 2,
+            index_prefixes_max_chars: 5,
+            copy_to: 'copy_field',
+            name: 'probe'
+        );
+
+        $this->assertSame([
+            'type'                  => 'text',
+            'analyzer'              => 'edge_ngram_with_diacritic',
+            'search_analyzer'       => 'full_with_diacritic',
+            'search_quote_analyzer' => 'full_without_diacritic',
+            'eager_global_ordinals' => true,
+            'fielddata'             => true,
+            'index_options'         => 'offsets',
+            'index_phrases'         => true,
+            'index_prefixes'        => ['min_chars' => 2, 'max_chars' => 5],
+            'norms'                 => false,
+            'position_increment_gap' => 0,
+            'similarity'            => 'boolean',
+            'term_vector'           => 'with_positions_offsets',
+            'store'                 => true,
+            'copy_to'               => 'copy_field',
+        ], $textType->getCollection()->toArray());
+    }
+
+    public function testTextTypeOmitsDefaults(): void
+    {
+        $textType = new TextType(name: 'probe');
+
+        $this->assertSame(['type' => 'text'], $textType->getCollection()->toArray());
+    }
+
     public function testReadMapping(): void
     {
         $metadata = $this->getMappingMetadata()->getMappingMetadata()->getMetadata();
@@ -221,6 +268,30 @@ class MappingTest extends TestCase
             $mapping['settings']['analysis']['analyzer']['whitespace_without_dots']['char_filter']
         );
         $this->assertArrayNotHasKey('char_filter', $mapping['settings']['analysis']['analyzer']['stemming']);
+
+        // parametry property z JSONu musi prezit round-trip (dokud je factory ignorovala, zbyl jen "type")
+        $catnums = $mapping['mappings']['properties']['searching_catnums'];
+        $this->assertSame('whitespace', $catnums['analyzer']);
+        $this->assertSame('whitespace_without_dots', $catnums['search_analyzer']);
+        $this->assertSame('text', $catnums['fields']['edge_ngram_unanalyzed_words']['type']);
+        $this->assertSame(
+            'edge_ngram_unanalyzed_words',
+            $catnums['fields']['edge_ngram_unanalyzed_words']['analyzer']
+        );
+        $this->assertSame(
+            'whitespace_without_dots',
+            $catnums['fields']['edge_ngram_unanalyzed_words']['search_analyzer']
+        );
+
+        $names = $mapping['mappings']['properties']['searching_names'];
+        $this->assertSame('stemming', $names['analyzer']);
+        $this->assertSame('full_with_diacritic', $names['fields']['full_with_diacritic']['analyzer']);
+        // keyword multi-field ma v JSONu typ icu_collation_keyword, ktery knihovna nezna -> preskoci se
+        $this->assertArrayNotHasKey('keyword', $names['fields']);
+
+        // index: false na keyword property se musi propsat
+        $breadcrumb = $mapping['mappings']['properties']['breadcrumb']['properties'];
+        $this->assertSame('keyword', $breadcrumb['slug']['type']);
         $this->assertCount(53, $mapping['mappings']['properties']);
         $this->assertCount(53, $mapping2['testing_amproductsmodule']['mappings']['properties']);
     }

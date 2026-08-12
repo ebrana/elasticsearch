@@ -11,10 +11,13 @@ use stdClass;
 
 class IntegerTypeFactory implements PropertyFactoryInterface
 {
+    use NumericConfigurationTrait;
+
     public static function create(string $name, stdClass $configuration): AbstractType
     {
         $integerType = new IntegerType();
         $integerType->setName($name);
+        self::applyConfiguration($integerType, $configuration);
 
         return $integerType;
     }
