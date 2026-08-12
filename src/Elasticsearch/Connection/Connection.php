@@ -10,12 +10,15 @@ use Elastic\Elasticsearch\Endpoints\Indices;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Elasticsearch\Connection\Analyze\AnalyzeRequest;
 use Elasticsearch\Connection\Analyze\AnalyzeResult;
+use Elasticsearch\Connection\Params\BulkParams;
 use Elasticsearch\Connection\Params\CountParams;
 use Elasticsearch\Connection\Params\CreateIndexParams;
 use Elasticsearch\Connection\Params\DeleteIndexParams;
 use Elasticsearch\Connection\Params\IndexDocumentParams;
 use Elasticsearch\Connection\Params\IndexExistParams;
 use Elasticsearch\Connection\Params\SearchParams;
+use Elasticsearch\Indexing\Bulk\BulkRequest;
+use Elasticsearch\Indexing\Bulk\BulkResponse;
 use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Request\MetadataRequest;
@@ -224,6 +227,78 @@ class Connection
         }
 
         throw new RuntimeException('Wrong data format');
+    }
+
+    /**
+     * Davkova indexace. Bulk vraci HTTP 200 i kdyz cast polozek selze, takze je potreba
+     * zkontrolovat BulkResponse::hasErrors().
+     *
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
+     * @throws \JsonException
+     */
+    public function bulk(BulkRequest $request, ?BulkParams $params = null): BulkResponse
+    {
+        if ($request->isEmpty()) {
+            throw new RuntimeException('Bulk request must contain at least one operation.');
+        }
+
+        $data = ['body' => $this->provideBulkBody($request)];
+
+        if ($params) {
+            $data = array_merge($data, $params->toArray());
+        }
+
+        // refresh jde do query stringu, kde bool skonci jako "1" - ES ceka "true"/"false"/"wait_for"
+        if (isset($data['refresh']) && is_bool($data['refresh'])) {
+            $data['refresh'] = $data['refresh'] ? 'true' : 'false';
+        }
+
+        /** @var array{body: string, refresh?: string, routing?: string, timeout?: int|string} $typedData */
+        $typedData = $data;
+
+        $response = $this->getClient()->bulk($typedData);
+        if ($response instanceof Elasticsearch) {
+            /** @var array<string, mixed> $result */
+            $result = $response->asArray();
+
+            return new BulkResponse($result);
+        }
+
+        throw new RuntimeException('Wrong data format');
+    }
+
+    /**
+     * Bulk telo je NDJSON: radek s metadaty, pod nim (krome delete) radek s daty.
+     *
+     * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
+     * @throws \JsonException
+     */
+    private function provideBulkBody(BulkRequest $request): string
+    {
+        $lines = '';
+
+        foreach ($request->getOperations() as $operation) {
+            $metadata = ['_index' => $operation->getIndex()->getNameWithPrefix($this->indexPrefix)];
+
+            $id = $operation->getId();
+            if (null !== $id) {
+                $metadata['_id'] = $id;
+            }
+
+            $metadata = array_merge($metadata, $operation->getMetadata());
+            $lines .= json_encode([$operation->getAction() => $metadata], JSON_THROW_ON_ERROR) . "\n";
+
+            $source = $operation->getSource();
+            if (null !== $source) {
+                $lines .= json_encode($source, JSON_THROW_ON_ERROR) . "\n";
+            }
+        }
+
+        return $lines;
     }
 
     /**
