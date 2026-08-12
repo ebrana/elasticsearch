@@ -25,7 +25,7 @@ class FulltextQueriesTest extends TestCase
     {
         $this->assertSame(
             ['match_phrase' => ['name' => ['query' => 'cerne boty']]],
-            new MatchPhraseQuery('name', 'cerne boty')->toArray()
+            (new MatchPhraseQuery('name', 'cerne boty'))->toArray()
         );
 
         $this->assertSame(
@@ -36,14 +36,14 @@ class FulltextQueriesTest extends TestCase
                 'zero_terms_query' => 'all',
                 'boost'            => 2.0,
             ]]],
-            new MatchPhraseQuery(
+            (new MatchPhraseQuery(
                 'name',
                 'cerne boty',
                 analyzer: 'czech_fulltext',
                 slop: 2,
                 zero_terms_query: 'all',
                 boost: 2.0
-            )->toArray()
+            ))->toArray()
         );
     }
 
@@ -51,7 +51,7 @@ class FulltextQueriesTest extends TestCase
     {
         $this->assertSame(
             ['match_phrase_prefix' => ['name' => ['query' => 'cerne bo', 'max_expansions' => 10]]],
-            new MatchPhrasePrefixQuery('name', 'cerne bo', max_expansions: 10)->toArray()
+            (new MatchPhrasePrefixQuery('name', 'cerne bo', max_expansions: 10))->toArray()
         );
     }
 
@@ -63,12 +63,12 @@ class FulltextQueriesTest extends TestCase
                 'operator'             => 'AND',
                 'minimum_should_match' => '2',
             ]]],
-            new MatchBoolPrefixQuery(
+            (new MatchBoolPrefixQuery(
                 'name',
                 'cerne bo',
                 operator: Operator::AND,
                 minimum_should_match: '2'
-            )->toArray()
+            ))->toArray()
         );
     }
 
@@ -76,7 +76,7 @@ class FulltextQueriesTest extends TestCase
     {
         $this->assertSame(
             ['fuzzy' => ['code' => ['value' => 'ABC123', 'fuzziness' => 'AUTO', 'transpositions' => false]]],
-            new FuzzyQuery('code', 'ABC123', fuzziness: 'AUTO', transpositions: false)->toArray()
+            (new FuzzyQuery('code', 'ABC123', fuzziness: 'AUTO', transpositions: false))->toArray()
         );
     }
 
@@ -88,12 +88,12 @@ class FulltextQueriesTest extends TestCase
                 'flags'            => 'COMPLEMENT|INTERVAL',
                 'case_insensitive' => true,
             ]]],
-            new RegexpQuery(
+            (new RegexpQuery(
                 'code',
                 'AB.*',
                 flags: [RegexpFlag::COMPLEMENT, RegexpFlag::INTERVAL],
                 case_insensitive: true
-            )->toArray()
+            ))->toArray()
         );
     }
 
@@ -101,7 +101,7 @@ class FulltextQueriesTest extends TestCase
     {
         $this->assertSame(
             ['ids' => ['values' => ['1', '2']]],
-            new IdsQuery(['1', '2'])->toArray()
+            (new IdsQuery(['1', '2']))->toArray()
         );
     }
 
@@ -112,7 +112,7 @@ class FulltextQueriesTest extends TestCase
                 'terms'                      => ['akce', 'novinka'],
                 'minimum_should_match_field' => 'required_matches',
             ]]],
-            new TermsSetQuery('tags', ['akce', 'novinka'], minimum_should_match_field: 'required_matches')
+            (new TermsSetQuery('tags', ['akce', 'novinka'], minimum_should_match_field: 'required_matches'))
                 ->toArray()
         );
     }
@@ -121,7 +121,7 @@ class FulltextQueriesTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        new TermsSetQuery('tags', ['akce'])->toArray();
+        (new TermsSetQuery('tags', ['akce']))->toArray();
     }
 
     public function testPrefixQueryKeepsOptionsInsideField(): void
@@ -134,7 +134,7 @@ class FulltextQueriesTest extends TestCase
                 'rewrite'          => 'constant_score',
                 'case_insensitive' => true,
             ]]],
-            new PrefixQuery('code', 'ab', rewrite: 'constant_score', case_insensitive: true)->toArray()
+            (new PrefixQuery('code', 'ab', rewrite: 'constant_score', case_insensitive: true))->toArray()
         );
     }
 
@@ -148,13 +148,13 @@ class FulltextQueriesTest extends TestCase
                 'default_operator' => 'AND',
                 'lenient'          => true,
             ]],
-            new SimpleQueryStringQuery(
+            (new SimpleQueryStringQuery(
                 'cerne + boty',
                 fields: ['name^3', 'description'],
                 flags: [SimpleQueryStringFlag::AND, SimpleQueryStringFlag::OR, SimpleQueryStringFlag::PREFIX],
                 default_operator: Operator::AND,
                 lenient: true
-            )->toArray()
+            ))->toArray()
         );
     }
 }
