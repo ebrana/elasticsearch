@@ -18,7 +18,7 @@ final class TextType extends AbstractType implements MultiFieldsInterface
     use MetadataTrait;
     use MultiFieldsTrait;
 
-    private const DEFAULT_POSITION_INCREMENT_GAP = 100;
+    private const int DEFAULT_POSITION_INCREMENT_GAP = 100;
 
     /**
      * @param AbstractType[]|null $fields

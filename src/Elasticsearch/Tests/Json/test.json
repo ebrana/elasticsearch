@@ -19,6 +19,59 @@
                         "type": "edge_ngram",
                         "min_gram": 2,
                         "max_gram": 20
+                    },
+                    "lowercase_turkish": {
+                        "type": "lowercase",
+                        "language": "turkish"
+                    },
+                    "ascii": {
+                        "type": "asciifolding",
+                        "preserve_original": true
+                    },
+                    "eshop_synonyms": {
+                        "type": "synonym_graph",
+                        "synonyms": ["notebook, laptop", "mobil, telefon"],
+                        "expand": false,
+                        "lenient": true
+                    },
+                    "catnum_delimiter": {
+                        "type": "word_delimiter_graph",
+                        "preserve_original": true,
+                        "split_on_case_change": false,
+                        "protected_words": ["Wi-Fi"]
+                    },
+                    "bigrams": {
+                        "type": "shingle",
+                        "max_shingle_size": 3,
+                        "output_unigrams": false,
+                        "token_separator": "-"
+                    },
+                    "french_elision": {
+                        "type": "elision",
+                        "articles": ["l", "d"],
+                        "articles_case": true
+                    },
+                    "protect_brands": {
+                        "type": "keyword_marker",
+                        "keywords": ["akce"],
+                        "ignore_case": true
+                    },
+                    "strip_dashes": {
+                        "type": "pattern_replace",
+                        "pattern": "-",
+                        "replacement": "",
+                        "all": false
+                    },
+                    "min_length": {
+                        "type": "length",
+                        "min": 2
+                    },
+                    "dedup": {
+                        "type": "unique",
+                        "only_on_same_position": true
+                    },
+                    "trimmed": {
+                        "type": "trim"
                     }
                 },
                 "tokenizer": {

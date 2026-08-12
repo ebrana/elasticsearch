@@ -312,6 +312,48 @@ class MappingTest extends TestCase
         ], $analyzers['czech_builtin']);
         $this->assertSame(['type' => 'standard', 'max_token_length' => 20], $analyzers['standard_limited']);
         $this->assertSame(['type' => 'keyword'], $analyzers['catnum_keyword']);
+
+        // token filtry z JSONu; posilaji se jen odchylky od defaultu Elasticsearche
+        $filters = $mapping['settings']['analysis']['filter'];
+        $this->assertSame(['type' => 'lowercase', 'language' => 'turkish'], $filters['lowercase_turkish']);
+        $this->assertSame(['type' => 'asciifolding', 'preserve_original' => true], $filters['ascii']);
+        $this->assertSame([
+            'type'     => 'synonym_graph',
+            'synonyms' => ['notebook, laptop', 'mobil, telefon'],
+            'expand'   => false,
+            'lenient'  => true,
+        ], $filters['eshop_synonyms']);
+        $this->assertSame([
+            'type'                 => 'word_delimiter_graph',
+            'preserve_original'    => true,
+            'split_on_case_change' => false,
+            'protected_words'      => ['Wi-Fi'],
+        ], $filters['catnum_delimiter']);
+        $this->assertSame([
+            'type'             => 'shingle',
+            'max_shingle_size' => 3,
+            'output_unigrams'  => false,
+            'token_separator'  => '-',
+        ], $filters['bigrams']);
+        $this->assertSame([
+            'type'          => 'elision',
+            'articles'      => ['l', 'd'],
+            'articles_case' => true,
+        ], $filters['french_elision']);
+        $this->assertSame([
+            'type'        => 'keyword_marker',
+            'keywords'    => ['akce'],
+            'ignore_case' => true,
+        ], $filters['protect_brands']);
+        $this->assertSame([
+            'type'        => 'pattern_replace',
+            'pattern'     => '-',
+            'replacement' => '',
+            'all'         => false,
+        ], $filters['strip_dashes']);
+        $this->assertSame(['type' => 'length', 'min' => 2], $filters['min_length']);
+        $this->assertSame(['type' => 'unique', 'only_on_same_position' => true], $filters['dedup']);
+        $this->assertSame(['type' => 'trim'], $filters['trimmed']);
         // analyzer bez `type` zustava custom se svym tokenizerem
         $this->assertSame('custom', $analyzers['full_with_diacritic']['type']);
         $this->assertSame('keep_special_chars', $analyzers['full_with_diacritic']['tokenizer']);

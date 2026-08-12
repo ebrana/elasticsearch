@@ -105,6 +105,51 @@ Nerozpoznaný `type` se stejně jako dřív zpracuje jako custom analyzer.
 }
 `````
 
+### Token filtry
+
+Token filtry (`analysis.filter`) pracují na už rozpadaných tokenech. Definují se atributem
+na úrovni třídy a analyzer se na ně odkazuje jménem přes `filters` — **záleží na pořadí**,
+filtry se aplikují zleva doprava.
+
+| Atribut | ES typ | Hlavní parametry |
+|---|---|---|
+| `LowercaseFilter(name)` | `lowercase` | `language` (enum `LowercaseLanguage`: greek, irish, turkish) |
+| `AsciiFoldingFilter(name)` | `asciifolding` | `preserve_original` |
+| `SynonymFilter(name)` | `synonym` | `synonyms`, `synonyms_path`, `synonyms_set`, `expand`, `lenient`, `format`, `updateable` |
+| `SynonymGraphFilter(name)` | `synonym_graph` | totéž; zvládá víceslovná synonyma, ale jen jako search analyzer |
+| `WordDelimiterGraphFilter(name)` | `word_delimiter_graph` | `preserve_original`, `catenate_*`, `split_on_case_change`, `split_on_numerics`, `protected_words`, … |
+| `ShingleFilter(name)` | `shingle` | `min_shingle_size`, `max_shingle_size`, `output_unigrams`, `token_separator`, `filler_token` |
+| `ElisionFilter(name)` | `elision` | `articles`, `articles_path`, `articles_case` |
+| `KeywordMarkerFilter(name)` | `keyword_marker` | `keywords`, `keywords_path`, `keywords_pattern`, `ignore_case` |
+| `PatternReplaceFilter(name, pattern)` | `pattern_replace` | `replacement`, `all` |
+| `LengthFilter(name)` | `length` | `min`, `max` |
+| `UniqueFilter(name)` | `unique` | `only_on_same_position` |
+| `TrimFilter(name)` | `trim` | — |
+| `StopFilter(name, stopwords)` | `stop` | `stopwords_path`, `ignore_case`, `remove_trailing` |
+| `StemmerFilter(name, language)` | `stemmer` | — |
+| `NgramFilter` / `EdgeNgramFilter` | `ngram` / `edge_ngram` | `min_gram`, `max_gram` |
+| `HunspellFilter(name, locale)` | `hunspell` | `dictionary`, `dedup`, `longest_only` |
+
+`````
+#[Analyzer(
+    name: "fulltext",
+    tokenizer: "standard",
+    filters: ["czech_lowercase", "protect_brands", "czech_stemmer", "ascii"]
+)]
+#[LowercaseFilter(name: "czech_lowercase")]
+#[KeywordMarkerFilter(name: "protect_brands", keywords: ["akce"], ignore_case: true)]
+#[StemmerFilter(name: "czech_stemmer", language: Language::CZECH)]
+#[AsciiFoldingFilter(name: "ascii", preserve_original: true)]
+`````
+
+Do mappingu jde jen to, co se liší od defaultu Elasticsearche.
+
+Na co narazit u synonym: `expand: true` (default) doplní ke vstupu všechny varianty
+(`laptop` → `laptop`, `notebook`), `expand: false` je naopak sjednotí na první term
+(`laptop` → `notebook`). `KeywordMarkerFilter` musí být v pořadí filtrů **před** stemmerem,
+jinak nemá co chránit. U `ShingleFilter` je potřeba myslet na `index.max_shingle_diff`
+(default 3), u ngramů na `index.max_ngram_diff` (default 1).
+
 ### Ladění analyzerů (`_analyze`)
 
 `Connection::analyze()` ukáže, na jaké tokeny Elasticsearch rozpadne zadaný text.
