@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Connection\Params;
 
+use BackedEnum;
+
 abstract class AbstractParams
 {
     /**
@@ -21,7 +23,10 @@ abstract class AbstractParams
         foreach ($this->getParams() as $param) {
             $value = $this->$param;
             if (null !== $value) {
-                if (is_object($value) && method_exists($value, 'toString')) {
+                if ($value instanceof BackedEnum) {
+                    $value = $value->value;
+                } elseif (is_object($value) && method_exists($value, 'toString')) {
+                    // ponechano kvuli objektum, ktere backed enum nejsou
                     $value = $value->toString();
                 }
                 /** @var string|int|bool|null $value */

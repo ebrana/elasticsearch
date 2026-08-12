@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Suggest\Enums;
 
 /**
- * Pro ktere termy se maji navrhy hledat.
- *
- * Stejne hodnoty ma i Connection\Params\SuggestMode, ktery patri ke query parametrum
- * _search a ma navic toString() pro jejich serializaci. Tenhle je pro telo requestu.
+ * Pro ktere termy se maji navrhy hledat. Pouziva se jak v tele requestu (TermSuggest,
+ * DirectGenerator), tak jako query parametr suggest_mode v SearchParams.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#term-suggester
  */

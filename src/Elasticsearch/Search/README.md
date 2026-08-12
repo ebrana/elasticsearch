@@ -575,10 +575,12 @@ Na co narazit:
   jinak vyhodí výjimku ještě před odesláním.
 - `PhraseSuggest` potřebuje pole analyzované shingle filtrem (typicky podpole
   `name.trigram`), jinak nemá z čeho fráze skládat.
-- Query parametry `suggest_field`/`suggest_text`/`suggest_mode` v `SearchParams` zůstávají,
-  ale umí jen term suggester. Pro `phrase` a `completion` je potřeba tělo requestu.
-- `Search\Suggest\Enums\SuggestMode` má stejné hodnoty jako `Connection\Params\SuggestMode`;
-  ten druhý patří ke query parametrům a má navíc `toString()` pro jejich serializaci.
+- Query parametry `suggest_field`/`suggest_text`/`suggest_mode` v `SearchParams` zůstávají
+  a fungují, ale umí jen term suggester — pro `phrase` a `completion` je potřeba tělo
+  requestu. Suggester se u nich v odpovědi jmenuje podle **pole**, ne podle jména, které
+  bys zvolil; `Result::getSuggests()` ho tedy najdeš pod klíčem `name`, ne `opravy`.
+- `SuggestMode` je jeden enum (`Search\Suggest\Enums\SuggestMode`) pro tělo requestu
+  i pro query parametr.
 
 []() > [Ukázka použítí](../../../examples/searchData.php) <
 
