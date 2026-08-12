@@ -168,4 +168,60 @@ class PhpQueryBuilderTest extends TestCase
         $this->assertStringContainsString('$builder->addAggregation(', $result);
         $this->assertStringContainsString('$builder->size(0);', $result);
     }
+
+    public function testFulltextQueryResolvers(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "bool": {
+              "must": [
+                { "match_phrase": { "name": { "query": "cerne boty", "slop": 2 } } },
+                { "match_phrase_prefix": { "name": { "query": "cerne bo", "max_expansions": 10 } } },
+                { "match_bool_prefix": { "name": { "query": "cerne bo", "operator": "and" } } },
+                { "fuzzy": { "code": { "value": "ABC", "fuzziness": "AUTO" } } },
+                { "regexp": { "code": { "value": "AB.*", "flags": "COMPLEMENT|INTERVAL" } } },
+                { "ids": { "values": ["1", "2"] } },
+                { "terms_set": { "tags": { "terms": ["akce"], "minimum_should_match_field": "req" } } },
+                { "simple_query_string": { "query": "cerne + boty", "fields": ["name^3"], "default_operator": "and" } }
+              ]
+            }
+          }
+        }');
+
+        $this->assertStringContainsString(
+            "new MatchPhraseQuery(field: 'name', query: 'cerne boty', slop: 2);",
+            $result
+        );
+        $this->assertStringContainsString(
+            "new MatchPhrasePrefixQuery(field: 'name', query: 'cerne bo', max_expansions: 10);",
+            $result
+        );
+        $this->assertStringContainsString(
+            "new MatchBoolPrefixQuery(field: 'name', query: 'cerne bo', operator: Operator::AND);",
+            $result
+        );
+        $this->assertStringContainsString("new FuzzyQuery(field: 'code', value: 'ABC', fuzziness: 'AUTO');", $result);
+        $this->assertStringContainsString(
+            "new RegexpQuery(field: 'code', value: 'AB.*', flags: [RegexpFlag::COMPLEMENT, RegexpFlag::INTERVAL]);",
+            $result
+        );
+        $this->assertStringContainsString("new IdsQuery(values: ['1', '2']);", $result);
+        $this->assertStringContainsString(
+            "new TermsSetQuery(field: 'tags', terms: ['akce'], minimum_should_match_field: 'req');",
+            $result
+        );
+        $this->assertStringContainsString(
+            "new SimpleQueryStringQuery(query: 'cerne + boty', fields: ['name^3'], default_operator: Operator::AND);",
+            $result
+        );
+    }
+
+    public function testShorthandFulltextQuery(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{"query": {"match_phrase": {"name": "cerne boty"}}}');
+
+        $this->assertSame("\$matchPhraseQuery = new MatchPhraseQuery(field: 'name', query: 'cerne boty');", $result);
+    }
 }

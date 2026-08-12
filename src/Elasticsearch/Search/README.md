@@ -77,6 +77,93 @@ new \Elasticsearch\Search\Queries\TermQuery('user.id', 'flx');
 new \Elasticsearch\Search\Queries\WildcardQuery('user.id', '*doe');
 ```
 
+#### `MatchPhraseQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query-phrase.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query-phrase.html)
+
+Slova v přesném pořadí vedle sebe; `slop` povoluje, kolik pozic smí být mezi nimi.
+
+```php
+new \Elasticsearch\Search\Queries\MatchPhraseQuery('name', 'černé boty', slop: 2);
+```
+
+#### `MatchPhrasePrefixQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query-phrase-prefix.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query-phrase-prefix.html)
+
+Poslední slovo bere jako prefix — „search as you type" bez edge_ngram indexu.
+
+```php
+new \Elasticsearch\Search\Queries\MatchPhrasePrefixQuery('name', 'černé bo', max_expansions: 10);
+```
+
+#### `MatchBoolPrefixQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-bool-prefix-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-bool-prefix-query.html)
+
+Na rozdíl od `match_phrase_prefix` nezáleží na pořadí slov — vhodné pro víceslovný autocomplete.
+
+```php
+new \Elasticsearch\Search\Queries\MatchBoolPrefixQuery('name', 'boty čer', operator: Operator::AND);
+```
+
+#### `SimpleQueryStringQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html)
+
+Na rozdíl od `query_string` nespadne na syntaktické chybě, jen nesmyslnou část ignoruje —
+bezpečnější volba pro vstup od uživatele. `flags` omezí, které operátory smí uživatel použít.
+
+```php
+new \Elasticsearch\Search\Queries\SimpleQueryStringQuery(
+    'boty -platěné',
+    fields: ['name^3', 'description'],
+    flags: [SimpleQueryStringFlag::AND, SimpleQueryStringFlag::NOT, SimpleQueryStringFlag::PHRASE],
+    default_operator: Operator::AND
+);
+```
+
+> Pozor: omezení `flags` mění chování parseru. Bez `WHITESPACE`/`ALL` se některé zápisy
+> (např. `boty -platěné` s mezerou) neparsují tak, jak by člověk čekal. Je to vlastnost
+> Elasticsearche, ne knihovny — ověřeno, že se stejným tělem vrací `curl` totéž.
+
+#### `FuzzyQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html)
+
+Tolerantní k překlepům. Pracuje na neanalyzované hodnotě, takže se hodí na `keyword` pole.
+
+```php
+new \Elasticsearch\Search\Queries\FuzzyQuery('code', 'ABC124', fuzziness: 'AUTO');
+```
+
+#### `RegexpQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html)
+
+```php
+new \Elasticsearch\Search\Queries\RegexpQuery('code', 'AB.*', flags: [RegexpFlag::COMPLEMENT]);
+```
+
+#### `TermsSetQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-set-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-set-query.html)
+
+Vyžaduje jen zadaný minimální počet shod. Kolik jich musí být, se bere z pole dokumentu,
+ze skriptu, nebo se zadá pevně — jedno z toho je povinné.
+
+```php
+new \Elasticsearch\Search\Queries\TermsSetQuery('tags', ['akce', 'novinka'], minimum_should_match_field: 'req');
+```
+
+#### `IdsQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html)
+
+```php
+new \Elasticsearch\Search\Queries\IdsQuery(['1', '2']);
+```
+
 #### `BoolQuery`
 
 [https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html)
