@@ -62,6 +62,44 @@ abstract class AbstractGenerateProduct
     protected ArrayCollection $sellingPriceWithVat;
 `````
 
+### Nastavení indexu
+
+Atribut `Index` kromě jména a `postEventClass` nese i nastavení indexu:
+
+```php
+#[Index(
+    name: "AmproductsModule",
+    max_result_window: 50000,
+    number_of_shards: 2,
+    number_of_replicas: 1,
+    refresh_interval: "30s",
+    max_ngram_diff: 5,
+    max_shingle_diff: 4
+)]
+```
+
+Do mappingu jde jen to, co je vyplněné (`max_result_window` má default 10000). Ke všemu
+existují i settery, takže se to dá dolaďovat v post-event handleru — například vypnout
+refresh pro hromadnou reindexaci:
+
+```php
+$index->setRefreshInterval('-1');
+```
+
+| Nastavení | K čemu |
+|---|---|
+| `max_result_window` | strop pro `from` + `size` (ES default 10000) |
+| `number_of_shards` / `number_of_replicas` | rozložení indexu; shardy nelze u existujícího indexu měnit |
+| `refresh_interval` | jak často se změny stanou viditelné; `-1` vypne |
+| `max_ngram_diff` | povolený rozdíl `max_gram` − `min_gram` (ES default 1) |
+| `max_shingle_diff` | povolený rozdíl u `ShingleFilter` (ES default 3) |
+
+Bez `max_ngram_diff` Elasticsearch odmítne vytvořit index s širším ngram rozsahem než 1 —
+je to nejčastější důvod, proč `NgramTokenizer(min_gram: 2, max_gram: 6)` selže.
+
+V JSON driveru se čte jak vnořená forma `settings.index.*`, tak plochá `settings.*` —
+Elasticsearch bere obě.
+
 ### Vestavěné analyzery
 
 Vedle vlastního (custom) analyzeru skládaného z tokenizeru a filtrů (`Analyzer`) lze použít

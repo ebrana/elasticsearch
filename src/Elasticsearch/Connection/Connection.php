@@ -252,7 +252,7 @@ class Connection
             $data = array_merge($data, $params->toArray());
         }
 
-        // refresh jde do query stringu, kde bool skonci jako "1" - ES ceka "true"/"false"/"wait_for"
+        // klient ma refresh typovany jako string; bool by prevedl sam, ale shape to nedovoluje
         if (isset($data['refresh']) && is_bool($data['refresh'])) {
             $data['refresh'] = $data['refresh'] ? 'true' : 'false';
         }

@@ -60,10 +60,45 @@ class JsonDriver implements DriverInterface
             $this->propertiesResolver->resolveProperties($mapping->$indexName->mappings, $index);
         }
         if (isset($mapping->$indexName->settings)) {
+            $this->resolveIndexSettings($mapping->$indexName->settings, $index);
             $this->resolveAnalysis($mapping->$indexName->settings, $index);
         }
 
         return $index;
+    }
+
+    /**
+     * Nastaveni indexu muze byt v JSONu pod `settings.index`, nebo naplocho v `settings` -
+     * Elasticsearch bere obe varianty.
+     */
+    private function resolveIndexSettings(stdClass $settings, Index $index): void
+    {
+        $sources = [$settings];
+        if (isset($settings->index) && $settings->index instanceof stdClass) {
+            // vnorena varianta ma prednost
+            $sources[] = $settings->index;
+        }
+
+        foreach ($sources as $source) {
+            if (isset($source->max_result_window)) {
+                $index->setMaxResultWindow((int)$source->max_result_window);
+            }
+            if (isset($source->number_of_shards)) {
+                $index->setNumberOfShards((int)$source->number_of_shards);
+            }
+            if (isset($source->number_of_replicas)) {
+                $index->setNumberOfReplicas((int)$source->number_of_replicas);
+            }
+            if (isset($source->refresh_interval)) {
+                $index->setRefreshInterval((string)$source->refresh_interval);
+            }
+            if (isset($source->max_ngram_diff)) {
+                $index->setMaxNgramDiff((int)$source->max_ngram_diff);
+            }
+            if (isset($source->max_shingle_diff)) {
+                $index->setMaxShingleDiff((int)$source->max_shingle_diff);
+            }
+        }
     }
 
     /**

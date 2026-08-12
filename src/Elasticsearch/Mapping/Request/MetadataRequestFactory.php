@@ -53,26 +53,47 @@ class MetadataRequestFactory
     }
 
     /**
-     * @return array<string, array<string, array<string, array<string, array<string>|string>>>>|null
+     * @return array<string, mixed>|null
      */
     private function resolveSettings(Index $index): ?array
     {
+        // nastaveni indexu se posila i kdyz index nema zadnou analysis
+        $settings = $this->provideIndexSettings($index);
         $analysis = $index->getAnalysis();
-        if (null === $analysis) {
-            return null;
+
+        if (null !== $analysis) {
+            $settings['analysis'] = ['analyzer' => []];
+            $this->provideAnalyzers($analysis, $settings);
+            $this->provideFilters($analysis, $settings);
+            $this->provideCharacterFilters($analysis, $settings);
+            $this->provideTokenizers($analysis, $settings);
+            $this->provideNormalizers($analysis, $settings);
         }
 
-        $settings = [
-            'analysis' => [
-                'analyzer' => [],
-            ],
-            'max_result_window' => $index->getMaxResultWindow(),
-        ];
-        $this->provideAnalyzers($analysis, $settings);
-        $this->provideFilters($analysis, $settings);
-        $this->provideCharacterFilters($analysis, $settings);
-        $this->provideTokenizers($analysis, $settings);
-        $this->provideNormalizers($analysis, $settings);
+        return [] === $settings ? null : $settings;
+    }
+
+    /**
+     * Elasticsearch bere tyhle klice jak naplocho v `settings`, tak pod `settings.index` -
+     * knihovna je posila naplocho.
+     *
+     * @return array<string, mixed>
+     */
+    private function provideIndexSettings(Index $index): array
+    {
+        $settings = ['max_result_window' => $index->getMaxResultWindow()];
+
+        foreach ([
+            'number_of_shards'   => $index->getNumberOfShards(),
+            'number_of_replicas' => $index->getNumberOfReplicas(),
+            'refresh_interval'   => $index->getRefreshInterval(),
+            'max_ngram_diff'     => $index->getMaxNgramDiff(),
+            'max_shingle_diff'   => $index->getMaxShingleDiff(),
+        ] as $key => $value) {
+            if (null !== $value) {
+                $settings[$key] = $value;
+            }
+        }
 
         return $settings;
     }
