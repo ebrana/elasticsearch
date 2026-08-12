@@ -73,6 +73,33 @@ final class HitsCollection implements IteratorAggregate, Countable
         return $this->collection->count();
     }
 
+    /**
+     * Zvyraznene useky z odpovedi, naklicovane podle _id dokumentu. Iterace kolekce zustava
+     * na surovych hitech, takze `$hit['highlight']` funguje dal - tohle je jen zkratka.
+     *
+     * @return array<string, array<string, string[]>>
+     */
+    public function getHighlights(): array
+    {
+        $highlights = [];
+
+        foreach ($this->collection as $hit) {
+            if (!is_array($hit) || !isset($hit['_id']) || !isset($hit['highlight'])) {
+                continue;
+            }
+
+            if (!is_array($hit['highlight'])) {
+                continue;
+            }
+
+            /** @var array<string, string[]> $hitHighlights */
+            $hitHighlights = $hit['highlight'];
+            $highlights[(string)$hit['_id']] = $hitHighlights;
+        }
+
+        return $highlights;
+    }
+
     public function isEmpty(): bool
     {
         return $this->collection->isEmpty();

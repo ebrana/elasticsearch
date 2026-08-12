@@ -483,6 +483,57 @@ $query = (new Builder('class'))
     ->build();
 ```
 
+## Highlight
+
+`Builder::setHighlight()` přidá do těla requestu sekci `highlight`, takže Elasticsearch
+u každého hitu vrátí úseky textu se zvýrazněnými shodami.
+
+```php
+use Elasticsearch\Search\Highlight\{Highlight, HighlightField};
+use Elasticsearch\Search\Highlight\Enums\{BoundaryScanner, HighlightOrder};
+
+$highlight = new Highlight(
+    new HighlightField('name'),
+    (new HighlightField('description'))->setNumberOfFragments(2)
+);
+$highlight->setTags(['<mark>'], ['</mark>'])
+    ->setFragmentSize(40)
+    ->setOrder(HighlightOrder::SCORE)
+    ->setBoundaryScanner(BoundaryScanner::SENTENCE);
+
+$builder->setHighlight($highlight);
+```
+
+Volby lze zadat globálně na `Highlight` i u jednotlivých `HighlightField` — u pole přebijí
+tu globální. K dispozici jsou `type`, `pre_tags`/`post_tags`, `fragment_size`,
+`number_of_fragments`, `order`, `require_field_match`, `boundary_scanner`,
+`boundary_max_scan`, `boundary_chars`, `no_match_size`, `highlight_query`, `phrase_limit`,
+`fragmenter`, `max_analyzed_offset`; navíc globálně `encoder` a `useStyledTags()`,
+u pole `matched_fields` a `fragment_offset`.
+
+Ve výsledku se k úsekům dostaneš přes `getHighlights()`, naklíčované podle `_id`:
+
+```php
+$result = $connection->search($builder);
+
+foreach ($result->getHits()->getHighlights() as $id => $fields) {
+    foreach ($fields['description'] ?? [] as $fragment) {
+        echo $fragment;   // Kozene <mark>boty</mark> se hodi i do prace.
+    }
+}
+```
+
+Iterace `getHits()` zůstává na surových hitech, takže `$hit['highlight']` funguje dál —
+`getHighlights()` je jen zkratka.
+
+Na co narazit:
+
+- `no_match_size` je jediný způsob, jak dostat obsah pole, ve kterém shoda není; bez něj
+  se takové pole ve výsledku vůbec neobjeví.
+- `matched_fields` funguje jen s `fvh` highlighterem a pole musí mít v mappingu
+  `term_vector: with_positions_offsets`.
+- `useStyledTags()` použije předpřipravené značky `<em class="hlt1">` až `<em class="hlt10">`.
+
 []() > [Ukázka použítí](../../../examples/searchData.php) <
 
 [<< zpět](../../../README.md)

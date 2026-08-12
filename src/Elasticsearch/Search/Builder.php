@@ -9,6 +9,7 @@ use Elasticsearch\Mapping\Index;
 use Elasticsearch\Search\Aggregations\AbstractAggregation;
 use Elasticsearch\Search\Aggregations\AggregationCollection;
 use Elasticsearch\Search\Collapse\Collapse;
+use Elasticsearch\Search\Highlight\Highlight;
 use Elasticsearch\Search\Queries\Query;
 use Elasticsearch\Search\Sorts\SortCollection;
 use Elasticsearch\Search\Sorts\SortInterface;
@@ -19,6 +20,7 @@ final class Builder
     private ?AggregationCollection $aggregations = null;
     private ?SortCollection $sorts = null;
     private ?Collapse $collapse = null;
+    private ?Highlight $highlight = null;
     private ?int $size = null;
     private ?int $from = null;
     private ?string $indexPrefix = null;
@@ -46,6 +48,11 @@ final class Builder
     public function setCollapse(?Collapse $collapse): void
     {
         $this->collapse = $collapse;
+    }
+
+    public function setHighlight(?Highlight $highlight): void
+    {
+        $this->highlight = $highlight;
     }
 
     public function addAggregation(AbstractAggregation $aggregation): self
@@ -160,6 +167,10 @@ final class Builder
 
         if ($this->collapse) {
             $collection->set('collapse', $this->collapse->toArray());
+        }
+
+        if ($this->highlight) {
+            $collection->set('highlight', $this->highlight->toArray());
         }
 
         return $collection;
