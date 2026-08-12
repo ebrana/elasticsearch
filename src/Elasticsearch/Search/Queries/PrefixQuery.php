@@ -16,11 +16,7 @@ readonly class PrefixQuery implements Query
 
     public function toArray(): array
     {
-        $data = [
-            $this->field => [
-                'value' => $this->value,
-            ]
-        ];
+        $data = ['value' => $this->value];
 
         if ($this->rewrite) {
             $data['rewrite'] = $this->rewrite;
@@ -29,6 +25,6 @@ readonly class PrefixQuery implements Query
             $data['case_insensitive'] = $this->case_insensitive;
         }
 
-        return ['prefix' => $data];
+        return ['prefix' => [$this->field => $data]];
     }
 }
