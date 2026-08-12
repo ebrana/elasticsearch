@@ -13,6 +13,7 @@ use Elasticsearch\Search\Highlight\Highlight;
 use Elasticsearch\Search\Queries\Query;
 use Elasticsearch\Search\Sorts\SortCollection;
 use Elasticsearch\Search\Sorts\SortInterface;
+use Elasticsearch\Search\Suggest\Suggest;
 
 final class Builder
 {
@@ -21,6 +22,7 @@ final class Builder
     private ?SortCollection $sorts = null;
     private ?Collapse $collapse = null;
     private ?Highlight $highlight = null;
+    private ?Suggest $suggest = null;
     private ?int $size = null;
     private ?int $from = null;
     private ?string $indexPrefix = null;
@@ -53,6 +55,11 @@ final class Builder
     public function setHighlight(?Highlight $highlight): void
     {
         $this->highlight = $highlight;
+    }
+
+    public function setSuggest(?Suggest $suggest): void
+    {
+        $this->suggest = $suggest;
     }
 
     public function addAggregation(AbstractAggregation $aggregation): self
@@ -171,6 +178,10 @@ final class Builder
 
         if ($this->highlight) {
             $collection->set('highlight', $this->highlight->toArray());
+        }
+
+        if ($this->suggest) {
+            $collection->set('suggest', $this->suggest->toArray());
         }
 
         return $collection;

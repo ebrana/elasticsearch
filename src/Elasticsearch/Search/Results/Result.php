@@ -14,6 +14,9 @@ final class Result
     private HitsCollection $hits;
     private ArrayCollection $aggregations;
 
+    /** @var array<string, SuggestEntry[]> */
+    private array $suggests = [];
+
     /** @phpstan-ignore-next-line */
     public function __construct(array $record)
     {
@@ -52,6 +55,61 @@ final class Result
         }
 
         $this->aggregations = new ArrayCollection($record['aggregations'] ?? []);
+
+        if (isset($record['suggest']) && is_array($record['suggest'])) {
+            $this->resolveSuggests($record['suggest']);
+        }
+    }
+
+    /**
+     * @param array<mixed> $suggest
+     */
+    private function resolveSuggests(array $suggest): void
+    {
+        foreach ($suggest as $name => $entries) {
+            if (!is_array($entries)) {
+                continue;
+            }
+
+            $resolved = [];
+            foreach ($entries as $entry) {
+                if (!is_array($entry)) {
+                    continue;
+                }
+
+                $options = [];
+                if (isset($entry['options']) && is_array($entry['options'])) {
+                    foreach ($entry['options'] as $option) {
+                        if (!is_array($option)) {
+                            continue;
+                        }
+
+                        /** @var array<string, mixed>|null $source */
+                        $source = isset($option['_source']) && is_array($option['_source'])
+                            ? $option['_source']
+                            : null;
+
+                        $options[] = new SuggestOption(
+                            (string)($option['text'] ?? ''),
+                            isset($option['score']) ? (float)$option['score'] : null,
+                            isset($option['freq']) ? (int)$option['freq'] : null,
+                            isset($option['_id']) ? (string)$option['_id'] : null,
+                            isset($option['_index']) ? (string)$option['_index'] : null,
+                            $source,
+                        );
+                    }
+                }
+
+                $resolved[] = new SuggestEntry(
+                    (string)($entry['text'] ?? ''),
+                    (int)($entry['offset'] ?? 0),
+                    (int)($entry['length'] ?? 0),
+                    $options,
+                );
+            }
+
+            $this->suggests[(string)$name] = $resolved;
+        }
     }
 
     public function getTook(): ?int
@@ -77,5 +135,23 @@ final class Result
     public function getAggregations(): ArrayCollection
     {
         return $this->aggregations;
+    }
+
+    /**
+     * Navrhy naklicovane podle jmena suggesteru, jak je vrati Elasticsearch.
+     *
+     * @return array<string, SuggestEntry[]>
+     */
+    public function getSuggests(): array
+    {
+        return $this->suggests;
+    }
+
+    /**
+     * @return SuggestEntry[]
+     */
+    public function getSuggest(string $name): array
+    {
+        return $this->suggests[$name] ?? [];
     }
 }

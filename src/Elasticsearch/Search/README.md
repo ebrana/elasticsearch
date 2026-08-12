@@ -534,6 +534,52 @@ Na co narazit:
   `term_vector: with_positions_offsets`.
 - `useStyledTags()` použije předpřipravené značky `<em class="hlt1">` až `<em class="hlt10">`.
 
+## Suggest
+
+`Builder::setSuggest()` přidá do těla requestu sekci `suggest`. Dostupné jsou tři suggestery:
+
+| Třída | ES suggester | K čemu |
+|---|---|---|
+| `TermSuggest(name, text, field)` | `term` | opravy po jednotlivých slovech |
+| `PhraseSuggest(name, text, field)` | `phrase` | oprava celé fráze, bere v potaz výskyt slov spolu |
+| `CompletionSuggest(name, field, prefix:)` | `completion` | autocomplete nad polem typu `completion` |
+
+```php
+use Elasticsearch\Search\Suggest\{CompletionSuggest, Suggest, TermSuggest};
+use Elasticsearch\Search\Suggest\Enums\SuggestMode;
+
+$builder->setSuggest(new Suggest(
+    new TermSuggest('opravy', 'boyt', 'name', suggest_mode: SuggestMode::ALWAYS, size: 3),
+    new CompletionSuggest('doplneni', 'doplneni', prefix: 'cerne', skip_duplicates: true)
+));
+```
+
+Ve výsledku jsou návrhy naklíčované jménem suggesteru:
+
+```php
+$result = $connection->search($builder);
+
+foreach ($result->getSuggest('opravy') as $entry) {
+    $entry->getText();          // 'boyt'  - vstupní úsek
+    $entry->getOptionTexts();   // ['boty']
+    $entry->getFirstOption()?->getScore();
+}
+```
+
+`SuggestOption` nese `text` a `score`; `freq` vrací jen term suggester, `_id`/`_index`/`_source`
+jen completion suggester.
+
+Na co narazit:
+
+- `CompletionSuggest` se zadává `prefix` nebo `regex`, ne `text` — a právě jedním z nich;
+  jinak vyhodí výjimku ještě před odesláním.
+- `PhraseSuggest` potřebuje pole analyzované shingle filtrem (typicky podpole
+  `name.trigram`), jinak nemá z čeho fráze skládat.
+- Query parametry `suggest_field`/`suggest_text`/`suggest_mode` v `SearchParams` zůstávají,
+  ale umí jen term suggester. Pro `phrase` a `completion` je potřeba tělo requestu.
+- `Search\Suggest\Enums\SuggestMode` má stejné hodnoty jako `Connection\Params\SuggestMode`;
+  ten druhý patří ke query parametrům a má navíc `toString()` pro jejich serializaci.
+
 []() > [Ukázka použítí](../../../examples/searchData.php) <
 
 [<< zpět](../../../README.md)
