@@ -11,6 +11,7 @@ use Elasticsearch\Search\Aggregations\AggregationCollection;
 use Elasticsearch\Search\Collapse\Collapse;
 use Elasticsearch\Search\Highlight\Highlight;
 use Elasticsearch\Search\Queries\Query;
+use Elasticsearch\Search\Rescore\Rescore;
 use Elasticsearch\Search\Sorts\SortCollection;
 use Elasticsearch\Search\Sorts\SortInterface;
 use Elasticsearch\Search\Suggest\Suggest;
@@ -23,6 +24,20 @@ final class Builder
     private ?Collapse $collapse = null;
     private ?Highlight $highlight = null;
     private ?Suggest $suggest = null;
+    private ?Query $postFilter = null;
+    private ?PointInTime $pointInTime = null;
+    private ?float $minScore = null;
+    private bool|int|null $trackTotalHits = null;
+    private ?bool $trackScores = null;
+
+    /** @var Rescore[] */
+    private array $rescores = [];
+
+    /** @var array<string, array<string, mixed>> */
+    private array $scriptFields = [];
+
+    /** @var array<string, array<string, mixed>> */
+    private array $runtimeMappings = [];
     private ?int $size = null;
     private ?int $from = null;
     private ?string $indexPrefix = null;
@@ -62,6 +77,80 @@ final class Builder
         $this->suggest = $suggest;
     }
 
+    /**
+     * Filtr, ktery se uplatni az po vypoctu agregaci - agregace tedy pocitaji z vysledku
+     * pred timto filtrem. Typicke pro fasety, kde vybrana hodnota nema zuzit nabidku.
+     */
+    public function setPostFilter(?Query $postFilter): void
+    {
+        $this->postFilter = $postFilter;
+    }
+
+    /**
+     * S Point in Time se index neposila v requestu, ale je soucasti PIT - build()
+     * ho proto vynecha.
+     */
+    public function setPointInTime(?PointInTime $pointInTime): void
+    {
+        $this->pointInTime = $pointInTime;
+    }
+
+    public function minScore(?float $minScore): self
+    {
+        $this->minScore = $minScore;
+
+        return $this;
+    }
+
+    /**
+     * true = presny pocet, cislo = presny do zadaneho limitu (nad nim relation "gte").
+     */
+    public function trackTotalHits(bool|int|null $trackTotalHits): self
+    {
+        $this->trackTotalHits = $trackTotalHits;
+
+        return $this;
+    }
+
+    /**
+     * Vraci skore i kdyz se radi podle pole - jinak je _score null.
+     */
+    public function trackScores(?bool $trackScores): self
+    {
+        $this->trackScores = $trackScores;
+
+        return $this;
+    }
+
+    public function addRescore(Rescore $rescore): self
+    {
+        $this->rescores[] = $rescore;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $script skript tak, jak ho ceka ES (vcetne klice source)
+     */
+    public function addScriptField(string $name, array $script): self
+    {
+        $this->scriptFields[$name] = ['script' => $script];
+
+        return $this;
+    }
+
+    /**
+     * Pole spocitane az pri hledani, bez zapisu do indexu.
+     *
+     * @param array<string, mixed> $definition napr. ['type' => 'keyword', 'script' => [...]]
+     */
+    public function addRuntimeMapping(string $field, array $definition): self
+    {
+        $this->runtimeMappings[$field] = $definition;
+
+        return $this;
+    }
+
     public function addAggregation(AbstractAggregation $aggregation): self
     {
         if (!$this->aggregations) {
@@ -94,9 +183,12 @@ final class Builder
         if (!empty($body)) {
             $collection->set('body', $body);
         }
-        $collection->set('index', $this->index->getName());
-        if (null !== $this->indexPrefix) {
-            $collection->set('index', $this->indexPrefix . $collection->get('index'));
+        // s PIT patri index do pit.id, ne do requestu; ES by ho jinak odmitl
+        if (null === $this->pointInTime) {
+            $collection->set('index', $this->index->getName());
+            if (null !== $this->indexPrefix) {
+                $collection->set('index', $this->indexPrefix . $collection->get('index'));
+            }
         }
 
         return $collection;
@@ -182,6 +274,40 @@ final class Builder
 
         if ($this->suggest) {
             $collection->set('suggest', $this->suggest->toArray());
+        }
+
+        if ($this->postFilter) {
+            $collection->set('post_filter', $this->postFilter->toArray());
+        }
+
+        if (null !== $this->minScore) {
+            $collection->set('min_score', $this->minScore);
+        }
+
+        if (null !== $this->trackTotalHits) {
+            $collection->set('track_total_hits', $this->trackTotalHits);
+        }
+
+        if (null !== $this->trackScores) {
+            $collection->set('track_scores', $this->trackScores);
+        }
+
+        if ($this->scriptFields) {
+            $collection->set('script_fields', $this->scriptFields);
+        }
+
+        if ($this->runtimeMappings) {
+            $collection->set('runtime_mappings', $this->runtimeMappings);
+        }
+
+        if ($this->rescores) {
+            $rescores = array_map(static fn (Rescore $rescore): array => $rescore->toArray(), $this->rescores);
+            // jeden rescore jde poslat i jako objekt, vic jich musi byt pole
+            $collection->set('rescore', 1 === count($rescores) ? $rescores[0] : $rescores);
+        }
+
+        if ($this->pointInTime) {
+            $collection->set('pit', $this->pointInTime->toArray());
         }
 
         return $collection;

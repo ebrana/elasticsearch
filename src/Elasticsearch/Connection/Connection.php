@@ -20,6 +20,7 @@ use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Request\MetadataRequest;
 use Elasticsearch\Search\Builder;
+use Elasticsearch\Search\PointInTime;
 use Elasticsearch\Search\Results\Result;
 use RuntimeException;
 
@@ -223,6 +224,53 @@ class Connection
         }
 
         throw new RuntimeException('Wrong data format');
+    }
+
+    /**
+     * Otevre Point in Time - zamrznuty pohled na index pro konzistentni hluboke strankovani
+     * pres search_after. Po dostrankovani je potreba ho zavrit pres closePointInTime().
+     *
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
+     */
+    public function openPointInTime(Index $index, string $keepAlive = '1m'): PointInTime
+    {
+        $response = $this->getClient()->openPointInTime([
+            'index'      => $index->getNameWithPrefix($this->indexPrefix),
+            'keep_alive' => $keepAlive,
+        ]);
+
+        if (!$response instanceof Elasticsearch) {
+            throw new RuntimeException('Wrong data format');
+        }
+
+        $data = $response->asArray();
+        if (!isset($data['id']) || !is_string($data['id'])) {
+            throw new RuntimeException('Point in time response is missing id.');
+        }
+
+        return new PointInTime($data['id'], $keepAlive);
+    }
+
+    /**
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
+    public function closePointInTime(PointInTime $pointInTime): bool
+    {
+        $response = $this->getClient()->closePointInTime([
+            'body' => ['id' => $pointInTime->getId()],
+        ]);
+
+        if (!$response instanceof Elasticsearch) {
+            throw new RuntimeException('Wrong data format');
+        }
+
+        return (bool)($response->asArray()['succeeded'] ?? false);
     }
 
     /**

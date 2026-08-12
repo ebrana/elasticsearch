@@ -582,6 +582,82 @@ Na co narazit:
 - `SuggestMode` je jeden enum (`Search\Suggest\Enums\SuggestMode`) pro tělo requestu
   i pro query parametr.
 
+## Další volby těla requestu
+
+```php
+$builder->setPostFilter(new TermQuery('brand', 'Alfa'));   // filtr aplikovaný PO agregacích
+$builder->minScore(1.0);                                    // zahodí hity pod skóre
+$builder->trackTotalHits(true);                             // přesný počet (nebo limit: 10000)
+$builder->trackScores(true);                                // skóre i při řazení podle pole
+```
+
+`post_filter` je klíčový pro fasety: agregace se počítají z výsledků **před** ním, takže
+výběr jedné hodnoty nezúží nabídku ostatních.
+
+```php
+$builder->addScriptField('sleva', ['source' => "doc['price'].value * 0.8"]);
+$builder->addRuntimeMapping('pasmo', [
+    'type'   => 'keyword',
+    'script' => ['source' => "emit(doc['price'].value > 150 ? 'drahe' : 'levne')"],
+]);
+```
+
+`script_fields` se vrací v `$hit['fields']`, ne v `_source`. `runtime_mappings` definuje pole
+počítané až při hledání — jde ho použít i v agregaci nebo řazení, aniž by se zapisovalo do indexu.
+
+### Rescore
+
+Přepočítá skóre jen u prvních `window_size` výsledků z každého shardu — pro drahé query,
+které se nevyplatí pustit přes celý index.
+
+```php
+use Elasticsearch\Search\Rescore\{Enums\RescoreMode, Rescore};
+
+$builder->addRescore(new Rescore(
+    new MatchPhraseQuery('name', 'černé kožené'),
+    window_size: 50,
+    query_weight: 0.3,
+    rescore_query_weight: 2.0,
+    score_mode: RescoreMode::TOTAL
+));
+```
+
+Jeden rescore se posílá jako objekt, víc jich jako pole — knihovna to řeší sama.
+
+### Point in Time
+
+Zamrznutý pohled na index, aby hluboké stránkování přes `search_after` vracelo konzistentní
+výsledky, i když se mezitím indexuje.
+
+```php
+$pit = $connection->openPointInTime($index, '2m');
+
+$after = null;
+do {
+    $builder = $searchBuilderFactory->create(Product::class);
+    $builder->setQuery(new MatchAllQuery());
+    $builder->addSort(new Sort('price', SortDirection::ASC));
+    $builder->size(100);
+    $builder->setPointInTime($pit);
+    if ($after) {
+        $builder->searchAfter($after);
+    }
+
+    $result = $connection->search($builder);
+    $hits = $result->getHits()->toArray();
+    $after = $hits ? end($hits)['sort'] : null;
+} while ($hits);
+
+$connection->closePointInTime($pit);
+```
+
+Na co narazit:
+
+- S PIT se **index neposílá v requestu** — je součástí PIT. `Builder::build()` ho proto
+  vynechá; s indexem by ES request odmítl.
+- PIT je potřeba zavřít, jinak drží zdroje až do vypršení `keep_alive`.
+- `keep_alive` je u otevření povinné, knihovna použije `1m`, když ho neuvedeš.
+
 []() > [Ukázka použítí](../../../examples/searchData.php) <
 
 [<< zpět](../../../README.md)
