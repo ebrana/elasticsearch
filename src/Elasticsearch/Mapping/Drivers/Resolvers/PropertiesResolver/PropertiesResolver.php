@@ -10,6 +10,7 @@ use Elasticsearch\Mapping\Drivers\Factories\Properties\Numeric\FloatTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Numeric\IntegerTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Text\TextTypeFactory;
 use Elasticsearch\Mapping\Index;
+use Elasticsearch\Mapping\Types\Helpers\MultiFieldsInterface;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\NestedType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\PropertyFactoryInterface;
@@ -44,12 +45,20 @@ final class PropertiesResolver
                     $field = new ObjectType(name: $key);
                 }
                 $this->resolveProperties($property, $index, $field);
-                $index->addProperty($field);
+                if ($objectType) {
+                    $objectType->addProperty($field);
+                } else {
+                    $index->addProperty($field);
+                }
                 continue; // property->properties ... next level
             }
             if (isset($this->propertiesFactories[$property->type])) {
                 $factory = $this->propertiesFactories[$property->type];
                 $field = $factory::create($key, $property);
+
+                if ($field instanceof MultiFieldsInterface && isset($property->fields)) {
+                    $this->resolveMultiFields($property->fields, $field);
+                }
 
                 if ($objectType) {
                     $objectType->addProperty($field);
@@ -57,6 +66,22 @@ final class PropertiesResolver
                     $index->addProperty($field);
                 }
             }
+        }
+    }
+
+    /**
+     * Multi-fields (`fields`) nemohou byt zanorene do dalsich multi-fields, resi se proto jen jedna uroven.
+     */
+    private function resolveMultiFields(stdClass $fields, MultiFieldsInterface $parent): void
+    {
+        /** @var stdClass $configuration */
+        foreach ((array)$fields as $name => $configuration) {
+            if (!isset($configuration->type) || !isset($this->propertiesFactories[$configuration->type])) {
+                continue;
+            }
+
+            $factory = $this->propertiesFactories[$configuration->type];
+            $parent->addField($factory::create((string)$name, $configuration));
         }
     }
 }
