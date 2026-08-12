@@ -14,6 +14,14 @@ class TermsAggregation extends AbstractAggregation
     use WithAggregations;
 
     protected ?int $size = null;
+    protected ?int $shardSize = null;
+    protected ?int $minDocCount = null;
+
+    /** @var string[]|string|null */
+    protected array|string|null $include = null;
+
+    /** @var string[]|string|null */
+    protected array|string|null $exclude = null;
 
     /** @var array<string, string>|null */
     protected ?array $order = null;
@@ -29,6 +37,49 @@ class TermsAggregation extends AbstractAggregation
     public function size(int $size): self
     {
         $this->size = $size;
+
+        return $this;
+    }
+
+    /**
+     * Kolik termu si vyzada z kazdeho shardu. Vyssi hodnota zpresnuje doc_count
+     * u vetsiho poctu shardu za cenu pameti.
+     */
+    public function shardSize(int $shardSize): self
+    {
+        $this->shardSize = $shardSize;
+
+        return $this;
+    }
+
+    /**
+     * Vynecha termy s mensim poctem dokumentu (ES default 1).
+     */
+    public function minDocCount(int $minDocCount): self
+    {
+        $this->minDocCount = $minDocCount;
+
+        return $this;
+    }
+
+    /**
+     * Vyctem hodnot, nebo regulernim vyrazem.
+     *
+     * @param string[]|string $include
+     */
+    public function include(array|string $include): self
+    {
+        $this->include = $include;
+
+        return $this;
+    }
+
+    /**
+     * @param string[]|string $exclude
+     */
+    public function exclude(array|string $exclude): self
+    {
+        $this->exclude = $exclude;
 
         return $this;
     }
@@ -54,12 +105,28 @@ class TermsAggregation extends AbstractAggregation
             $parameters['size'] = $this->size;
         }
 
-        if ($this->missing) {
+        if (null !== $this->missing) {
             $parameters['missing'] = $this->missing;
         }
 
         if ($this->order) {
             $parameters['order'] = $this->order;
+        }
+
+        if (null !== $this->shardSize) {
+            $parameters['shard_size'] = $this->shardSize;
+        }
+
+        if (null !== $this->minDocCount) {
+            $parameters['min_doc_count'] = $this->minDocCount;
+        }
+
+        if (null !== $this->include) {
+            $parameters['include'] = $this->include;
+        }
+
+        if (null !== $this->exclude) {
+            $parameters['exclude'] = $this->exclude;
         }
 
         $aggregation = [

@@ -6,16 +6,23 @@ namespace Elasticsearch\Tools\Resolvers;
 
 use Elasticsearch\Tools\Resolvers\Aggregation\AbstractAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\AggregationResolveInterface;
+use Elasticsearch\Tools\Resolvers\Aggregation\AvgAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\CardinalityAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\ExtendedStatsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\FilterAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\GlobalAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\MaxAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\MinAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\NestedAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\PercentileRanksAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\PercentilesAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\ReverseNestedAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\StatsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\SumAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\TermsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\TopHitsAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\ValueCountAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\WeightedAvgAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Query\QueryResolver;
 
 class AggregationResolver
@@ -34,6 +41,13 @@ class AggregationResolver
         'max' => MaxAggregationResolver::class,
         'sum' => SumAggregationResolver::class,
         'cardinality' => CardinalityAggregationResolver::class,
+        'avg' => AvgAggregationResolver::class,
+        'value_count' => ValueCountAggregationResolver::class,
+        'stats' => StatsAggregationResolver::class,
+        'extended_stats' => ExtendedStatsAggregationResolver::class,
+        'percentiles' => PercentilesAggregationResolver::class,
+        'percentile_ranks' => PercentileRanksAggregationResolver::class,
+        'weighted_avg' => WeightedAvgAggregationResolver::class,
     ];
 
     private int $counter = 0;

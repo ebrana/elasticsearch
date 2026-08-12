@@ -7,7 +7,12 @@ namespace Elasticsearch\Search\Aggregations;
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithMissing;
 
-class MaxAggregation extends AbstractAggregation
+/**
+ * Vrati count, min, max, avg a sum jednim dotazem - levnejsi nez ctyri samostatne agregace.
+ *
+ * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
+ */
+class StatsAggregation extends AbstractAggregation
 {
     use WithMissing;
 
@@ -20,14 +25,12 @@ class MaxAggregation extends AbstractAggregation
 
     public function payload(): ArrayCollection
     {
-        $parameters = [
-            'field' => $this->field,
-        ];
+        $parameters = ['field' => $this->field];
 
         if (null !== $this->missing) {
             $parameters['missing'] = $this->missing;
         }
 
-        return new ArrayCollection(['max' => $parameters]);
+        return new ArrayCollection(['stats' => $parameters]);
     }
 }

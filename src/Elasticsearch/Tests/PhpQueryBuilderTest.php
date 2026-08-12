@@ -329,4 +329,38 @@ class PhpQueryBuilderTest extends TestCase
         $this->assertStringContainsString("\$scoreFunction0 = new RandomScoreFunction();", $result);
         $this->assertStringContainsString("functions: [\$scoreFunction0]", $result);
     }
+
+    public function testMetricAggregationResolvers(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": { "match_all": {} },
+          "aggs": {
+            "prumer":   { "avg": { "field": "price", "missing": 0 } },
+            "pocet":    { "value_count": { "field": "brand" } },
+            "statis":   { "stats": { "field": "price" } },
+            "rozsir":   { "extended_stats": { "field": "price", "sigma": 3 } },
+            "perc":     { "percentiles": { "field": "price", "percents": [50, 95], "keyed": false } },
+            "ranks":    { "percentile_ranks": { "field": "price", "values": [100, 500] } },
+            "vazeny":   { "weighted_avg": { "value": { "field": "rating", "missing": 0 }, "weight": { "field": "reviews" } } },
+            "znacky":   { "terms": { "field": "brand", "size": 10, "min_doc_count": 2, "shard_size": 100, "exclude": "Gama.*" } }
+          }
+        }');
+
+        $this->assertStringContainsString("new AvgAggregation('prumer', 'price');", $result);
+        $this->assertStringContainsString("->missing(0);", $result);
+        $this->assertStringContainsString("new ValueCountAggregation('pocet', 'brand');", $result);
+        $this->assertStringContainsString("new StatsAggregation('statis', 'price');", $result);
+        $this->assertStringContainsString("new ExtendedStatsAggregation('rozsir', 'price');", $result);
+        $this->assertStringContainsString("->sigma(3);", $result);
+        $this->assertStringContainsString("new PercentilesAggregation('perc', 'price');", $result);
+        $this->assertStringContainsString("->percents([50, 95]);", $result);
+        $this->assertStringContainsString("new PercentileRanksAggregation('ranks', 'price', [100, 500]);", $result);
+        $this->assertStringContainsString("new WeightedAvgAggregation('vazeny', 'rating', 'reviews');", $result);
+        $this->assertStringContainsString("->valueMissing(0);", $result);
+        $this->assertStringContainsString("new TermsAggregation('znacky', 'brand');", $result);
+        $this->assertStringContainsString("->minDocCount(2);", $result);
+        $this->assertStringContainsString("->shardSize(100);", $result);
+        $this->assertStringContainsString("->exclude('Gama.*');", $result);
+    }
 }

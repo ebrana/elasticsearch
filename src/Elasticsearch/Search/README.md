@@ -429,6 +429,45 @@ new \Elasticsearch\Search\Aggregations\TopHitsAggregation(
 );
 ```
 
+## Metrické agregace
+
+| Třída | ES agregace |
+|---|---|
+| `AvgAggregation(name, field)` | `avg` |
+| `MinAggregation` / `MaxAggregation` / `SumAggregation` | `min` / `max` / `sum` |
+| `ValueCountAggregation(name, field)` | `value_count` — počet hodnot (ne unikátních) |
+| `CardinalityAggregation(name, field)` | `cardinality` — přibližný počet unikátních |
+| `StatsAggregation(name, field)` | `stats` — count, min, max, avg, sum jedním dotazem |
+| `ExtendedStatsAggregation(name, field)` | `extended_stats` — navíc rozptyl a odchylka, volitelně `sigma()` |
+| `PercentilesAggregation(name, field)` | `percentiles` — `percents()`, `keyed()`, `compression()` |
+| `PercentileRanksAggregation(name, field, values)` | `percentile_ranks` — obrácené percentily |
+| `WeightedAvgAggregation(name, valueField, weightField)` | `weighted_avg` |
+
+```php
+$percentiles = new PercentilesAggregation('cenove_pasmo', 'price');
+$percentiles->percents([50.0, 95.0]);
+$builder->addAggregation($percentiles);
+
+// hodnocení vážené počtem recenzí
+$builder->addAggregation(new WeightedAvgAggregation('hodnoceni', 'rating', 'reviews'));
+```
+
+`missing()` (u většiny metrik) dosadí hodnotu za dokumenty, kterým pole chybí — bez toho
+se do agregace vůbec nepočítají.
+
+### `TermsAggregation`
+
+Kromě `size()`, `order()` a `missing()` má i `shardSize()`, `minDocCount()`, `include()`
+a `exclude()`:
+
+```php
+$terms = new TermsAggregation('znacky', 'brand');
+$terms->size(10)
+    ->minDocCount(2)          // vynechá značky s jedním produktem
+    ->exclude('Gama.*')       // regulární výraz, nebo pole hodnot
+    ->shardSize(100);         // přesnější doc_count při více shardech
+```
+
 ## Přidání sorts
 
 `Builder` má `addSort()` methodu s rozhranním `Sort`. Více v dokumentaci [the ElasticSearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/sort-search-results.html).
