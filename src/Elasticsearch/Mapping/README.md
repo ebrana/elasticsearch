@@ -105,6 +105,60 @@ Nerozpoznaný `type` se stejně jako dřív zpracuje jako custom analyzer.
 }
 `````
 
+### Tokenizery
+
+Tokenizer (`analysis.tokenizer`) rozpadá text na tokeny; každý custom analyzer má právě jeden.
+
+| Atribut | ES typ | Hlavní parametry |
+|---|---|---|
+| `StandardTokenizer(name)` | `standard` | `max_token_length` |
+| `WhitespaceTokenizer(name)` | `whitespace` | `max_token_length` |
+| `KeywordTokenizer(name)` | `keyword` | `buffer_size` |
+| `LetterTokenizer(name)` | `letter` | — |
+| `LowercaseTokenizer(name)` | `lowercase` | — |
+| `UaxUrlEmailTokenizer(name)` | `uax_url_email` | `max_token_length` |
+| `ClassicTokenizer(name)` | `classic` | `max_token_length` |
+| `CharGroupTokenizer(name, tokenize_on_chars)` | `char_group` | `max_token_length` |
+| `PathHierarchyTokenizer(name)` | `path_hierarchy` | `delimiter`, `replacement`, `buffer_size`, `reverse`, `skip` |
+| `PatternTokenizer(name)` | `pattern` | `pattern`, `flags`, `group` |
+| `NgramTokenizer` / `EdgeNgramTokenizer` | `ngram` / `edge_ngram` | `min_gram`, `max_gram`, `token_chars` |
+
+`CharGroupTokenizer` je levnější alternativa `pattern` tokenizeru, když stačí vyjmenovat
+oddělovače — v `tokenize_on_chars` můžou být jak jména tříd znaků (`whitespace`, `letter`,
+`digit`, `punctuation`, `symbol`), tak konkrétní znaky:
+
+`````
+#[CharGroupTokenizer(name: "catnum_chars", tokenize_on_chars: ["whitespace", "-", "/"])]
+`````
+
+`PathHierarchyTokenizer` vyrobí token pro každou úroveň cesty, což se hodí na kategoriové
+fasety (`elektro|mobily|kryty` → `elektro`, `elektro|mobily`, `elektro|mobily|kryty`):
+
+`````
+#[PathHierarchyTokenizer(name: "category_path", delimiter: "|")]
+`````
+
+### Normalizery
+
+Normalizer (`analysis.normalizer`) je obdoba analyzeru pro `keyword` pole — nemá tokenizer
+a výsledkem je vždy jediný token. Používá se na sjednocení hodnot pro řazení a fasety.
+Elasticsearch v něm připouští jen filtry, které nemění počet tokenů (`lowercase`,
+`asciifolding`, `elision`, char filtry, …).
+
+`````
+#[Normalizer(name: "sort_normalizer", filters: ["lowercase", "asciifolding"])]
+`````
+
+Na pole se zapojí jménem přes `KeywordType`:
+
+`````
+#[KeywordType(normalizer: "sort_normalizer")]
+protected string $sortName;
+`````
+
+`"Nové Boty"` pak v indexu leží jako jediný token `"nove boty"`. Ověřit to lze přes
+`_analyze` s parametrem `normalizer` (viz níže).
+
 ### Token filtry
 
 Token filtry (`analysis.filter`) pracují na už rozpadaných tokenech. Definují se atributem

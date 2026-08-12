@@ -17,6 +17,7 @@ use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Analysis;
 use Elasticsearch\Mapping\Settings\AnalyzerInterface;
+use Elasticsearch\Mapping\Settings\Normalizer;
 use Elasticsearch\Mapping\Settings\AbstractTokenizer;
 use Elasticsearch\Mapping\Types\AbstractType;
 use Elasticsearch\Mapping\Types\MappingInterface;
@@ -106,6 +107,16 @@ class AnnotationDriver implements DriverInterface
             foreach ($tokenizers as $tokenizer) {
                 $tokenizerInstance = $tokenizer->newInstance();
                 $analysis->addTokenizer($tokenizerInstance);
+            }
+        }
+
+        $normalizers = $reflection->getAttributes(Normalizer::class);
+        if (!empty($normalizers)) {
+            if (null === $analysis) {
+                $analysis = new Analysis();
+            }
+            foreach ($normalizers as $normalizer) {
+                $analysis->addNormalizer($normalizer->newInstance());
             }
         }
 

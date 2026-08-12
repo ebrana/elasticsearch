@@ -72,8 +72,25 @@ class MetadataRequestFactory
         $this->provideFilters($analysis, $settings);
         $this->provideCharacterFilters($analysis, $settings);
         $this->provideTokenizers($analysis, $settings);
+        $this->provideNormalizers($analysis, $settings);
 
         return $settings;
+    }
+
+    /**
+     * @param array<string, mixed> $settings
+     */
+    private function provideNormalizers(Analysis $analysis, array &$settings): void
+    {
+        $normalizers = $analysis->getNormalizers();
+        if ($normalizers->count() > 0) {
+            $settings['analysis']['normalizer'] = [];
+
+            /** @var \Elasticsearch\Mapping\Settings\Normalizer $normalizer */
+            foreach ($normalizers as $normalizer) {
+                $settings['analysis']['normalizer'][$normalizer->getName()] = $normalizer->toArray();
+            }
+        }
     }
 
     /**

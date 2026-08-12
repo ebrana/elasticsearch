@@ -202,6 +202,14 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('filter', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('tokenizer', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('ngram', $mapping['settings']['analysis']['tokenizer']);
+        $this->assertSame([
+            'type'      => 'path_hierarchy',
+            'delimiter' => '|',
+        ], $mapping['settings']['analysis']['tokenizer']['category_path']);
+        $this->assertSame([
+            'type'   => 'custom',
+            'filter' => ['lowercase', 'asciifolding'],
+        ], $mapping['settings']['analysis']['normalizer']['sort_normalizer']);
         $this->assertArrayHasKey('char_filter', $mapping['settings']['analysis']);
         $this->assertCount(2, $mapping['settings']['analysis']['char_filter']);
         $this->assertEquals(
@@ -354,6 +362,36 @@ class MappingTest extends TestCase
         $this->assertSame(['type' => 'length', 'min' => 2], $filters['min_length']);
         $this->assertSame(['type' => 'unique', 'only_on_same_position' => true], $filters['dedup']);
         $this->assertSame(['type' => 'trim'], $filters['trimmed']);
+
+        // tokenizery z JSONu
+        $tokenizers = $mapping['settings']['analysis']['tokenizer'];
+        $this->assertSame(['type' => 'keyword', 'buffer_size' => 512], $tokenizers['whole_value']);
+        $this->assertSame(['type' => 'whitespace', 'max_token_length' => 30], $tokenizers['spaces']);
+        $this->assertSame(['type' => 'letter'], $tokenizers['letters_only']);
+        $this->assertSame(['type' => 'lowercase'], $tokenizers['lowercased']);
+        $this->assertSame(['type' => 'uax_url_email'], $tokenizers['urls_and_emails']);
+        $this->assertSame(['type' => 'classic'], $tokenizers['classic_english']);
+        $this->assertSame([
+            'type'              => 'char_group',
+            'tokenize_on_chars' => ['whitespace', '-', '/'],
+        ], $tokenizers['catnum_chars']);
+        $this->assertSame([
+            'type'      => 'path_hierarchy',
+            'delimiter' => '|',
+            'reverse'   => true,
+            'skip'      => 1,
+        ], $tokenizers['category_path']);
+
+        // normalizery z JSONu; char_filter zapsany jako skalar musi vyjit jako pole
+        $normalizers = $mapping['settings']['analysis']['normalizer'];
+        $this->assertSame([
+            'type'   => 'custom',
+            'filter' => ['lowercase', 'asciifolding'],
+        ], $normalizers['sort_normalizer']);
+        $this->assertSame([
+            'type'        => 'custom',
+            'char_filter' => ['dots_replace_filter'],
+        ], $normalizers['single_char_filter']);
         // analyzer bez `type` zustava custom se svym tokenizerem
         $this->assertSame('custom', $analyzers['full_with_diacritic']['type']);
         $this->assertSame('keep_special_chars', $analyzers['full_with_diacritic']['tokenizer']);

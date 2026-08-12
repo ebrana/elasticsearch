@@ -7,6 +7,7 @@ namespace Elasticsearch\Mapping\Drivers;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\AnalyzerResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\CharacterFilterResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\FiltersResolver;
+use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\NormalizerResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\TokenizerResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\PropertiesResolver\PropertiesResolver;
 use Elasticsearch\Mapping\Index;
@@ -21,6 +22,7 @@ class JsonDriver implements DriverInterface
     private TokenizerResolver $tokenizerResolver;
     private AnalyzerResolver $analyzerResolver;
     private CharacterFilterResolver $characterFilterResolver;
+    private NormalizerResolver $normalizerResolver;
 
     public function __construct()
     {
@@ -29,6 +31,7 @@ class JsonDriver implements DriverInterface
         $this->tokenizerResolver = new TokenizerResolver();
         $this->analyzerResolver = new AnalyzerResolver();
         $this->characterFilterResolver = new CharacterFilterResolver();
+        $this->normalizerResolver = new NormalizerResolver();
     }
 
     /**
@@ -85,6 +88,10 @@ class JsonDriver implements DriverInterface
             // resolve character filter
             if (isset($mappings->analysis->char_filter)) {
                 $this->characterFilterResolver->resolveFilters($mappings->analysis->char_filter, $analysis);
+            }
+            // resolve normalizer
+            if (isset($mappings->analysis->normalizer)) {
+                $this->normalizerResolver->resolveNormalizer($mappings->analysis->normalizer, $analysis);
             }
 
             $index->setAnalysis($analysis);

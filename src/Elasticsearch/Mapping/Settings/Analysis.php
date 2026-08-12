@@ -14,7 +14,8 @@ final readonly class Analysis
         private ArrayCollection $analyzers = new ArrayCollection(),
         private ArrayCollection $filters = new ArrayCollection(),
         private ArrayCollection $tokenizers = new ArrayCollection(),
-        private ArrayCollection $characterFilters = new ArrayCollection()
+        private ArrayCollection $characterFilters = new ArrayCollection(),
+        private ArrayCollection $normalizers = new ArrayCollection()
     ) {
     }
 
@@ -38,6 +39,11 @@ final readonly class Analysis
         $this->tokenizers->set($tokenizer->getName(), $tokenizer);
     }
 
+    public function addNormalizer(Normalizer $normalizer): void
+    {
+        $this->normalizers->set($normalizer->getName(), $normalizer);
+    }
+
     public function getAnalyzers(): ArrayCollection
     {
         return $this->analyzers;
@@ -56,5 +62,10 @@ final readonly class Analysis
     public function getTokenizers(): ArrayCollection
     {
         return $this->tokenizers;
+    }
+
+    public function getNormalizers(): ArrayCollection
+    {
+        return $this->normalizers;
     }
 }

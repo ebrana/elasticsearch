@@ -78,6 +78,45 @@
                     "keep_special_chars": {
                         "type": "pattern",
                         "pattern": "[^\\p{L}\\d-/]+"
+                    },
+                    "whole_value": {
+                        "type": "keyword",
+                        "buffer_size": 512
+                    },
+                    "spaces": {
+                        "type": "whitespace",
+                        "max_token_length": 30
+                    },
+                    "letters_only": {
+                        "type": "letter"
+                    },
+                    "lowercased": {
+                        "type": "lowercase"
+                    },
+                    "urls_and_emails": {
+                        "type": "uax_url_email"
+                    },
+                    "catnum_chars": {
+                        "type": "char_group",
+                        "tokenize_on_chars": ["whitespace", "-", "/"]
+                    },
+                    "category_path": {
+                        "type": "path_hierarchy",
+                        "delimiter": "|",
+                        "skip": 1,
+                        "reverse": true
+                    },
+                    "classic_english": {
+                        "type": "classic"
+                    }
+                },
+                "normalizer": {
+                    "sort_normalizer": {
+                        "type": "custom",
+                        "filter": ["lowercase", "asciifolding"]
+                    },
+                    "single_char_filter": {
+                        "char_filter": "dots_replace_filter"
                     }
                 },
                 "analyzer": {

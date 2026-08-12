@@ -13,8 +13,10 @@ use Elasticsearch\Mapping\Settings\Analyzers\StandardAnalyzer;
 use Elasticsearch\Mapping\Settings\CharacterFilters\HtmlStripCharacterFilter;
 use Elasticsearch\Mapping\Settings\CharacterFilters\PatternReplaceCharacterFilter;
 use Elasticsearch\Mapping\Settings\Filters\NgramFilter;
+use Elasticsearch\Mapping\Settings\Normalizer;
 use Elasticsearch\Mapping\Settings\Tokenizers\Enums\TokenChars;
 use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
+use Elasticsearch\Mapping\Settings\Tokenizers\PathHierarchyTokenizer;
 use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
 use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
@@ -42,6 +44,8 @@ use Elasticsearch\Tests\PostEventSample;
 #[HtmlStripCharacterFilter(name: "html_strip_filter")]
 #[LanguageAnalyzer(name: "czech_fulltext", language: AnalyzerLanguage::CZECH, stopwords: "_czech_", stem_exclusion: ["akce"])]
 #[StandardAnalyzer(name: "standard_limited", max_token_length: 20)]
+#[PathHierarchyTokenizer(name: "category_path", delimiter: "|")]
+#[Normalizer(name: "sort_normalizer", filters: ["lowercase", "asciifolding"])]
 abstract class AbstractGenerateProduct
 {
     #[TextType]
