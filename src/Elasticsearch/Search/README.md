@@ -170,7 +170,8 @@ Tyhle query žijí v podsložkách podle kategorií, které používá dokumenta
 
 | Namespace | Query |
 |---|---|
-| `Search\Queries\Compound` | `BoostingQuery`, `ConstantScoreQuery` |
+| `Search\Queries\Compound` | `BoostingQuery`, `ConstantScoreQuery`, `FunctionScoreQuery` |
+| `Search\Queries\Compound\FunctionScore` | funkce pro `FunctionScoreQuery` |
 | `Search\Queries\Specialized` | `DistanceFeatureQuery`, `MoreLikeThisQuery`, `PinnedQuery`, `RankFeatureQuery`, `ScriptScoreQuery` |
 | `Search\Queries\Specialized\RankFeature` | funkce pro `RankFeatureQuery` |
 
@@ -242,6 +243,51 @@ Funkce jsou v `Search\Queries\Functions`:
 ```php
 new \Elasticsearch\Search\Queries\RankFeatureQuery('popularity', new SaturationFunction(50.0));
 ```
+
+#### `FunctionScoreQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html)
+
+Přepočítá skóre jednou nebo více funkcemi. `score_mode` říká, jak se složí funkce mezi sebou,
+`boost_mode` jak se výsledek spojí se skóre z původní query.
+
+Funkce jsou v `Search\Queries\Compound\FunctionScore`; každá může mít vlastní `filter`
+(uplatní se jen na jeho shody) a `weight`:
+
+| Funkce | Chování |
+|---|---|
+| `WeightFunction(weight, ?filter)` | samotná váha — typicky „co odpovídá filtru, násob skóre X" |
+| `FieldValueFactorFunction(field, ?factor, ?modifier, ?missing)` | skóre z hodnoty číselného pole |
+| `RandomScoreFunction(?seed, ?field)` | náhodné skóre; se `seed` stabilní mezi dotazy |
+| `ScriptScoreFunction(script)` | skóre ze skriptu |
+| `GaussDecayFunction(field, origin, scale, ?offset, ?decay, ?multi_value_mode)` | zvonová křivka |
+| `ExpDecayFunction(…)` | exponenciální pokles |
+| `LinearDecayFunction(…)` | lineární pokles, dojde na nulu |
+
+```php
+$query = new FunctionScoreQuery(
+    new MatchQuery('name', 'boty'),
+    [
+        new WeightFunction(3.0, new TermQuery('inStock', true)),
+        new FieldValueFactorFunction('popularity', factor: 1.2, modifier: FieldValueFactorModifier::SQRT, missing: 1.0),
+        new GaussDecayFunction('createdAt', 'now', '10d', decay: 0.5),
+    ],
+    score_mode: ScoreMode::SUM,
+    boost_mode: BoostMode::MULTIPLY,
+    max_boost: 10.0
+);
+$query->addFunction(new RandomScoreFunction(seed: 10, field: '_seq_no'));
+```
+
+Na co narazit:
+
+- U `FieldValueFactorFunction` se vyplatí zadat `missing` — bez ní skončí dokumenty
+  bez toho pole chybou.
+- `LinearDecayFunction` na rozdíl od gauss a exp dojde na nulu, takže vzdálenější
+  dokumenty dostanou skóre 0 a s `min_score` úplně vypadnou.
+- `multi_value_mode` je v JSONu sourozenec pole, ne jeho součást — knihovna to řeší za tebe.
+- `LinearDecayFunction` (decay) je něco jiného než `RankFeature\LinearFunction`
+  (pro `rank_feature`), i když se obě v JSONu jmenují `linear`.
 
 #### `PinnedQuery`
 

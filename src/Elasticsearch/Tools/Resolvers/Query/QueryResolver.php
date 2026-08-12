@@ -30,6 +30,7 @@ class QueryResolver
         'bool' => BoolQueryResolver::class,
         'nested' => NestedQueryResolver::class,
         'constant_score' => ConstantScoreQueryResolver::class,
+        'function_score' => FunctionScoreQueryResolver::class,
         'boosting' => BoostingQueryResolver::class,
         'script_score' => ScriptScoreQueryResolver::class,
         'pinned' => PinnedQueryResolver::class,

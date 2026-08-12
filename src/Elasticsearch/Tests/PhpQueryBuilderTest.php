@@ -278,4 +278,55 @@ class PhpQueryBuilderTest extends TestCase
         $this->assertStringContainsString("new ScriptScoreQuery(query: \$scriptScoreInner, script: [", $result);
         $this->assertStringContainsString("min_score: 1);", $result);
     }
+
+    public function testFunctionScoreQueryResolver(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "function_score": {
+              "query": { "match_all": {} },
+              "functions": [
+                { "filter": { "term": { "inStock": true } }, "weight": 3 },
+                { "field_value_factor": { "field": "popularity", "factor": 1.2, "modifier": "sqrt", "missing": 1 } },
+                { "random_score": { "seed": 10, "field": "_seq_no" } },
+                { "gauss": { "createdAt": { "origin": "now", "scale": "10d", "decay": 0.5 } } },
+                { "linear": { "price": { "origin": 100, "scale": 50 }, "multi_value_mode": "avg" } }
+              ],
+              "score_mode": "sum",
+              "boost_mode": "multiply",
+              "max_boost": 10
+            }
+          }
+        }');
+
+        $this->assertStringContainsString("\$functionScoreInner = new MatchAllQuery();", $result);
+        $this->assertStringContainsString("\$scoreFunction0Filter = new TermQuery(field: 'inStock', value: true);", $result);
+        $this->assertStringContainsString("\$scoreFunction0 = new WeightFunction(weight: 3, filter: \$scoreFunction0Filter);", $result);
+        $this->assertStringContainsString("\$scoreFunction1 = new FieldValueFactorFunction(field: 'popularity', factor: 1.2, modifier: FieldValueFactorModifier::SQRT, missing: 1);", $result);
+        $this->assertStringContainsString("\$scoreFunction2 = new RandomScoreFunction(seed: 10, field: '_seq_no');", $result);
+        $this->assertStringContainsString("\$scoreFunction3 = new GaussDecayFunction(field: 'createdAt', origin: 'now', scale: '10d', decay: 0.5);", $result);
+        $this->assertStringContainsString("\$scoreFunction4 = new LinearDecayFunction(field: 'price', origin: 100, scale: 50, multi_value_mode: MultiValueMode::AVG);", $result);
+        $this->assertStringContainsString("functions: [\$scoreFunction0, \$scoreFunction1, \$scoreFunction2, \$scoreFunction3, \$scoreFunction4]", $result);
+        $this->assertStringContainsString("score_mode: ScoreMode::SUM", $result);
+        $this->assertStringContainsString("boost_mode: BoostMode::MULTIPLY", $result);
+        $this->assertStringContainsString("max_boost: 10", $result);
+    }
+
+    public function testFunctionScoreShorthandSingleFunction(): void
+    {
+        // ES pripousti jednu funkci zapsanou primo, bez obalu functions
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "function_score": {
+              "query": { "match_all": {} },
+              "random_score": {}
+            }
+          }
+        }');
+
+        $this->assertStringContainsString("\$scoreFunction0 = new RandomScoreFunction();", $result);
+        $this->assertStringContainsString("functions: [\$scoreFunction0]", $result);
+    }
 }
