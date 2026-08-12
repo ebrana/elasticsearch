@@ -224,4 +224,58 @@ class PhpQueryBuilderTest extends TestCase
 
         $this->assertSame("\$matchPhraseQuery = new MatchPhraseQuery(field: 'name', query: 'cerne boty');", $result);
     }
+
+    public function testScoringQueryResolvers(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "bool": {
+              "should": [
+                { "constant_score": { "filter": { "term": { "inStock": true } }, "boost": 1.5 } },
+                {
+                  "boosting": {
+                    "positive": { "match_all": {} },
+                    "negative": { "term": { "sellingDenied": true } },
+                    "negative_boost": 0.2
+                  }
+                },
+                { "distance_feature": { "field": "createdAt", "origin": "now", "pivot": "7d" } },
+                { "rank_feature": { "field": "popularity", "saturation": { "pivot": 80 } } },
+                { "rank_feature": { "field": "sales", "log": { "scaling_factor": 4 } } },
+                { "pinned": { "organic": { "match_all": {} }, "ids": ["1", "2"] } },
+                { "more_like_this": { "fields": ["name"], "like": "boty", "min_term_freq": 1 } }
+              ]
+            }
+          }
+        }');
+
+        $this->assertStringContainsString("new ConstantScoreQuery(filter: \$constantScoreFilter, boost: 1.5);", $result);
+        $this->assertStringContainsString("new BoostingQuery(positive: \$boostingPositive, negative: \$boostingNegative, negative_boost: 0.2);", $result);
+        $this->assertStringContainsString("new DistanceFeatureQuery(field: 'createdAt', origin: 'now', pivot: '7d');", $result);
+        $this->assertStringContainsString("new RankFeatureQuery(field: 'popularity', function: new SaturationFunction(80));", $result);
+        $this->assertStringContainsString("new RankFeatureQuery(field: 'sales', function: new LogarithmFunction(4));", $result);
+        $this->assertStringContainsString("new PinnedQuery(organic: \$pinnedOrganic, ids: ['1', '2']);", $result);
+        $this->assertStringContainsString("new MoreLikeThisQuery(fields: ['name'], like: 'boty', min_term_freq: 1);", $result);
+        // obalene query se musi vyresolvovat pred pouzitim
+        $this->assertStringContainsString("\$constantScoreFilter = new TermQuery(field: 'inStock', value: true);", $result);
+    }
+
+    public function testScriptScoreQueryResolver(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "script_score": {
+              "query": { "match_all": {} },
+              "script": { "source": "doc[\'popularity\'].value" },
+              "min_score": 1
+            }
+          }
+        }');
+
+        $this->assertStringContainsString("\$scriptScoreInner = new MatchAllQuery();", $result);
+        $this->assertStringContainsString("new ScriptScoreQuery(query: \$scriptScoreInner, script: [", $result);
+        $this->assertStringContainsString("min_score: 1);", $result);
+    }
 }

@@ -29,6 +29,13 @@ class QueryResolver
         'dis_max' => DisMaxQueryResolver::class,
         'bool' => BoolQueryResolver::class,
         'nested' => NestedQueryResolver::class,
+        'constant_score' => ConstantScoreQueryResolver::class,
+        'boosting' => BoostingQueryResolver::class,
+        'script_score' => ScriptScoreQueryResolver::class,
+        'pinned' => PinnedQueryResolver::class,
+        'distance_feature' => DistanceFeatureQueryResolver::class,
+        'rank_feature' => RankFeatureQueryResolver::class,
+        'more_like_this' => MoreLikeThisQueryResolver::class,
     ];
 
     /**

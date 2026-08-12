@@ -164,6 +164,111 @@ new \Elasticsearch\Search\Queries\TermsSetQuery('tags', ['akce', 'novinka'], min
 new \Elasticsearch\Search\Queries\IdsQuery(['1', '2']);
 ```
 
+### Ovlivnění relevance
+
+Tyhle query žijí v podsložkách podle kategorií, které používá dokumentace Elasticsearche:
+
+| Namespace | Query |
+|---|---|
+| `Search\Queries\Compound` | `BoostingQuery`, `ConstantScoreQuery` |
+| `Search\Queries\Specialized` | `DistanceFeatureQuery`, `MoreLikeThisQuery`, `PinnedQuery`, `RankFeatureQuery`, `ScriptScoreQuery` |
+| `Search\Queries\Specialized\RankFeature` | funkce pro `RankFeatureQuery` |
+
+Ostatní query zatím zůstávají přímo v `Search\Queries` — přesunou se až v samostatném kroku,
+protože u nich by to byl BC break.
+
+#### `ConstantScoreQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html)
+
+Obalí filtr a všem shodám dá stejné skóre — ES nemusí počítat relevanci a může výsledek cachovat.
+
+```php
+new \Elasticsearch\Search\Queries\ConstantScoreQuery(new TermQuery('inStock', true));
+```
+
+#### `BoostingQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-boosting-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-boosting-query.html)
+
+Dokumenty odpovídající `negative` nevyřadí, jen jim sníží skóre — pro věci, které nechceme
+skrýt, jen odsunout dozadu (nedostupné produkty apod.).
+
+```php
+new \Elasticsearch\Search\Queries\BoostingQuery(
+    positive: new MatchQuery('name', 'boty'),
+    negative: new TermQuery('sellingDenied', true),
+    negative_boost: 0.1
+);
+```
+
+#### `ScriptScoreQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-score-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-score-query.html)
+
+```php
+new \Elasticsearch\Search\Queries\ScriptScoreQuery(
+    new MatchAllQuery(),
+    ['source' => "doc['popularity'].value * params.factor", 'params' => ['factor' => 2]]
+);
+```
+
+#### `DistanceFeatureQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-distance-feature-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-distance-feature-query.html)
+
+Zvyšuje skóre podle blízkosti k bodu — novinky dřív, bližší prodejna dřív. Pole musí být
+`date`, `date_nanos` nebo `geo_point`.
+
+```php
+new \Elasticsearch\Search\Queries\DistanceFeatureQuery('createdAt', 'now', '7d');
+new \Elasticsearch\Search\Queries\DistanceFeatureQuery('location', [14.42, 50.08], '10km');
+```
+
+#### `RankFeatureQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-rank-feature-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-rank-feature-query.html)
+
+Zvyšuje skóre podle hodnoty v poli typu `rank_feature` (popularita, počet prodejů).
+Funkce jsou v `Search\Queries\Functions`:
+
+| Funkce | Chování |
+|---|---|
+| `SaturationFunction(?pivot)` | skóre roste a nasytí se; u `pivot` je 0.5. Bez pivotu si ho ES spočítá z dat |
+| `LogarithmFunction(scaling_factor)` | `log(scaling_factor + hodnota)` |
+| `SigmoidFunction(pivot, exponent)` | jako saturation, `exponent` řídí strmost |
+| `LinearFunction()` | skóre přímo proporční hodnotě |
+
+```php
+new \Elasticsearch\Search\Queries\RankFeatureQuery('popularity', new SaturationFunction(50.0));
+```
+
+#### `PinnedQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-pinned-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-pinned-query.html)
+
+Vybrané dokumenty vytáhne na začátek, zbytek dohledá `organic`. Zadává se buď `ids`,
+nebo `docs` (když je potřeba i index) — ne obojí.
+
+```php
+new \Elasticsearch\Search\Queries\PinnedQuery(new MatchQuery('name', 'boty'), ids: ['1', '2']);
+```
+
+#### `MoreLikeThisQuery`
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html)
+
+„Podobné produkty" — v `like` může být text i odkaz na dokument.
+
+```php
+new \Elasticsearch\Search\Queries\MoreLikeThisQuery(
+    ['name', 'description'],
+    [['_index' => 'product', '_id' => '1']],
+    min_term_freq: 1,
+    min_doc_freq: 1
+);
+```
+
 #### `BoolQuery`
 
 [https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html)
