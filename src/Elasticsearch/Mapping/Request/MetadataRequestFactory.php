@@ -152,7 +152,7 @@ class MetadataRequestFactory
         if ($filters->count() > 0) {
             $settings['analysis']['char_filter'] = [];
 
-            /** @var \Elasticsearch\Mapping\Settings\AbstractCharactedFilter $filter */
+            /** @var \Elasticsearch\Mapping\Settings\AbstractCharacterFilter $filter */
             foreach ($filters as $filter) {
                 $settings['analysis']['char_filter'][$filter->getName()] = $filter->toArray();
             }

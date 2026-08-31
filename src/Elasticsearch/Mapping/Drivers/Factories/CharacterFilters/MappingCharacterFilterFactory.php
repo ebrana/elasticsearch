@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Elasticsearch\Mapping\Drivers\Factories\CharactedFilters;
+namespace Elasticsearch\Mapping\Drivers\Factories\CharacterFilters;
 
 use Elasticsearch\Mapping\Exceptions\AttributeMissingException;
-use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
+use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 use Elasticsearch\Mapping\Settings\CharacterFilters\MappingCharacterFilter;
 use stdClass;
 
@@ -15,7 +15,7 @@ class MappingCharacterFilterFactory implements CharacterFilterFactoryInterface
      * @param stdClass&object{mappings?: array<string, string>|null, mappings_path?: string|null} $configuration
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */
-    public static function create(string $name, stdClass $configuration): AbstractCharactedFilter
+    public static function create(string $name, stdClass $configuration): AbstractCharacterFilter
     {
         if (!isset($configuration->mappings) && !isset($configuration->mappings_path)) {
             throw new AttributeMissingException('Mapping Character Filter must define mappings or mappings_path.');

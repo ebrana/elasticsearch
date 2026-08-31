@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Elasticsearch\Mapping\Settings\CharacterFilters;
 
 use Attribute;
-use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
+use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 use Elasticsearch\Mapping\Settings\CharacterFilters\Enums\Flags;
 
 #[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
-class PatternReplaceCharacterFilter extends AbstractCharactedFilter
+class PatternReplaceCharacterFilter extends AbstractCharacterFilter
 {
     /** @var Flags[] */
     private ?array $flags = null;

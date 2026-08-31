@@ -6,10 +6,10 @@ namespace Elasticsearch\Mapping\Settings\CharacterFilters;
 
 use Attribute;
 use Elasticsearch\Mapping\Exceptions\AttributeMissingException;
-use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
+use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 
 #[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
-class MappingCharacterFilter extends AbstractCharactedFilter
+class MappingCharacterFilter extends AbstractCharacterFilter
 {
     /**
      * @param array<string, string>|null  $mappings

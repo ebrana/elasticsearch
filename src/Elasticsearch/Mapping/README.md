@@ -236,7 +236,7 @@ filtry se aplikují zleva doprava.
 
 Do mappingu jde jen to, co se liší od defaultu Elasticsearche.
 
-Na co narazit u synonym: `expand: true` (default) doplní ke vstupu všechny varianty
+U synonym si dej pozor: `expand: true` (default) doplní ke vstupu všechny varianty
 (`laptop` → `laptop`, `notebook`), `expand: false` je naopak sjednotí na první term
 (`laptop` → `notebook`). `KeywordMarkerFilter` musí být v pořadí filtrů **před** stemmerem,
 jinak nemá co chránit. U `ShingleFilter` je potřeba myslet na `index.max_shingle_diff`

@@ -7,10 +7,15 @@ namespace Elasticsearch\Tools\Resolvers;
 use Elasticsearch\Tools\Resolvers\Aggregation\AbstractAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\AggregationResolveInterface;
 use Elasticsearch\Tools\Resolvers\Aggregation\AvgAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\BucketScriptAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\BucketSelectorAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\BucketSortAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\CardinalityAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\CompositeAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\CumulativeSumAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\DateHistogramAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\DateRangeAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\DerivativeAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\ExtendedStatsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\FilterAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\FiltersAggregationResolver;
@@ -70,6 +75,11 @@ class AggregationResolver
         'rare_terms' => RareTermsAggregationResolver::class,
         'significant_terms' => SignificantTermsAggregationResolver::class,
         'sampler' => SamplerAggregationResolver::class,
+        'bucket_selector' => BucketSelectorAggregationResolver::class,
+        'bucket_script' => BucketScriptAggregationResolver::class,
+        'bucket_sort' => BucketSortAggregationResolver::class,
+        'derivative' => DerivativeAggregationResolver::class,
+        'cumulative_sum' => CumulativeSumAggregationResolver::class,
     ];
 
     private int $counter = 0;

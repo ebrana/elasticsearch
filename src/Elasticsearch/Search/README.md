@@ -279,7 +279,7 @@ $query = new FunctionScoreQuery(
 $query->addFunction(new RandomScoreFunction(seed: 10, field: '_seq_no'));
 ```
 
-Na co narazit:
+Na co si dát pozor:
 
 - U `FieldValueFactorFunction` se vyplatí zadat `missing` — bez ní skončí dokumenty
   bez toho pole chybou.
@@ -545,7 +545,7 @@ do {
 Zdroje jsou `TermsSource`, `HistogramSource` a `DateHistogramSource`; každý umí `order()`
 a `missingBucket()` (bez něj dokumenty bez hodnoty z výsledku vypadnou).
 
-### Na co narazit
+### Na co si dát pozor
 
 - `SignificantTermsAggregation` porovnává četnost ve výsledku dotazu proti celému indexu —
   s `MatchAllQuery` je popředí i pozadí totéž a nevrátí nic. Má smysl jen nad zužujícím
@@ -554,6 +554,50 @@ a `missingBucket()` (bez něj dokumenty bez hodnoty z výsledku vypadnou).
   bucket za každou podmínku, druhá filtruje jednou.
 - `MultiTermsAggregation` je dražší než vnořené `terms`, ale nepřijde o kombinace, které by
   se ořezem `size` na vyšší úrovni ztratily.
+
+## Pipeline agregace
+
+Počítají nad výsledky jiných agregací. Cesta k metrice se zadává přes `buckets_path`.
+
+| Třída | ES agregace | K čemu |
+|---|---|---|
+| `BucketSelectorAggregation(name, bucketsPath, script)` | `bucket_selector` | vyhodí buckety, pro které skript vrátí false (obdoba `HAVING`) |
+| `BucketScriptAggregation(name, bucketsPath, script)` | `bucket_script` | spočítá novou hodnotu z metrik v bucketu |
+| `BucketSortAggregation(name)` | `bucket_sort` | seřadí nebo stránkuje hotové buckety |
+| `DerivativeAggregation(name, bucketsPath)` | `derivative` | rozdíl oproti předchozímu bucketu |
+| `CumulativeSumAggregation(name, bucketsPath)` | `cumulative_sum` | postupný součet |
+
+```php
+use Elasticsearch\Search\Aggregations\Enums\GapPolicy;
+
+$znacky = new TermsAggregation('znacky', 'brand');
+$znacky->aggregation(new SumAggregation('trzby', 'amount'));
+// jen značky s tržbami nad 300
+$znacky->aggregation(new BucketSelectorAggregation('filtr', ['celkem' => 'trzby'], 'params.celkem > 300'));
+// a seřadit sestupně, vzít 2
+$znacky->aggregation((new BucketSortAggregation('serad'))->sort(['trzby' => ['order' => 'desc']])->size(2));
+
+$builder->addAggregation($znacky);
+```
+
+Nad `histogram` / `date_histogram` dávají smysl `derivative` a `cumulative_sum`:
+
+```php
+$mesice = new DateHistogramAggregation('mesice', 'date');
+$mesice->calendarInterval('month');
+$mesice->aggregation(new SumAggregation('trzby', 'amount'));
+$mesice->aggregation((new DerivativeAggregation('zmena', 'trzby'))->gapPolicy(GapPolicy::INSERT_ZEROS));
+$mesice->aggregation(new CumulativeSumAggregation('narustajici', 'trzby'));
+```
+
+### Na co si dát pozor
+
+- `bucket_selector` a `bucket_sort` běží až nad hotovými buckety — `size` u rodičovské
+  agregace se aplikuje **před** nimi. Pokud má `terms` `size: 10`, seřadí se jen těch 10.
+- `derivative` a `cumulative_sum` jdou použít jen uvnitř histogramu nebo date_histogramu.
+- U prvního bucketu `derivative` hodnotu nemá — chybí, s čím porovnávat.
+- `GapPolicy` řeší chybějící hodnoty: `SKIP` bucket přeskočí, `INSERT_ZEROS` dosadí nulu,
+  `KEEP_VALUES` nechá null.
 
 ## Přidání sorts
 
@@ -652,7 +696,7 @@ foreach ($result->getHits()->getHighlights() as $id => $fields) {
 Iterace `getHits()` zůstává na surových hitech, takže `$hit['highlight']` funguje dál —
 `getHighlights()` je jen zkratka.
 
-Na co narazit:
+Na co si dát pozor:
 
 - `no_match_size` je jediný způsob, jak dostat obsah pole, ve kterém shoda není; bez něj
   se takové pole ve výsledku vůbec neobjeví.
@@ -695,7 +739,7 @@ foreach ($result->getSuggest('opravy') as $entry) {
 `SuggestOption` nese `text` a `score`; `freq` vrací jen term suggester, `_id`/`_index`/`_source`
 jen completion suggester.
 
-Na co narazit:
+Na co si dát pozor:
 
 - `CompletionSuggest` se zadává `prefix` nebo `regex`, ne `text` — a právě jedním z nich;
   jinak vyhodí výjimku ještě před odesláním.
@@ -777,7 +821,7 @@ do {
 $connection->closePointInTime($pit);
 ```
 
-Na co narazit:
+Na co si dát pozor:
 
 - S PIT se **index neposílá v requestu** — je součástí PIT. `Builder::build()` ho proto
   vynechá; s indexem by ES request odmítl.

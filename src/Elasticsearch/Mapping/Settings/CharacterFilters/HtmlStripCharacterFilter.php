@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Elasticsearch\Mapping\Settings\CharacterFilters;
 
 use Attribute;
-use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
+use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 
 #[Attribute(Attribute::TARGET_CLASS|Attribute::IS_REPEATABLE)]
-class HtmlStripCharacterFilter extends AbstractCharactedFilter
+class HtmlStripCharacterFilter extends AbstractCharacterFilter
 {
     /**
      * @param string[]|null $escaped_tags

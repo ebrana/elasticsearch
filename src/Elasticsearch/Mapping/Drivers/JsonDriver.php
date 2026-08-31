@@ -118,7 +118,7 @@ class JsonDriver implements DriverInterface
             }
             // resolve tokenizer
             if (isset($mappings->analysis->tokenizer)) {
-                $this->tokenizerResolver->resolvetTokenizer($mappings->analysis->tokenizer, $analysis);
+                $this->tokenizerResolver->resolveTokenizer($mappings->analysis->tokenizer, $analysis);
             }
             // resolve character filter
             if (isset($mappings->analysis->char_filter)) {

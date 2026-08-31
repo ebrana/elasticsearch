@@ -29,7 +29,7 @@ final readonly class Analysis
         $this->filters->set($filter->getName(), $filter);
     }
 
-    public function addCharacterFilter(AbstractCharactedFilter $filter): void
+    public function addCharacterFilter(AbstractCharacterFilter $filter): void
     {
         $this->characterFilters->set($filter->getName(), $filter);
     }

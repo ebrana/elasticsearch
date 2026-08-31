@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Elasticsearch\Mapping\Drivers\Factories\CharactedFilters;
+namespace Elasticsearch\Mapping\Drivers\Factories\CharacterFilters;
 
 use Elasticsearch\Mapping\Exceptions\AttributeMissingException;
-use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
+use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 use Elasticsearch\Mapping\Settings\CharacterFilters\Enums\Flags;
 use Elasticsearch\Mapping\Settings\CharacterFilters\PatternReplaceCharacterFilter;
 use stdClass;
@@ -16,7 +16,7 @@ class PatternReplaceCharacterFilterFactory implements CharacterFilterFactoryInte
      * @param stdClass&object{pattern?: string, replacement?: string, flags?: string} $configuration
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */
-    public static function create(string $name, stdClass $configuration): AbstractCharactedFilter
+    public static function create(string $name, stdClass $configuration): AbstractCharacterFilter
     {
         if (!isset($configuration->pattern)) {
             throw new AttributeMissingException('Pattern Replace characted filter must define pattern.');

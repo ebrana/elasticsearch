@@ -37,7 +37,15 @@ final class TokenizerResolver
         'classic'        => ClassicTokenizerFactory::class,
     ];
 
+    /**
+     * @deprecated Preklep v nazvu, pouzij resolveTokenizer().
+     */
     public function resolvetTokenizer(stdClass $tokenizers, Analysis $analysis): void
+    {
+        $this->resolveTokenizer($tokenizers, $analysis);
+    }
+
+    public function resolveTokenizer(stdClass $tokenizers, Analysis $analysis): void
     {
         foreach ((array)$tokenizers as $name => $tokenizer) {
             if (isset($this->tokenizerFactories[$tokenizer->type])) {

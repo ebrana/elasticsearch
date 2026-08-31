@@ -13,7 +13,7 @@ use Elasticsearch\Mapping\Exceptions\MissingKeyResolverException;
 use Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException;
 use Elasticsearch\Mapping\Exceptions\MissingPostEventException;
 use Elasticsearch\Mapping\Index;
-use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
+use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Analysis;
 use Elasticsearch\Mapping\Settings\AnalyzerInterface;
@@ -121,7 +121,7 @@ class AnnotationDriver implements DriverInterface
         }
 
         $characterFilters = $reflection->getAttributes(
-            AbstractCharactedFilter::class,
+            AbstractCharacterFilter::class,
             ReflectionAttribute::IS_INSTANCEOF
         );
         if (!empty($characterFilters)) {
