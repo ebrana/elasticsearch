@@ -149,6 +149,12 @@ verzování ze [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `percentile_ranks`, `cardinality`, `terms`).
 - **`GlobalAggregation` bez podagregací posílala `"aggs": []`**, což Elasticsearch odmítá
   (`Expected [START_OBJECT] under [aggs]`) — samostatně tedy nešla použít vůbec.
+- **`ScaledFloatType` neposílal povinný `scaling_factor`**, takže `indices.create`
+  s takovou property skončil na `Field [scaling_factor] is required`. Typ tedy nešlo
+  použít vůbec.
+- **`AliasType` měl v konstruktoru překlep `contect` místo `context`** — pojmenovaný
+  argument `context:` padal na `Unknown named parameter`. Parametr je přejmenovaný;
+  volání pozicí funguje beze změny, `contect:` už ne.
 - `make phpstan` padal na `Allowed memory size exhausted` — target má `--memory-limit=512M`.
 
 ### Odebráno

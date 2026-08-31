@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Mapping\Types\Common\Numeric;
 
 use Attribute;
+use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Types\Helpers\Metadata;
 
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
@@ -35,5 +36,14 @@ final class ScaledFloatType extends AbstractNumericType
     public function setScalingFactor(float $scaling_factor): void
     {
         $this->scaling_factor = $scaling_factor;
+    }
+
+    public function getCollection(): ArrayCollection
+    {
+        $collection = parent::getCollection();
+        // scaling_factor je u scaled_float povinny - bez nej ES odmitne vytvorit index
+        $collection->set('scaling_factor', $this->getScalingFactor());
+
+        return $collection;
     }
 }

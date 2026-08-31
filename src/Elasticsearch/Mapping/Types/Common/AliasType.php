@@ -14,11 +14,11 @@ final class AliasType extends AbstractType
     public function __construct(
         private readonly string $path,
         ?string $name = null,
-        ?string $contect = null,
+        ?string $context = null,
     ) {
         parent::__construct();
 
-        $this->context = $contect;
+        $this->context = $context;
         $this->type = 'alias';
         if (null !== $name && $name !== '') {
             $this->setName($name);
