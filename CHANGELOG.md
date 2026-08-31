@@ -82,6 +82,16 @@ verzování ze [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `BucketSortAggregation`, `DerivativeAggregation`, `CumulativeSumAggregation`
   a enum `GapPolicy`, opět včetně resolverů.
 
+#### Mapping — typy properties
+
+- JSON driver rozezná 19 typů místo pěti: přibyly `match_only_text`, `constant_keyword`,
+  `wildcard`, `long`, `short`, `byte`, `unsigned_long`, `double`, `half_float`,
+  `scaled_float`, `date`, `date_nanos`, `binary` a `alias`. Dosud se property s těmito
+  typy z mappingu tiše ztrácely.
+- `DateType` a `DateNanoType` nově umí `format`, `locale`, `null_value`, `index`,
+  `doc_values`, `store` a `ignore_malformed` (sdílené v `DateOptionsTrait`).
+  `DateType` z nich dosud neznal ani jeden, `DateNanoType` neměl vůbec žádný parametr.
+
 #### Mapping — nastavení indexu
 
 - Atribut `Index` nese `number_of_shards`, `number_of_replicas`, `refresh_interval`,
@@ -152,6 +162,9 @@ verzování ze [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`ScaledFloatType` neposílal povinný `scaling_factor`**, takže `indices.create`
   s takovou property skončil na `Field [scaling_factor] is required`. Typ tedy nešlo
   použít vůbec.
+- **`null_value` se zahazovalo, když byla jeho hodnota falsy** (`'0'`, `0`, `false`) —
+  stejný falsy check jako u agregací. Opraveno v `AbstractNumericType`, `KeywordType`,
+  `BooleanType`, `WildcardType` a u `ConstantKeywordType` i pro `value`.
 - **`AliasType` měl v konstruktoru překlep `contect` místo `context`** — pojmenovaný
   argument `context:` padal na `Unknown named parameter`. Parametr je přejmenovaný;
   volání pozicí funguje beze změny, `contect:` už ne.

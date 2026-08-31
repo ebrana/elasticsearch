@@ -62,6 +62,32 @@ abstract class AbstractGenerateProduct
     protected ArrayCollection $sellingPriceWithVat;
 `````
 
+### Typy properties v JSON driveru
+
+JSON driver rozezná tyhle typy; u ostatních property tiše přeskočí:
+
+| ES typ | Třída |
+|---|---|
+| `text`, `match_only_text` | `TextType`, `MatchOnlyTextType` |
+| `keyword`, `constant_keyword`, `wildcard` | `KeywordType`, `ConstantKeywordType`, `WildcardType` |
+| `integer`, `long`, `short`, `byte`, `unsigned_long` | `IntegerType`, `LongType`, … |
+| `float`, `double`, `half_float`, `scaled_float` | `FloatType`, `DoubleType`, … |
+| `boolean` | `BooleanType` |
+| `date`, `date_nanos` | `DateType`, `DateNanoType` |
+| `binary`, `alias` | `BinaryType`, `AliasType` |
+| `object`, `nested` | podle přítomnosti `properties` |
+
+`scaled_float` vyžaduje `scaling_factor` a `alias` vyžaduje `path` — bez nich factory vyhodí
+`AttributeMissingException` ještě před odesláním, protože by je odmítl i Elasticsearch.
+
+`DateType` i `DateNanoType` umí `format`, `locale`, `null_value`, `index`, `doc_values`,
+`store` a `ignore_malformed`:
+
+```php
+#[DateType(name: 'createdAt', format: 'yyyy-MM-dd', ignore_malformed: true)]
+protected string $createdAt;
+```
+
 ### Nastavení indexu
 
 Atribut `Index` kromě jména a `postEventClass` nese i nastavení indexu:
