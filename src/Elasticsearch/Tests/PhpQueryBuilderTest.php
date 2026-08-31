@@ -363,4 +363,50 @@ class PhpQueryBuilderTest extends TestCase
         $this->assertStringContainsString("->shardSize(100);", $result);
         $this->assertStringContainsString("->exclude('Gama.*');", $result);
     }
+
+    public function testBucketAggregationResolvers(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": { "match_all": {} },
+          "aggs": {
+            "pasma":   { "histogram": { "field": "price", "interval": 100, "min_doc_count": 0 } },
+            "mesice":  { "date_histogram": { "field": "createdAt", "calendar_interval": "month", "format": "yyyy-MM" } },
+            "rozsahy": { "range": { "field": "price", "ranges": [ { "to": 100, "key": "levne" }, { "from": 100, "to": 500 } ] } },
+            "obdobi":  { "date_range": { "field": "createdAt", "ranges": [ { "from": "now-1M/M", "to": "now" } ], "format": "yyyy-MM-dd" } },
+            "stavy":   { "filters": { "filters": { "skladem": { "term": { "inStock": true } } }, "other_bucket": true } },
+            "bezceny": { "missing": { "field": "price" } },
+            "vzacne":  { "rare_terms": { "field": "brand", "max_doc_count": 3 } },
+            "vyznam":  { "significant_terms": { "field": "brand", "size": 5 } },
+            "vzorek":  { "sampler": { "shard_size": 200 } },
+            "kombi":   { "multi_terms": { "terms": [ { "field": "brand" }, { "field": "color" } ], "size": 10 } },
+            "strany":  { "composite": { "size": 100, "sources": [ { "znacka": { "terms": { "field": "brand" } } }, { "cena": { "histogram": { "field": "price", "interval": 100 } } } ] } }
+          }
+        }');
+
+        $this->assertStringContainsString("new HistogramAggregation('pasma', 'price', 100);", $result);
+        $this->assertStringContainsString("->minDocCount(0);", $result);
+        $this->assertStringContainsString("new DateHistogramAggregation('mesice', 'createdAt');", $result);
+        $this->assertStringContainsString("->calendarInterval('month');", $result);
+        $this->assertStringContainsString("->format('yyyy-MM');", $result);
+        $this->assertStringContainsString(
+            "new RangeAggregation('rozsahy', 'price', new Range(to: 100, key: 'levne'), new Range(from: 100, to: 500));",
+            $result
+        );
+        $this->assertStringContainsString("new DateRangeAggregation('obdobi', 'createdAt', new Range(from: 'now-1M/M', to: 'now'));", $result);
+        $this->assertStringContainsString("new FiltersAggregation('stavy');", $result);
+        $this->assertStringContainsString("->filter('skladem', ", $result);
+        $this->assertStringContainsString("->otherBucket(true);", $result);
+        $this->assertStringContainsString("new MissingAggregation('bezceny', 'price');", $result);
+        $this->assertStringContainsString("new RareTermsAggregation('vzacne', 'brand');", $result);
+        $this->assertStringContainsString("->maxDocCount(3);", $result);
+        $this->assertStringContainsString("new SignificantTermsAggregation('vyznam', 'brand');", $result);
+        $this->assertStringContainsString("new SamplerAggregation('vzorek');", $result);
+        $this->assertStringContainsString("->shardSize(200);", $result);
+        $this->assertStringContainsString("new MultiTermsAggregation('kombi', 'brand', 'color');", $result);
+        $this->assertStringContainsString(
+            "new CompositeAggregation('strany', new TermsSource('znacka', 'brand'), new HistogramSource('cena', 'price', 100));",
+            $result
+        );
+    }
 }

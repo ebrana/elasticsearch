@@ -8,15 +8,26 @@ use Elasticsearch\Tools\Resolvers\Aggregation\AbstractAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\AggregationResolveInterface;
 use Elasticsearch\Tools\Resolvers\Aggregation\AvgAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\CardinalityAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\CompositeAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\DateHistogramAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\DateRangeAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\ExtendedStatsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\FilterAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\FiltersAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\GlobalAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\HistogramAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\MaxAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\MinAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\MissingAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\MultiTermsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\NestedAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\PercentileRanksAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\PercentilesAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\RangeAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\RareTermsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\ReverseNestedAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\SamplerAggregationResolver;
+use Elasticsearch\Tools\Resolvers\Aggregation\SignificantTermsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\StatsAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\SumAggregationResolver;
 use Elasticsearch\Tools\Resolvers\Aggregation\TermsAggregationResolver;
@@ -48,6 +59,17 @@ class AggregationResolver
         'percentiles' => PercentilesAggregationResolver::class,
         'percentile_ranks' => PercentileRanksAggregationResolver::class,
         'weighted_avg' => WeightedAvgAggregationResolver::class,
+        'histogram' => HistogramAggregationResolver::class,
+        'date_histogram' => DateHistogramAggregationResolver::class,
+        'range' => RangeAggregationResolver::class,
+        'date_range' => DateRangeAggregationResolver::class,
+        'filters' => FiltersAggregationResolver::class,
+        'missing' => MissingAggregationResolver::class,
+        'composite' => CompositeAggregationResolver::class,
+        'multi_terms' => MultiTermsAggregationResolver::class,
+        'rare_terms' => RareTermsAggregationResolver::class,
+        'significant_terms' => SignificantTermsAggregationResolver::class,
+        'sampler' => SamplerAggregationResolver::class,
     ];
 
     private int $counter = 0;

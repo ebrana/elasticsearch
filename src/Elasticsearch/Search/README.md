@@ -468,6 +468,93 @@ $terms->size(10)
     ->shardSize(100);         // přesnější doc_count při více shardech
 ```
 
+## Bucket agregace
+
+| Třída | ES agregace |
+|---|---|
+| `HistogramAggregation(name, field, interval)` | `histogram` — intervaly pevné šířky |
+| `DateHistogramAggregation(name, field)` | `date_histogram` — `calendarInterval()` nebo `fixedInterval()` |
+| `RangeAggregation(name, field, ...Range)` | `range` — vlastní intervaly |
+| `DateRangeAggregation(name, field, ...Range)` | `date_range` — ve `from`/`to` i date math |
+| `FiltersAggregation(name, [key => Query])` | `filters` — bucket za každou podmínku |
+| `MissingAggregation(name, field)` | `missing` — dokumenty bez hodnoty |
+| `MultiTermsAggregation(name, ...fields)` | `multi_terms` — kombinace hodnot více polí |
+| `RareTermsAggregation(name, field)` | `rare_terms` — nejvzácnější termy |
+| `SignificantTermsAggregation(name, field)` | `significant_terms` — neobvykle časté termy |
+| `SamplerAggregation(name)` | `sampler` — omezí podagregace na vzorek |
+| `CompositeAggregation(name, ...sources)` | `composite` — stránkovatelné |
+| `TermsAggregation`, `FilterAggregation`, `NestedAggregation`, `GlobalAggregation` | beze změny |
+
+Všechny umí podagregace — buď variadicky v konstruktoru, nebo přes `aggregation()`:
+
+```php
+$builder->addAggregation(
+    new MissingAggregation('bez_ceny', 'price', new AvgAggregation('prumer', 'rating'))
+);
+```
+
+### Intervaly
+
+```php
+$pasma = new HistogramAggregation('cenova_pasma', 'price', 100.0);
+$pasma->minDocCount(0)->extendedBounds(0.0, 1000.0);   // i prázdné intervaly
+
+$mesice = new DateHistogramAggregation('po_mesicich', 'createdAt');
+$mesice->calendarInterval('month')->format('yyyy-MM')->timeZone('Europe/Prague');
+```
+
+`calendarInterval()` respektuje délku měsíce a letní čas, `fixedInterval()` je pevný úsek
+(`"30d"`). Zadat lze právě jedno z nich — jinak agregace vyhodí výjimku ještě před odesláním.
+
+### Rozsahy
+
+```php
+use Elasticsearch\Search\Aggregations\Range;
+
+new RangeAggregation('pasma', 'price',
+    new Range(to: 100, key: 'levne'),
+    new Range(from: 100, to: 500),
+    new Range(from: 500, key: 'drahe')
+);
+```
+
+`from` je včetně, `to` už ne; vynechaná hranice znamená neomezeno.
+
+### Stránkování přes `composite`
+
+Jediná agregace, která umí projít **všechny** buckety. Odpověď vrací `after_key`, který se
+předá do `after()` pro další stránku:
+
+```php
+use Elasticsearch\Search\Aggregations\Composite\{HistogramSource, TermsSource};
+
+$after = null;
+do {
+    $agg = new CompositeAggregation('strany', new TermsSource('znacka', 'brand'));
+    $agg->size(100);
+    if ($after) {
+        $agg->after($after);
+    }
+    $builder->addAggregation($agg);
+
+    $result = $connection->search($builder)->getAggregations()->toArray();
+    $after = $result['strany']['after_key'] ?? null;
+} while ($after);
+```
+
+Zdroje jsou `TermsSource`, `HistogramSource` a `DateHistogramSource`; každý umí `order()`
+a `missingBucket()` (bez něj dokumenty bez hodnoty z výsledku vypadnou).
+
+### Na co narazit
+
+- `SignificantTermsAggregation` porovnává četnost ve výsledku dotazu proti celému indexu —
+  s `MatchAllQuery` je popředí i pozadí totéž a nevrátí nic. Má smysl jen nad zužujícím
+  dotazem, případně s `backgroundFilter()`.
+- `FiltersAggregation` (množné číslo) je něco jiného než `FilterAggregation` — první dělá
+  bucket za každou podmínku, druhá filtruje jednou.
+- `MultiTermsAggregation` je dražší než vnořené `terms`, ale nepřijde o kombinace, které by
+  se ořezem `size` na vyšší úrovni ztratily.
+
 ## Přidání sorts
 
 `Builder` má `addSort()` methodu s rozhranním `Sort`. Více v dokumentaci [the ElasticSearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/sort-search-results.html).
