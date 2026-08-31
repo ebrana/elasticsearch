@@ -1,0 +1,13 @@
+{
+    "vyhledavaci": {
+        "mappings": {
+            "properties": {
+                "doplneni":      { "type": "completion", "max_input_length": 30 },
+                "popularita":    { "type": "rank_feature" },
+                "doba_doruceni": { "type": "rank_feature", "positive_score_impact": false },
+                "pozice":        { "type": "geo_point", "ignore_malformed": true },
+                "razeni":        { "type": "icu_collation_keyword", "language": "cs", "country": "CZ", "index": false }
+            }
+        }
+    }
+}

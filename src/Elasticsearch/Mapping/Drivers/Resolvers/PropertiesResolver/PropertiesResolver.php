@@ -10,6 +10,7 @@ use Elasticsearch\Mapping\Drivers\Factories\Properties\BooleanTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Dates\DateNanoTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Dates\DateTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Keywords\ConstantKeywordTypeFactory;
+use Elasticsearch\Mapping\Drivers\Factories\Properties\Keywords\IcuCollationKeywordTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Keywords\KeywordTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Keywords\WildcardTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Numeric\ByteTypeFactory;
@@ -21,6 +22,9 @@ use Elasticsearch\Mapping\Drivers\Factories\Properties\Numeric\LongTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Numeric\ScaledFloatTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Numeric\ShortTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Numeric\UnsignedLongTypeFactory;
+use Elasticsearch\Mapping\Drivers\Factories\Properties\Spatial\GeoPointTypeFactory;
+use Elasticsearch\Mapping\Drivers\Factories\Properties\Specialized\RankFeatureTypeFactory;
+use Elasticsearch\Mapping\Drivers\Factories\Properties\Text\CompletionTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Text\MatchOnlyTextTypeFactory;
 use Elasticsearch\Mapping\Drivers\Factories\Properties\Text\TextTypeFactory;
 use Elasticsearch\Mapping\Index;
@@ -53,6 +57,10 @@ final class PropertiesResolver
         'date_nanos'       => DateNanoTypeFactory::class,
         'binary'           => BinaryTypeFactory::class,
         'alias'            => AliasTypeFactory::class,
+        'completion'       => CompletionTypeFactory::class,
+        'rank_feature'     => RankFeatureTypeFactory::class,
+        'geo_point'        => GeoPointTypeFactory::class,
+        'icu_collation_keyword' => IcuCollationKeywordTypeFactory::class,
     ];
 
     /**

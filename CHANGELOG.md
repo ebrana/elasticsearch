@@ -88,6 +88,10 @@ verzování ze [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `wildcard`, `long`, `short`, `byte`, `unsigned_long`, `double`, `half_float`,
   `scaled_float`, `date`, `date_nanos`, `binary` a `alias`. Dosud se property s těmito
   typy z mappingu tiše ztrácely.
+- Nové typy properties: `CompletionType`, `RankFeatureType`, `GeoPointType`
+  a `IcuCollationKeywordType` (ten vyžaduje plugin `analysis-icu`). První tři doplňují
+  díru, kdy knihovna uměla postavit `CompletionSuggest`, `RankFeatureQuery`
+  a `DistanceFeatureQuery`, ale ne namapovat pole, nad kterým běží.
 - `DateType` a `DateNanoType` nově umí `format`, `locale`, `null_value`, `index`,
   `doc_values`, `store` a `ignore_malformed` (sdílené v `DateOptionsTrait`).
   `DateType` z nich dosud neznal ani jeden, `DateNanoType` neměl vůbec žádný parametr.

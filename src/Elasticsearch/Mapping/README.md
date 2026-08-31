@@ -75,6 +75,10 @@ JSON driver rozezná tyhle typy; u ostatních property tiše přeskočí:
 | `boolean` | `BooleanType` |
 | `date`, `date_nanos` | `DateType`, `DateNanoType` |
 | `binary`, `alias` | `BinaryType`, `AliasType` |
+| `completion` | `CompletionType` |
+| `rank_feature` | `RankFeatureType` |
+| `geo_point` | `GeoPointType` |
+| `icu_collation_keyword` | `IcuCollationKeywordType` (vyžaduje plugin `analysis-icu`) |
 | `object`, `nested` | podle přítomnosti `properties` |
 
 `scaled_float` vyžaduje `scaling_factor` a `alias` vyžaduje `path` — bez nich factory vyhodí
@@ -87,6 +91,39 @@ JSON driver rozezná tyhle typy; u ostatních property tiše přeskočí:
 #[DateType(name: 'createdAt', format: 'yyyy-MM-dd', ignore_malformed: true)]
 protected string $createdAt;
 ```
+
+### Typy pro vyhledávací funkce
+
+Tyhle typy potřebují konkrétní funkce z části Search — bez nich by šel postavit dotaz,
+ale ne pole, nad kterým běží:
+
+```php
+// autocomplete pres CompletionSuggest
+#[CompletionType(name: 'doplneni', max_input_length: 30)]
+protected array $suggest;
+
+// skorovani pres RankFeatureQuery; positive_score_impact: false pro veliciny,
+// kde vyssi hodnota ma skore snizovat (napr. doba doruceni)
+#[RankFeatureType(name: 'popularita')]
+protected int $popularity;
+
+// DistanceFeatureQuery, decay funkce s geo originem, GeoDistanceSort
+#[GeoPointType(name: 'pozice', ignore_malformed: true)]
+protected array $location;
+```
+
+`IcuCollationKeywordType` řeší jazykově správné řazení — v češtině se tak „Č" seřadí
+za „C" a ne až za „Z". Typicky jako podpole jen pro řazení:
+
+```php
+#[TextType(name: 'nazev', fields: [
+    new IcuCollationKeywordType(language: 'cs', country: 'CZ', index: false, name: 'razeni'),
+])]
+protected string $name;
+```
+
+Bez pluginu `analysis-icu` Elasticsearch odmítne index vytvořit hláškou
+„No mapper found for type [icu_collation_keyword]".
 
 ### Nastavení indexu
 

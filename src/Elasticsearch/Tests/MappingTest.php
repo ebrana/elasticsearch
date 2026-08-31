@@ -304,8 +304,12 @@ class MappingTest extends TestCase
         $names = $mapping['mappings']['properties']['searching_names'];
         $this->assertSame('stemming', $names['analyzer']);
         $this->assertSame('full_with_diacritic', $names['fields']['full_with_diacritic']['analyzer']);
-        // keyword multi-field ma v JSONu typ icu_collation_keyword, ktery knihovna nezna -> preskoci se
-        $this->assertArrayNotHasKey('keyword', $names['fields']);
+        // icu_collation_keyword multi-field se driv preskakoval, protoze ho knihovna neznala
+        $this->assertSame([
+            'type'     => 'icu_collation_keyword',
+            'language' => 'en',
+            'index'    => false,
+        ], $names['fields']['keyword']);
 
         // index: false na keyword property se musi propsat
         $breadcrumb = $mapping['mappings']['properties']['breadcrumb']['properties'];

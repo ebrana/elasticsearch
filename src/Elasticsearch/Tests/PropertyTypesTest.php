@@ -12,6 +12,10 @@ use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Request\MetadataRequestFactory;
 use Elasticsearch\Mapping\Types\Common\AliasType;
 use Elasticsearch\Mapping\Types\Common\Dates\DateType;
+use Elasticsearch\Mapping\Types\Common\Keywords\IcuCollationKeywordType;
+use Elasticsearch\Mapping\Types\Spatial\GeoPointType;
+use Elasticsearch\Mapping\Types\Specialized\RankFeatureType;
+use Elasticsearch\Mapping\Types\Text\CompletionType;
 use Elasticsearch\Mapping\Types\Common\Numeric\ScaledFloatType;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -134,5 +138,107 @@ class PropertyTypesTest extends TestCase
         $this->expectException(AttributeMissingException::class);
 
         AliasTypeFactory::create('alias', new stdClass());
+    }
+
+    public function testCompletionType(): void
+    {
+        $this->assertSame(['type' => 'completion'], (new CompletionType(name: 'doplneni'))->getCollection()->toArray());
+
+        $type = new CompletionType(
+            analyzer: 'simple',
+            preserve_separators: false,
+            max_input_length: 30,
+            contexts: [['name' => 'kategorie', 'type' => 'category', 'path' => 'cat']],
+            name: 'doplneni'
+        );
+
+        $this->assertSame([
+            'type'                => 'completion',
+            'analyzer'            => 'simple',
+            'preserve_separators' => false,
+            'max_input_length'    => 30,
+            'contexts'            => [['name' => 'kategorie', 'type' => 'category', 'path' => 'cat']],
+        ], $type->getCollection()->toArray());
+    }
+
+    public function testRankFeatureType(): void
+    {
+        $this->assertSame(
+            ['type' => 'rank_feature'],
+            (new RankFeatureType(name: 'popularita'))->getCollection()->toArray()
+        );
+
+        // false se posilat musi - vyssi hodnota ma skore snizovat
+        $this->assertSame(
+            ['type' => 'rank_feature', 'positive_score_impact' => false],
+            (new RankFeatureType(positive_score_impact: false, name: 'doba'))->getCollection()->toArray()
+        );
+    }
+
+    public function testGeoPointType(): void
+    {
+        $this->assertSame(
+            ['type' => 'geo_point'],
+            (new GeoPointType(name: 'pozice'))->getCollection()->toArray()
+        );
+
+        $type = new GeoPointType(
+            ignore_malformed: true,
+            ignore_z_value: false,
+            null_value: ['lat' => 0.0, 'lon' => 0.0],
+            index: false,
+            name: 'pozice'
+        );
+
+        $this->assertSame([
+            'type'             => 'geo_point',
+            'ignore_malformed' => true,
+            'ignore_z_value'   => false,
+            'null_value'       => ['lat' => 0.0, 'lon' => 0.0],
+            'index'            => false,
+        ], $type->getCollection()->toArray());
+    }
+
+    public function testIcuCollationKeywordType(): void
+    {
+        $type = new IcuCollationKeywordType(
+            language: 'cs',
+            country: 'CZ',
+            strength: 'primary',
+            numeric: true,
+            index: false,
+            name: 'razeni'
+        );
+
+        $this->assertSame([
+            'type'     => 'icu_collation_keyword',
+            'language' => 'cs',
+            'country'  => 'CZ',
+            'strength' => 'primary',
+            'numeric'  => true,
+            'index'    => false,
+        ], $type->getCollection()->toArray());
+    }
+
+    public function testJsonDriverResolvesSearchTypes(): void
+    {
+        $index = (new JsonDriver())->loadMetadata(__DIR__ . '/Json/searchTypes.json');
+        $json = (new MetadataRequestFactory())->create($index)->getMappingJson();
+
+        /** @var array{mappings: array{properties: array<string, array<string, mixed>>}} $decoded */
+        $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        $properties = $decoded['mappings']['properties'];
+
+        $this->assertSame(['type' => 'completion', 'max_input_length' => 30], $properties['doplneni']);
+        $this->assertSame(['type' => 'rank_feature'], $properties['popularita']);
+        $this->assertSame(
+            ['type' => 'rank_feature', 'positive_score_impact' => false],
+            $properties['doba_doruceni']
+        );
+        $this->assertSame(['type' => 'geo_point', 'ignore_malformed' => true], $properties['pozice']);
+        $this->assertSame(
+            ['type' => 'icu_collation_keyword', 'language' => 'cs', 'country' => 'CZ', 'index' => false],
+            $properties['razeni']
+        );
     }
 }
