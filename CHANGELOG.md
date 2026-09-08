@@ -155,6 +155,8 @@ verzování ze [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `analysis.char_filter` — index s char filtrem tedy nešlo vytvořit vůbec.
 - **`PrefixQuery` s `rewrite` nebo `case_insensitive`** dávala tyto parametry vedle objektu
   pole místo dovnitř, takže ES vracel „`[prefix] query doesn't support multiple fields`".
+- **`PrefixQueryResolver` a `WildcardQueryResolver`** sahaly na `$metadata[null]`, když
+  dostaly prázdná metadata. Nově hlásí `RuntimeException` stejně jako ostatní resolvery.
 - **`Language::DANISH`** měl hodnotu `danich`, kterou Elasticsearch odmítá — dánský stemmer
   nešlo použít. Opraveno na `danish`, což mění vygenerovaný mapping.
 - **`PatternReplaceCharacterFilterFactory`** mapovala z devíti hodnot enumu `Flags` jen dvě,
