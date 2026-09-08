@@ -11,26 +11,27 @@ use IteratorAggregate;
 /**
  * @implements IteratorAggregate<int, AnalyzeToken>
  */
-final class AnalyzeResult implements IteratorAggregate, Countable
+final readonly class AnalyzeResult implements IteratorAggregate, Countable
 {
     /** @var AnalyzeToken[] */
-    private array $tokens = [];
+    private array $tokens;
 
     /** @var array<string, mixed>|null */
-    private ?array $detail = null;
+    private ?array $detail;
 
     /**
      * @param array<string, mixed> $record
      */
     public function __construct(array $record)
     {
+        $tokens = [];
         if (isset($record['tokens']) && is_array($record['tokens'])) {
             foreach ($record['tokens'] as $token) {
                 if (!is_array($token)) {
                     continue;
                 }
 
-                $this->tokens[] = new AnalyzeToken(
+                $tokens[] = new AnalyzeToken(
                     (string)($token['token'] ?? ''),
                     (int)($token['start_offset'] ?? 0),
                     (int)($token['end_offset'] ?? 0),
@@ -39,12 +40,14 @@ final class AnalyzeResult implements IteratorAggregate, Countable
                 );
             }
         }
+        $this->tokens = $tokens;
 
+        $detail = null;
         if (isset($record['detail']) && is_array($record['detail'])) {
-            /** @var array<string, mixed> $detail */
+            /** @var array<string, mixed> $record['detail'] */
             $detail = $record['detail'];
-            $this->detail = $detail;
         }
+        $this->detail = $detail;
     }
 
     /**
@@ -56,7 +59,7 @@ final class AnalyzeResult implements IteratorAggregate, Countable
     }
 
     /**
-     * Jen textove hodnoty tokenu - typicky to, co clovek pri ladeni analyzeru chce videt.
+     * Only the token strings - typically what one wants to see when debugging an analyzer.
      *
      * @return string[]
      */
@@ -66,7 +69,7 @@ final class AnalyzeResult implements IteratorAggregate, Countable
     }
 
     /**
-     * Obsah `detail` z odpovedi, tedy vystup po jednotlivych krocich (jen pri explain: true).
+     * The `detail` content of the response, i.e. the output of the individual steps (only with explain: true).
      *
      * @return array<string, mixed>|null
      */

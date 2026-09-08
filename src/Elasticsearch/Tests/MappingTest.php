@@ -168,7 +168,7 @@ class MappingTest extends TestCase
         /** @var NestedType $nestedByKeyResolver */
         $nestedByKeyResolver = $metadataProductIndex->getProperties()->get('books');
 
-        $this->assertSame('amproductsmodule', $metadataRequest->getIndex()->getName());
+        $this->assertSame('productmodule', $metadataRequest->getIndex()->getName());
 
         /** @var mixed[][][][][][][][][] $mapping */
         $mapping = json_decode($metadataRequest->getMappingJson(), true);
@@ -189,7 +189,7 @@ class MappingTest extends TestCase
         $this->assertCount(4, $mapping['settings']['analysis']['analyzer']);
         $this->assertArrayHasKey('standard', $mapping['settings']['analysis']['analyzer']);
         $this->assertArrayHasKey('autocomplete_analyzer', $mapping['settings']['analysis']['analyzer']);
-        // vestavene analyzery pres atributy: nemaji tokenizer/filter a type neni "custom"
+        // built-in analyzers via attributes: they have no tokenizer/filter and the type is not "custom"
         $this->assertSame([
             'type'           => 'czech',
             'stopwords'      => '_czech_',
@@ -276,7 +276,7 @@ class MappingTest extends TestCase
         $this->assertEquals('\.', $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['pattern']);
         $this->assertEquals('custom', $mapping['settings']['analysis']['analyzer']['full_with_diacritic']['type']);
         $this->assertCount(1, $mapping['settings']['analysis']['analyzer']['full_with_diacritic']['filter']);
-        // char_filter zapsany jako skalar v JSONu musi vyjit jako pole (ES akceptuje obe varianty)
+        // a char_filter written as a scalar in the JSON must come out as an array (ES accepts both variants)
         $this->assertSame(
             ['html_strip'],
             $mapping['settings']['analysis']['analyzer']['full_without_diacritic_html']['char_filter']
@@ -287,7 +287,7 @@ class MappingTest extends TestCase
         );
         $this->assertArrayNotHasKey('char_filter', $mapping['settings']['analysis']['analyzer']['stemming']);
 
-        // parametry property z JSONu musi prezit round-trip (dokud je factory ignorovala, zbyl jen "type")
+        // property parameters from the JSON must survive the round-trip (while the factories ignored them, only "type" was left)
         $catnums = $mapping['mappings']['properties']['searching_catnums'];
         $this->assertSame('whitespace', $catnums['analyzer']);
         $this->assertSame('whitespace_without_dots', $catnums['search_analyzer']);
@@ -311,11 +311,11 @@ class MappingTest extends TestCase
             'index'    => false,
         ], $names['fields']['keyword']);
 
-        // index: false na keyword property se musi propsat
+        // index: false on a keyword property has to be carried through
         $breadcrumb = $mapping['mappings']['properties']['breadcrumb']['properties'];
         $this->assertSame('keyword', $breadcrumb['slug']['type']);
 
-        // vestavene analyzery z JSONu (dokud se `type` ignoroval, vznikl z nich custom analyzer)
+        // built-in analyzers from the JSON (while `type` was ignored, they turned into a custom analyzer)
         $analyzers = $mapping['settings']['analysis']['analyzer'];
         $this->assertSame([
             'type'           => 'czech',
@@ -386,7 +386,7 @@ class MappingTest extends TestCase
             'skip'      => 1,
         ], $tokenizers['category_path']);
 
-        // normalizery z JSONu; char_filter zapsany jako skalar musi vyjit jako pole
+        // normalizers from the JSON; a char_filter written as a scalar must come out as an array
         $normalizers = $mapping['settings']['analysis']['normalizer'];
         $this->assertSame([
             'type'   => 'custom',
@@ -396,11 +396,11 @@ class MappingTest extends TestCase
             'type'        => 'custom',
             'char_filter' => ['dots_replace_filter'],
         ], $normalizers['single_char_filter']);
-        // analyzer bez `type` zustava custom se svym tokenizerem
+        // an analyzer without `type` stays custom, with its own tokenizer
         $this->assertSame('custom', $analyzers['full_with_diacritic']['type']);
         $this->assertSame('keep_special_chars', $analyzers['full_with_diacritic']['tokenizer']);
         $this->assertCount(53, $mapping['mappings']['properties']);
-        $this->assertCount(53, $mapping2['testing_amproductsmodule']['mappings']['properties']);
+        $this->assertCount(53, $mapping2['testing_productmodule']['mappings']['properties']);
     }
 
     private function getMappingMetadata(): MetadataProviderInterface

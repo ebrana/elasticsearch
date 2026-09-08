@@ -10,7 +10,7 @@ namespace Elasticsearch\Connection\Analyze;
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-analyze.html
  */
-final class AnalyzeRequest
+final readonly class AnalyzeRequest
 {
     /** @var string[] */
     private array $text;
@@ -23,14 +23,14 @@ final class AnalyzeRequest
      */
     public function __construct(
         array|string $text,
-        private readonly ?string $analyzer = null,
-        private readonly ?string $field = null,
-        private readonly ?string $tokenizer = null,
-        private readonly array $filter = [],
-        private readonly array $charFilter = [],
-        private readonly ?string $normalizer = null,
-        private readonly bool $explain = false,
-        private readonly array $attributes = [],
+        private ?string $analyzer = null,
+        private ?string $field = null,
+        private ?string $tokenizer = null,
+        private array $filter = [],
+        private array $charFilter = [],
+        private ?string $normalizer = null,
+        private bool $explain = false,
+        private array $attributes = [],
     ) {
         $this->text = is_array($text) ? $text : [$text];
     }

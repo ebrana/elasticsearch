@@ -7,9 +7,9 @@ namespace Elasticsearch\Search\Queries;
 use RuntimeException;
 
 /**
- * Jako terms query, ale vyzaduje jen zadany minimalni pocet shod. Kolik jich musi byt,
- * se bere z pole dokumentu (minimum_should_match_field), ze skriptu
- * (minimum_should_match_script), nebo se zada pevne (minimum_should_match).
+ * Like a terms query, but it only requires a given minimum number of matches. How many that is
+ * comes from a document field (minimum_should_match_field), from a script
+ * (minimum_should_match_script), or is given as a fixed value (minimum_should_match).
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-set-query.html
  */
@@ -37,8 +37,7 @@ readonly class TermsSetQuery implements Query
             && null === $this->minimum_should_match
         ) {
             throw new RuntimeException(
-                'Terms set query must define minimum_should_match_field, minimum_should_match_script'
-                . ' or minimum_should_match.'
+                'Terms set query must define minimum_should_match_field, minimum_should_match_script or minimum_should_match.'
             );
         }
 

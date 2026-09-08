@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Suggest;
 
 /**
- * Navrhy pro celou frazi - bere v potaz, jak casto se slova vyskytuji spolu.
- * Pole by melo byt analyzovane shingle filtrem (napr. "name.trigram").
+ * Suggestions for a whole phrase - it takes into account how often the words occur together.
+ * The field should be analyzed with a shingle filter (e.g. "name.trigram").
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#phrase-suggester
  */
@@ -44,7 +44,7 @@ readonly class PhraseSuggest implements SuggestInterface
     {
         $phrase = ['field' => $this->field];
 
-        foreach ([
+        $options = [
             'size'                       => $this->size,
             'gram_size'                  => $this->gram_size,
             'real_word_error_likelihood' => $this->real_word_error_likelihood,
@@ -55,7 +55,9 @@ readonly class PhraseSuggest implements SuggestInterface
             'shard_size'                 => $this->shard_size,
             'highlight'                  => $this->highlight,
             'collate'                    => $this->collate,
-        ] as $key => $value) {
+        ];
+
+        foreach ($options as $key => $value) {
             if (null !== $value) {
                 $phrase[$key] = $value;
             }

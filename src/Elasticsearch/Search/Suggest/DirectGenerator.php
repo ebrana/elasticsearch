@@ -8,8 +8,8 @@ use Elasticsearch\Search\Suggest\Enums\StringDistance;
 use Elasticsearch\Search\Suggest\Enums\SuggestMode;
 
 /**
- * Generator kandidatu pro PhraseSuggest. Bez nej pouzije Elasticsearch jeden vychozi
- * nad polem frazoveho suggesteru.
+ * A candidate generator for PhraseSuggest. Without it Elasticsearch uses a single default one
+ * over the field of the phrase suggester.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#phrase-suggester
  */
@@ -38,7 +38,7 @@ readonly class DirectGenerator
     {
         $data = ['field' => $this->field];
 
-        foreach ([
+        $options = [
             'size'            => $this->size,
             'suggest_mode'    => $this->suggest_mode?->value,
             'max_edits'       => $this->max_edits,
@@ -50,7 +50,9 @@ readonly class DirectGenerator
             'string_distance' => $this->string_distance?->value,
             'pre_filter'      => $this->pre_filter,
             'post_filter'     => $this->post_filter,
-        ] as $key => $value) {
+        ];
+
+        foreach ($options as $key => $value) {
             if (null !== $value) {
                 $data[$key] = $value;
             }

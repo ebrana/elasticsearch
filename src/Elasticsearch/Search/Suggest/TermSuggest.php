@@ -9,8 +9,8 @@ use Elasticsearch\Search\Suggest\Enums\SuggestMode;
 use Elasticsearch\Search\Suggest\Enums\SuggestSort;
 
 /**
- * Navrhy po jednotlivych slovech - "nemyslel jste tim...?" na urovni termu.
- * Pro celou frazi je vhodnejsi PhraseSuggest.
+ * Suggestions per individual word - "did you mean...?" at the term level.
+ * For a whole phrase PhraseSuggest is a better fit.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#term-suggester
  */
@@ -44,7 +44,7 @@ readonly class TermSuggest implements SuggestInterface
     {
         $term = ['field' => $this->field];
 
-        foreach ([
+        $options = [
             'analyzer'        => $this->analyzer,
             'size'            => $this->size,
             'sort'            => $this->sort?->value,
@@ -57,7 +57,9 @@ readonly class TermSuggest implements SuggestInterface
             'max_term_freq'   => $this->max_term_freq,
             'string_distance' => $this->string_distance?->value,
             'shard_size'      => $this->shard_size,
-        ] as $key => $value) {
+        ];
+
+        foreach ($options as $key => $value) {
             if (null !== $value) {
                 $term[$key] = $value;
             }

@@ -9,11 +9,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Types\AbstractType;
 
 /**
- * Keyword razeny podle pravidel daneho jazyka - v cestine se tak "Č" seradi za "C"
- * a ne az za "Z". Typicky se pouziva jako podpole s index: false jen pro razeni.
+ * A keyword sorted by the rules of a given language - in Czech "Č" then sorts right after "C"
+ * and not after "Z". Typically used as a sub-field with index: false, for sorting only.
  *
- * POZOR: vyzaduje plugin `analysis-icu`. Bez nej Elasticsearch odmitne vytvorit index
- * hlaskou "No mapper found for type [icu_collation_keyword]".
+ * BEWARE: requires the `analysis-icu` plugin. Without it Elasticsearch refuses to create the index
+ * with "No mapper found for type [icu_collation_keyword]".
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-icu.html
  */
@@ -21,12 +21,12 @@ use Elasticsearch\Mapping\Types\AbstractType;
 final class IcuCollationKeywordType extends AbstractType
 {
     /**
-     * @param string|null $language ISO kod jazyka, napr. "cs"
-     * @param string|null $country ISO kod zeme, napr. "CZ"
-     * @param string|null $strength primary, secondary, tertiary, quaternary nebo identical
-     * @param string|null $decomposition no nebo canonical
-     * @param string|null $alternate shifted nebo non-ignorable
-     * @param string|null $case_first lower nebo upper
+     * @param string|null $language ISO language code, e.g. "cs"
+     * @param string|null $country ISO country code, e.g. "CZ"
+     * @param string|null $strength primary, secondary, tertiary, quaternary or identical
+     * @param string|null $decomposition no or canonical
+     * @param string|null $alternate shifted or non-ignorable
+     * @param string|null $case_first lower or upper
      */
     public function __construct(
         private ?string $language = null,
@@ -135,7 +135,7 @@ final class IcuCollationKeywordType extends AbstractType
     }
 
     /**
-     * true seradi cisla podle hodnoty, ne po znacich ("2" pred "10").
+     * true sorts numbers by value, not character by character ("2" before "10").
      */
     public function getNumeric(): ?bool
     {
@@ -191,7 +191,7 @@ final class IcuCollationKeywordType extends AbstractType
     {
         $collection = parent::getCollection();
 
-        foreach ([
+        $options = [
             'language'      => $this->language,
             'country'       => $this->country,
             'variant'       => $this->variant,
@@ -202,7 +202,9 @@ final class IcuCollationKeywordType extends AbstractType
             'case_level'    => $this->case_level,
             'numeric'       => $this->numeric,
             'null_value'    => $this->null_value,
-        ] as $key => $value) {
+        ];
+
+        foreach ($options as $key => $value) {
             if (null !== $value) {
                 $collection->set($key, $value);
             }

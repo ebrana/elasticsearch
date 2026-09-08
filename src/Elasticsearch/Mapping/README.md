@@ -20,7 +20,7 @@ use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
 use Elasticsearch\Mapping\Types\Text\TextType;
 
-#[Index(name: "AmproductsModule")]
+#[Index(name: "ProductModule")]
 #[Analyzer(
     name: "trigrams",
     tokenizer: "ngram",
@@ -131,7 +131,7 @@ Atribut `Index` kromě jména a `postEventClass` nese i nastavení indexu:
 
 ```php
 #[Index(
-    name: "AmproductsModule",
+    name: "ProductModule",
     max_result_window: 50000,
     number_of_shards: 2,
     number_of_replicas: 1,

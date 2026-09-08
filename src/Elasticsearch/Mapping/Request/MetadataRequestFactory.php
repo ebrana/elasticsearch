@@ -57,7 +57,7 @@ class MetadataRequestFactory
      */
     private function resolveSettings(Index $index): ?array
     {
-        // nastaveni indexu se posila i kdyz index nema zadnou analysis
+        // index settings are sent even when the index has no analysis at all
         $settings = $this->provideIndexSettings($index);
         $analysis = $index->getAnalysis();
 
@@ -74,8 +74,8 @@ class MetadataRequestFactory
     }
 
     /**
-     * Elasticsearch bere tyhle klice jak naplocho v `settings`, tak pod `settings.index` -
-     * knihovna je posila naplocho.
+     * Elasticsearch accepts these keys both flat in `settings` and under `settings.index` -
+     * the library sends them flat.
      *
      * @return array<string, mixed>
      */
@@ -83,13 +83,15 @@ class MetadataRequestFactory
     {
         $settings = ['max_result_window' => $index->getMaxResultWindow()];
 
-        foreach ([
+        $optionalSettings = [
             'number_of_shards'   => $index->getNumberOfShards(),
             'number_of_replicas' => $index->getNumberOfReplicas(),
             'refresh_interval'   => $index->getRefreshInterval(),
             'max_ngram_diff'     => $index->getMaxNgramDiff(),
             'max_shingle_diff'   => $index->getMaxShingleDiff(),
-        ] as $key => $value) {
+        ];
+
+        foreach ($optionalSettings as $key => $value) {
             if (null !== $value) {
                 $settings[$key] = $value;
             }

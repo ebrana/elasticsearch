@@ -47,7 +47,7 @@ $this->resolveCollectionsByField(
       $document,
       $entity,
       $this->index->getProperties()->get('sellingPriceWithVat'),
-      function (AmproductsModuleLangs $langs) {
+      function (ProductModuleLangs $langs) {
             return '@' . $langs->getLang();
       }
 );

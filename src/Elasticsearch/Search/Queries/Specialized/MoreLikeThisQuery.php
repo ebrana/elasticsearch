@@ -7,8 +7,8 @@ namespace Elasticsearch\Search\Queries\Specialized;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Hleda dokumenty podobne zadanemu textu nebo existujicim dokumentum - "podobne produkty".
- * V `like` muze byt bud text, nebo odkaz na dokument ve tvaru ['_index' => ..., '_id' => ...].
+ * Looks for documents similar to a given text or to existing documents - "similar products".
+ * `like` can hold either a text, or a document reference shaped ['_index' => ..., '_id' => ...].
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html
  */
@@ -51,7 +51,7 @@ readonly class MoreLikeThisQuery implements Query
             $data['unlike'] = $this->unlike;
         }
 
-        foreach ([
+        $options = [
             'min_term_freq'             => $this->min_term_freq,
             'max_query_terms'           => $this->max_query_terms,
             'min_doc_freq'              => $this->min_doc_freq,
@@ -65,7 +65,9 @@ readonly class MoreLikeThisQuery implements Query
             'include'                   => $this->include,
             'fail_on_unsupported_field' => $this->fail_on_unsupported_field,
             'boost'                     => $this->boost,
-        ] as $key => $value) {
+        ];
+
+        foreach ($options as $key => $value) {
             if (null !== $value) {
                 $data[$key] = $value;
             }

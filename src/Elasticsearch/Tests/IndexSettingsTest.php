@@ -34,8 +34,8 @@ class IndexSettingsTest extends TestCase
 
     public function testMaxResultWindowSurvivesWithoutAnalysis(): void
     {
-        // dokud resolveSettings() koncil na null, kdyz index nemel analysis,
-        // max_result_window se do requestu nikdy nedostal
+        // while resolveSettings() returned null when the index had no analysis,
+        // max_result_window never made it into the request
         $index = $this->createIndex(new Index('bezanalysis', max_result_window: 50000));
 
         $this->assertSame(['max_result_window' => 50000], $this->requestSettings($index));
@@ -89,12 +89,12 @@ class IndexSettingsTest extends TestCase
         $jsonTestFile = __DIR__ . '/Json/test.json';
         $index = (new JsonDriver())->loadMetadata($jsonTestFile);
 
-        // vnorene pod settings.index
+        // nested under settings.index
         $this->assertSame(1, $index->getNumberOfShards());
         $this->assertSame(1, $index->getNumberOfReplicas());
         $this->assertSame(2, $index->getMaxNgramDiff());
         $this->assertSame(4, $index->getMaxShingleDiff());
-        // naplocho v settings
+        // flat in settings
         $this->assertSame('5s', $index->getRefreshInterval());
         $this->assertSame(20000, $index->getMaxResultWindow());
 
@@ -102,7 +102,39 @@ class IndexSettingsTest extends TestCase
         $this->assertSame(1, $settings['number_of_shards']);
         $this->assertSame('5s', $settings['refresh_interval']);
         $this->assertSame(20000, $settings['max_result_window']);
-        // analysis zustava vedle nastaveni indexu
+        // analysis stays next to the index settings
         $this->assertArrayHasKey('analysis', $settings);
+    }
+
+    public function testNestedIndexSettingsOverrideTheFlatOnes(): void
+    {
+        // the same keys on both levels - the nested ones are applied last and must win
+        $json = <<<'JSON'
+        {
+            "conflicting": {
+                "settings": {
+                    "number_of_shards": 9,
+                    "refresh_interval": "30s",
+                    "index": {
+                        "number_of_shards": 3,
+                        "refresh_interval": "1s"
+                    }
+                },
+                "mappings": {"properties": {"name": {"type": "text"}}}
+            }
+        }
+        JSON;
+
+        $file = tempnam(sys_get_temp_dir(), 'es-settings-') ?: throw new \RuntimeException('cannot create temp file');
+        file_put_contents($file, $json);
+
+        try {
+            $index = (new JsonDriver())->loadMetadata($file);
+        } finally {
+            unlink($file);
+        }
+
+        $this->assertSame(3, $index->getNumberOfShards());
+        $this->assertSame('1s', $index->getRefreshInterval());
     }
 }

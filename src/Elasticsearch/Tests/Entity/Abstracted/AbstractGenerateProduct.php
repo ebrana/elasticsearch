@@ -30,7 +30,7 @@ use Elasticsearch\Tests\Entity\Translations;
 use Elasticsearch\Tests\LangKeyResolver;
 use Elasticsearch\Tests\PostEventSample;
 
-#[Index(name: "AmproductsModule", postEventClass: PostEventSample::class)]
+#[Index(name: "ProductModule", postEventClass: PostEventSample::class)]
 #[Analyzer(
     name: "autocomplete_analyzer",
     tokenizer: "ngram",

@@ -8,8 +8,8 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 
 /**
- * Rozpada tokeny na hranicich nealfanumerickych znaku, zmen velikosti pismen a cislic -
- * typicky pro katalogova cisla ("Wi-Fi500" -> "Wi", "Fi", "500").
+ * Splits tokens at the boundaries of non-alphanumeric characters, letter case changes and digits -
+ * typically for catalogue numbers ("Wi-Fi500" -> "Wi", "Fi", "500").
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-word-delimiter-graph-tokenfilter.html
  */
@@ -203,7 +203,7 @@ class WordDelimiterGraphFilter extends AbstractFilter
         $data = parent::toArray();
 
         // posilaji se jen odchylky od defaultu Elasticsearche
-        foreach ([
+        $defaults = [
             'adjust_offsets'          => [$this->adjust_offsets, true],
             'catenate_all'            => [$this->catenate_all, false],
             'catenate_numbers'        => [$this->catenate_numbers, false],
@@ -215,7 +215,9 @@ class WordDelimiterGraphFilter extends AbstractFilter
             'split_on_case_change'    => [$this->split_on_case_change, true],
             'split_on_numerics'       => [$this->split_on_numerics, true],
             'stem_english_possessive' => [$this->stem_english_possessive, true],
-        ] as $key => [$value, $default]) {
+        ];
+
+        foreach ($defaults as $key => [$value, $default]) {
             if ($value !== $default) {
                 $data[$key] = $value;
             }

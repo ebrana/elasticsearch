@@ -15,7 +15,7 @@ use RuntimeException;
 readonly class CompletionSuggest implements SuggestInterface
 {
     /**
-     * @param array<string, mixed>|null $fuzzy napr. ['fuzziness' => 'AUTO', 'transpositions' => true]
+     * @param array<string, mixed>|null $fuzzy e.g. ['fuzziness' => 'AUTO', 'transpositions' => true]
      * @param array<string, mixed>|null $contexts
      */
     public function __construct(
@@ -48,13 +48,15 @@ readonly class CompletionSuggest implements SuggestInterface
 
         $completion = ['field' => $this->field];
 
-        foreach ([
+        $options = [
             'size'            => $this->size,
             'skip_duplicates' => $this->skip_duplicates,
             'fuzzy'           => $this->fuzzy,
             'contexts'        => $this->contexts,
             'analyzer'        => $this->analyzer,
-        ] as $key => $value) {
+        ];
+
+        foreach ($options as $key => $value) {
             if (null !== $value) {
                 $completion[$key] = $value;
             }
