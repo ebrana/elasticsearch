@@ -11,19 +11,26 @@ use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\TokenizerResolver;
 use Elasticsearch\Mapping\MappingMetada;
 use Elasticsearch\Mapping\MappingMetadata;
 use Elasticsearch\Mapping\Settings\AbstractCharactedFilter;
+use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 use Elasticsearch\Mapping\Settings\Analysis;
 use Elasticsearch\Mapping\Settings\CharacterFilters\HtmlStripCharacterFilter;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 /**
- * Preklepy v API jsou opravene, ale stara jmena zustavaji jako deprecated aliasy.
- * Tenhle test hlida, ze porad fungujou.
+ * The typos in the API are fixed, but the old names remain as deprecated aliases.
+ * This test guards that they keep working.
  */
 class DeprecatedAliasesTest extends TestCase
 {
     public function testMappingMetadaExtendsMappingMetadata(): void
     {
+        $this->expectUserDeprecationMessage(sprintf(
+            'Class "%s" is deprecated, use "%s" instead.',
+            MappingMetada::class,
+            MappingMetadata::class
+        ));
+
         $old = new MappingMetada(new ArrayCollection([]));
 
         $this->assertInstanceOf(MappingMetadata::class, $old);
@@ -31,7 +38,13 @@ class DeprecatedAliasesTest extends TestCase
 
     public function testCustomFilterOnDeprecatedBaseStillWorks(): void
     {
-        // vlastni char filtr postaveny na starem zakladu musi projit i novou typovou kontrolou
+        $this->expectUserDeprecationMessage(sprintf(
+            'Class "%s" is deprecated, extend "%s" instead.',
+            AbstractCharactedFilter::class,
+            AbstractCharacterFilter::class
+        ));
+
+        // a custom char filter built on the old base must still pass the new type check
         $filter = new class ('legacy') extends AbstractCharactedFilter {
             public function __construct(string $name)
             {
