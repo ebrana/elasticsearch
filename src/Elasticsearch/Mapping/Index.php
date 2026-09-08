@@ -114,8 +114,8 @@ final class Index
     }
 
     /**
-     * Napr. "1s" nebo "-1" pro vypnuti; pri hromadne reindexaci se vyplati vypnout
-     * a po dokonceni vratit.
+     * E.g. "1s" or "-1" to turn it off; during a bulk reindex it pays off to turn it off
+     * and restore it once finished.
      */
     public function getRefreshInterval(): ?string
     {

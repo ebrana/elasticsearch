@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries\Compound\FunctionScore\Enums;
 
 /**
- * Jak se vysledek funkci spoji se skorem z puvodni query.
+ * How the result of the functions is combined with the score of the original query.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html
  */

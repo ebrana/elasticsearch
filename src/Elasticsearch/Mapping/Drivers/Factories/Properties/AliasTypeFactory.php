@@ -12,7 +12,7 @@ use stdClass;
 class AliasTypeFactory implements PropertyFactoryInterface
 {
     /**
-     * Cte povinny path - pole, na ktere alias ukazuje.
+     * Reads the required path - the field the alias points to.
      *
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */

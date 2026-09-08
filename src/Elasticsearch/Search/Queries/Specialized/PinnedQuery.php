@@ -8,9 +8,9 @@ use Elasticsearch\Search\Queries\Query;
 use RuntimeException;
 
 /**
- * Vybrane dokumenty vytahne na zacatek vysledku, zbytek dohleda `organic` query.
- * Typicke pro placene pozice nebo rucne kurirovane vysledky. Zada se bud `ids`,
- * nebo `docs` (kdyz je potreba i index), ne obojí.
+ * Pulls the selected documents to the top of the results, the rest is found by the `organic` query.
+ * Typical for paid positions or manually curated results. Either `ids` or `docs` is given
+ * (when the index is needed too), not both.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-pinned-query.html
  */

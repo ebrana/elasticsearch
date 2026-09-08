@@ -10,7 +10,7 @@ class FunctionScoreQueryResolver extends AbstractQueryResolver
 {
     use ValueResolverTrait;
 
-    /** Klice, ktere na urovni function_score nejsou funkce. */
+    /** Keys that are not functions at the function_score level. */
     private const array RESERVED_KEYS = [
         'query',
         'functions',
@@ -65,8 +65,8 @@ class FunctionScoreQueryResolver extends AbstractQueryResolver
     }
 
     /**
-     * Elasticsearch pripousti jak `functions: [...]`, tak jednu funkci zapsanou primo
-     * na urovni function_score.
+     * Elasticsearch accepts both `functions: [...]` and a single function written directly
+     * at the function_score level.
      *
      * @param array<string, mixed> $metadata
      * @return array<int, array<string, mixed>>

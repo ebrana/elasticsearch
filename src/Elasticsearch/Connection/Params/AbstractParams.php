@@ -26,7 +26,7 @@ abstract class AbstractParams
                 if ($value instanceof BackedEnum) {
                     $value = $value->value;
                 } elseif (is_object($value) && method_exists($value, 'toString')) {
-                    // ponechano kvuli objektum, ktere backed enum nejsou
+                    // kept for objects that are not backed enums
                     $value = $value->toString();
                 }
                 /** @var string|int|bool|null $value */

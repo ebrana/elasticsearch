@@ -24,8 +24,8 @@ final class AnalyzerResolver
     }
 
     /**
-     * Bez `type` (nebo s `type: custom`) jde o vlastni analyzer skladany z tokenizeru a filtru.
-     * Nerozpoznany `type` se resi stejne jako dosud - jako custom analyzer.
+     * Without `type` (or with `type: custom`) it is a custom analyzer composed of a tokenizer and filters.
+     * An unrecognized `type` is handled the same way as before - as a custom analyzer.
      *
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */

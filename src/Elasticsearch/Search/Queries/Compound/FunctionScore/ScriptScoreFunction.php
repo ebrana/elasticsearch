@@ -7,8 +7,8 @@ namespace Elasticsearch\Search\Queries\Compound\FunctionScore;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Skore ze skriptu. Skript se zadava tak, jak ho ceka Elasticsearch, tedy vcetne
- * klice `source` a pripadneho `params`.
+ * A score from a script. The script is passed the way Elasticsearch expects it, i.e. including
+ * the `source` key and an optional `params`.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html#function-script-score
  */

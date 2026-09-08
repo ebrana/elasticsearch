@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries\Compound\FunctionScore\Enums;
 
 /**
- * Matematicka uprava hodnoty pole pred pouzitim ve skore.
+ * A mathematical adjustment of the field value before it is used in the score.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html#function-field-value-factor
  */

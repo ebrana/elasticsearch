@@ -8,8 +8,8 @@ use Elasticsearch\Search\Queries\Query;
 use Elasticsearch\Search\Queries\Specialized\RankFeature\RankFeatureFunctionInterface;
 
 /**
- * Zvysuje skore podle hodnoty v poli typu rank_feature (napr. popularita, pocet prodeju).
- * Bez zadane funkce pouzije Elasticsearch saturation s vypocitanym pivotem.
+ * Raises the score by the value of a rank_feature field (e.g. popularity, number of sales).
+ * With no function given Elasticsearch uses saturation with a computed pivot.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-rank-feature-query.html
  */

@@ -55,7 +55,7 @@ class DateHistogramAggregation extends AbstractAggregation
     }
 
     /**
-     * Pevny usek, napr. "30d" nebo "12h".
+     * A fixed interval, e.g. "30d" or "12h".
      */
     public function fixedInterval(string $interval): self
     {

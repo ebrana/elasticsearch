@@ -42,8 +42,8 @@ class TermsAggregation extends AbstractAggregation
     }
 
     /**
-     * Kolik termu si vyzada z kazdeho shardu. Vyssi hodnota zpresnuje doc_count
-     * u vetsiho poctu shardu za cenu pameti.
+     * How many terms to request from each shard. A higher value makes doc_count more accurate
+     * with a larger number of shards, at the cost of memory.
      */
     public function shardSize(int $shardSize): self
     {
@@ -63,7 +63,7 @@ class TermsAggregation extends AbstractAggregation
     }
 
     /**
-     * Vyctem hodnot, nebo regulernim vyrazem.
+     * By a list of values, or by a regular expression.
      *
      * @param string[]|string $include
      */

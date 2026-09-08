@@ -7,8 +7,8 @@ namespace Elasticsearch\Search\Queries\Compound;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Obali filtr a vsem shodam da stejne skore - Elasticsearch nemusi pocitat relevanci
- * a muze vysledek cachovat.
+ * Wraps a filter and gives all matches the same score - Elasticsearch does not have to compute
+ * relevance and can cache the result.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html
  */

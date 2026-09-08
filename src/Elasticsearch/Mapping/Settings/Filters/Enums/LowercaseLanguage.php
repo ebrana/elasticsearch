@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Mapping\Settings\Filters\Enums;
 
 /**
- * Jazyky, pro ktere ma lowercase filtr vlastni implementaci. Ostatni jazyky zadny nepotrebuji.
+ * Languages for which the lowercase filter has its own implementation. Other languages need none.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lowercase-tokenfilter.html
  */

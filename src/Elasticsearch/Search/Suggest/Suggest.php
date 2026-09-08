@@ -7,8 +7,8 @@ namespace Elasticsearch\Search\Suggest;
 use RuntimeException;
 
 /**
- * Sekce `suggest` v tele requestu. Muze obsahovat vic pojmenovanych suggesteru naraz;
- * v odpovedi se pak kazdy vraci pod svym jmenem.
+ * The `suggest` section of the request body. It can hold several named suggesters at once;
+ * each of them is then returned under its own name in the response.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html
  */

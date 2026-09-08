@@ -8,7 +8,7 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractTokenizer;
 
 /**
- * Rozpada text vsude, kde znak neni pismeno.
+ * Splits text wherever a character is not a letter.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-letter-tokenizer.html
  */

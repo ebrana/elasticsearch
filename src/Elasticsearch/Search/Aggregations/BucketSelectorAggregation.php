@@ -8,8 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithGapPolicy;
 
 /**
- * Vyhodi buckety, pro ktere skript vrati false - obdoba HAVING v SQL. Bezi az nad hotovymi
- * buckety, takze `size` u rodicovske agregace se pocita pred nim.
+ * Drops the buckets for which the script returns false - the equivalent of HAVING in SQL. It runs
+ * over already computed buckets, so the parent aggregation's `size` is applied before it.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-pipeline-bucket-selector-aggregation.html
  */
@@ -18,7 +18,7 @@ class BucketSelectorAggregation extends AbstractAggregation
     use WithGapPolicy;
 
     /**
-     * @param array<string, string> $bucketsPath jmeno promenne ve skriptu => cesta k metrice
+     * @param array<string, string> $bucketsPath script variable name => path to the metric
      * @param array<string, mixed>|string $script
      */
     public function __construct(

@@ -8,11 +8,11 @@ use Elasticsearch\Search\Queries\Compound\FunctionScore\Enums\MultiValueMode;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Linearni pokles. Na rozdil od gauss a exp dojde na nule - dokumenty dal nez
- * dvojnasobek scale dostanou skore 0.
+ * A linear decay. Unlike gauss and exp it reaches zero - documents farther than twice the scale
+ * get a score of 0.
  *
- * Jmenuje se LinearDecayFunction, aby se nemichala s RankFeature\LinearFunction;
- * v JSONu je to klic `linear` v obou pripadech.
+ * It is named LinearDecayFunction so that it is not confused with RankFeature\LinearFunction;
+ * in the JSON it is the `linear` key in both cases.
  */
 readonly class LinearDecayFunction extends AbstractDecayFunction
 {

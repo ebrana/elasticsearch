@@ -9,10 +9,10 @@ use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
 
 /**
- * Dávka operací pro bulk API. Do jedné davky lze michat operace i indexy.
+ * A batch of operations for the bulk API. Operations and indices can be mixed within one batch.
  *
- * Elasticsearch doporucuje davky radove tisice dokumentu nebo 5-15 MB tela; velikost
- * si musi ridit volajici, knihovna davku nedeli.
+ * Elasticsearch recommends batches of roughly thousands of documents or a 5-15 MB body; the size
+ * has to be governed by the caller, the library does not split the batch.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
  */

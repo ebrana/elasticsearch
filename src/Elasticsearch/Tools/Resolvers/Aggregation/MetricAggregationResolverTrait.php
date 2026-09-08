@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Tools\Resolvers\Aggregation;
 
 /**
- * Metriky maji stejny tvar: konstruktor (jmeno, pole) a volitelne fluent volby.
+ * The metrics share the same shape: a constructor (name, field) and optional fluent options.
  */
 trait MetricAggregationResolverTrait
 {
@@ -28,7 +28,7 @@ trait MetricAggregationResolverTrait
 
     /**
      * @param array<string, mixed> $metadata
-     * @param array<string, string> $options klic v metadatech => jmeno fluent metody
+     * @param array<string, string> $options metadata key => fluent method name
      * @return string[]
      */
     private function resolveOptions(array $metadata, string $property, array $options): array

@@ -68,14 +68,14 @@ class JsonDriver implements DriverInterface
     }
 
     /**
-     * Nastaveni indexu muze byt v JSONu pod `settings.index`, nebo naplocho v `settings` -
-     * Elasticsearch bere obe varianty.
+     * Index settings can be placed under `settings.index` in the JSON, or flat in `settings` -
+     * Elasticsearch accepts both variants.
      */
     private function resolveIndexSettings(stdClass $settings, Index $index): void
     {
         $sources = [$settings];
         if (isset($settings->index) && $settings->index instanceof stdClass) {
-            // vnorena varianta ma prednost
+            // applied last on purpose, so the nested values overwrite the flat ones
             $sources[] = $settings->index;
         }
 

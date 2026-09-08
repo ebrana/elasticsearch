@@ -9,7 +9,8 @@ use Elasticsearch\Search\Highlight\Enums\Encoder;
 use RuntimeException;
 
 /**
- * Sekce `highlight` v tele requestu - vrati u kazdeho hitu useky textu se zvyraznenymi shodami.
+ * The `highlight` section of the request body - it returns fragments of text with the matches
+ * highlighted for every hit.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html
  */
@@ -53,8 +54,8 @@ final class Highlight
     }
 
     /**
-     * Jedina hodnota, kterou Elasticsearch zna, je "styled" - pouzije predpripravene
-     * znacky <em class="hlt1"> az <em class="hlt10">.
+     * The only value Elasticsearch knows is "styled" - it uses the prepared tags
+     * <em class="hlt1"> through <em class="hlt10">.
      */
     public function useStyledTags(): self
     {
@@ -86,7 +87,7 @@ final class Highlight
         $fields = [];
         foreach ($this->fields as $name => $field) {
             $options = $field->toArray();
-            // pole bez vlastnich voleb musi byt v JSONu prazdny objekt, ne prazdne pole
+            // a field without its own options must be an empty object in the JSON, not an empty array
             $fields[$name] = [] === $options ? (object)[] : $options;
         }
         $data['fields'] = $fields;

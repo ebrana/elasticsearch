@@ -9,8 +9,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Types\AbstractType;
 
 /**
- * Cislo urcene k ovlivneni skore pres RankFeatureQuery - napr. popularita nebo pocet prodeju.
- * Hodnota musi byt kladna.
+ * A number meant to influence the score via RankFeatureQuery - e.g. popularity or number of sales.
+ * The value must be positive.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/rank-feature.html
  */
@@ -32,7 +32,7 @@ final class RankFeatureType extends AbstractType
     }
 
     /**
-     * false znamena, ze vyssi hodnota skore snizuje (napr. doba doruceni).
+     * false means a higher value lowers the score (e.g. delivery time).
      */
     public function isPositiveScoreImpact(): bool
     {

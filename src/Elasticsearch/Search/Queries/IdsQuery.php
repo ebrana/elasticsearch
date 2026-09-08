@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries;
 
 /**
- * Hleda dokumenty podle _id.
+ * Looks documents up by _id.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html
  */

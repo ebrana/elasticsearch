@@ -23,7 +23,7 @@ class ParamsTest extends TestCase
 
     public function testBackedEnumsSerializeToTheirValue(): void
     {
-        // assertEquals, protoze poradi klicu urcuje getParams() a na query parametrech nezalezi
+        // assertEquals, because the key order is decided by getParams() and does not matter in query parameters
         $this->assertEquals(
             [
                 'expand_wildcards' => 'hidden,open',

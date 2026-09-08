@@ -8,8 +8,8 @@ use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
 
 /**
- * Zaindexuje dokument jen kdyz s timto _id jeste neexistuje - jinak polozka selze
- * se statusem 409 a chyba je v BulkResponse::getErrors().
+ * Indexes the document only when no document with this _id exists yet - otherwise the item fails
+ * with status 409 and the error is reported in BulkResponse::getErrors().
  */
 readonly class CreateOperation implements BulkOperationInterface
 {

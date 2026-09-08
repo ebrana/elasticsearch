@@ -15,7 +15,7 @@ class ScaledFloatTypeFactory implements PropertyFactoryInterface
     use NumericConfigurationTrait;
 
     /**
-     * Cte povinny scaling_factor a spolecne parametry ciselnych typu.
+     * Reads the required scaling_factor and the parameters shared by the numeric types.
      *
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */

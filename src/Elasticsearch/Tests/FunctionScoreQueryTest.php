@@ -71,7 +71,7 @@ class FunctionScoreQueryTest extends TestCase
 
     public function testRandomScoreFunction(): void
     {
-        // bez parametru musi jit do JSONu prazdny objekt, ne prazdne pole
+        // with no parameters an empty object must go into the JSON, not an empty array
         $this->assertJsonQuery(
             '{"function_score":{"query":{"match_all":{}},"functions":[{"random_score":{}}]}}',
             (new FunctionScoreQuery(new MatchAllQuery(), [new RandomScoreFunction()]))->toArray()
@@ -116,7 +116,7 @@ class FunctionScoreQueryTest extends TestCase
             ]))->toArray()
         );
 
-        // multi_value_mode je sourozenec pole, ne jeho soucast
+        // multi_value_mode is a sibling of the field, not a part of it
         $this->assertJsonQuery(
             '{"function_score":{"query":{"match_all":{}},"functions":[{"linear":'
             . '{"price":{"origin":100,"scale":50},"multi_value_mode":"avg"}}]}}',

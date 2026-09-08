@@ -7,7 +7,7 @@ namespace Elasticsearch\Search\Highlight;
 use Elasticsearch\Search\Highlight\Concerns\WithHighlightOptions;
 
 /**
- * Jedno pole, ktere se ma zvyraznit. Bez dalsich voleb se pouziji ty globalni z Highlight.
+ * A single field to be highlighted. Without further options the global ones from Highlight are used.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html
  */
@@ -30,8 +30,8 @@ final class HighlightField
     }
 
     /**
-     * Zvyrazni podle shod v jinych polich - typicky varianty stejneho textu
-     * (napr. name a name.autocomplete). Funguje jen s fvh highlighterem.
+     * Highlights by the matches in other fields - typically variants of the same text
+     * (e.g. name and name.autocomplete). Works only with the fvh highlighter.
      *
      * @param string[]|null $matched_fields
      */

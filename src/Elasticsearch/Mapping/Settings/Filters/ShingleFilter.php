@@ -8,8 +8,8 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 
 /**
- * Sklada n-tice po sobe jdoucich tokenu (slovni n-gramy) - pomaha pri hledani frazi.
- * Pozor na index.max_shingle_diff (default 3).
+ * Builds tuples of consecutive tokens (word n-grams) - it helps when searching for phrases.
+ * Mind index.max_shingle_diff (3 by default).
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-shingle-tokenfilter.html
  */

@@ -10,8 +10,8 @@ use Elasticsearch\Mapping\Settings\Analyzers\Concerns\WithStopwords;
 use Elasticsearch\Mapping\Settings\Analyzers\Enums\AnalyzerLanguage;
 
 /**
- * Vestaveny jazykovy analyzer (czech, english, ...) - obsahuje uz tokenizer, lowercase,
- * stopwords a stemmer pro dany jazyk.
+ * A built-in language analyzer (czech, english, ...) - it already contains a tokenizer, lowercase,
+ * stopwords and a stemmer for the given language.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html
  */
@@ -43,7 +43,7 @@ class LanguageAnalyzer extends AbstractAnalyzer
 
     public function getLanguage(): AnalyzerLanguage
     {
-        // typ vestaveneho jazykoveho analyzeru je zaroven jmeno jazyka
+        // the type of a built-in language analyzer is at the same time the language name
         return AnalyzerLanguage::from($this->getType());
     }
 

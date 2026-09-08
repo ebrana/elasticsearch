@@ -10,7 +10,7 @@ use Elasticsearch\Search\Aggregations\Concerns\WithMissing;
 use RuntimeException;
 
 /**
- * Rozdeli hodnoty do zadanych intervalu. Na rozdil od histogramu nemusi byt stejne siroke.
+ * Splits values into the given intervals. Unlike a histogram they do not have to be equally wide.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-range-aggregation.html
  */

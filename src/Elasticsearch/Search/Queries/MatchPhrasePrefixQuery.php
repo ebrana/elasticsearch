@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries;
 
 /**
- * Jako match_phrase, ale posledni slovo bere jako prefix - typicke pro "search as you type"
- * bez potreby edge_ngram indexu.
+ * Like match_phrase, but it treats the last word as a prefix - typical for "search as you type"
+ * without the need for an edge_ngram index.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query-phrase-prefix.html
  */

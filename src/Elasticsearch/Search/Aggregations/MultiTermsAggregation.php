@@ -9,8 +9,9 @@ use Elasticsearch\Search\Aggregations\Concerns\WithAggregations;
 use RuntimeException;
 
 /**
- * Bucket za kazdou kombinaci hodnot vic poli. Je drazsi nez vnorene terms agregace,
- * ale vraci i kombinace, ktere by se pri orezu `size` na vyssi urovni ztratily.
+ * A bucket per each combination of values from several fields. It is more expensive than nested
+ * terms aggregations, but it also returns combinations that would be lost when `size` cuts
+ * the higher level.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-multi-terms-aggregation.html
  */

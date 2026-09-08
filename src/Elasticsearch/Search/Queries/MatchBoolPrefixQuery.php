@@ -7,8 +7,8 @@ namespace Elasticsearch\Search\Queries;
 use Elasticsearch\Search\Queries\Enums\Operator;
 
 /**
- * Kazde slovo hleda jako term, posledni jako prefix - na rozdil od match_phrase_prefix
- * nezalezi na poradi slov. Dobra volba pro autocomplete nad vice slovy.
+ * Searches every word as a term and the last one as a prefix - unlike match_phrase_prefix
+ * the word order does not matter. A good choice for autocomplete over several words.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-bool-prefix-query.html
  */

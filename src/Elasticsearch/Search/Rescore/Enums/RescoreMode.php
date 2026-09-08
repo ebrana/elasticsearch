@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Rescore\Enums;
 
 /**
- * Jak se spoji skore z puvodni query se skorem z rescore query.
+ * How the score of the original query is combined with the score of the rescore query.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/filter-search-results.html#rescore
  */

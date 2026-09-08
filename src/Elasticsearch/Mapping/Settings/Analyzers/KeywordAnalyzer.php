@@ -8,7 +8,7 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractAnalyzer;
 
 /**
- * Cely vstup zustane jednim tokenem.
+ * The whole input stays a single token.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-keyword-analyzer.html
  */

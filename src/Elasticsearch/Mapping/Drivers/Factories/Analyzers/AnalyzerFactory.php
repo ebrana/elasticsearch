@@ -11,7 +11,7 @@ use stdClass;
 final class AnalyzerFactory implements AnalyzerFactoryInterface
 {
     /**
-     * Vlastni (custom) analyzer: cte tokenizer (povinny), filter a char_filter.
+     * Custom analyzer: reads tokenizer (required), filter and char_filter.
      *
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */

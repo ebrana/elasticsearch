@@ -62,7 +62,7 @@ class AnnotationDriver implements DriverInterface
         $index = $reflection->getAttributes(Index::class);
 
         if (empty($index)) {
-            // hledej v dalsich levelech
+            // look further up the class hierarchy
             $parentClass = $reflection->getParentClass();
             if (false !== $parentClass) {
                 $this->level++;
@@ -77,7 +77,7 @@ class AnnotationDriver implements DriverInterface
             $indexMetadata = $index[0]->newInstance();
         }
 
-        // hledej filtry a analyzery (custom Analyzer i vestavene analyzery)
+        // look for filters and analyzers (both a custom Analyzer and the built-in ones)
         $analyzers = $reflection->getAttributes(AnalyzerInterface::class, ReflectionAttribute::IS_INSTANCEOF);
         $analysis = null;
 
@@ -209,7 +209,7 @@ class AnnotationDriver implements DriverInterface
         if (null === $key) {
             throw new RuntimeException(sprintf('Field "%s" has no keyResolver.', $objectType->getFieldName()));
         }
-        // mam typ object a zaroven rikam, ze chci klice pres resolver
+        // the type is object and at the same time the keys are requested via a resolver
         $keyResolver = $this->getKeyResolver($key);
         $keys = $keyResolver->resolve();
         foreach ($keys as $key) {

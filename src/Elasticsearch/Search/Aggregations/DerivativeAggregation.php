@@ -27,7 +27,7 @@ class DerivativeAggregation extends AbstractAggregation
     }
 
     /**
-     * Prepocte rozdil na zadanou jednotku (jen u date_histogramu), napr. "day".
+     * Converts the difference to the given unit (date_histogram only), e.g. "day".
      */
     public function unit(string $unit): self
     {

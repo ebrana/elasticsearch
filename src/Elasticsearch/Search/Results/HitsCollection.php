@@ -74,8 +74,8 @@ final class HitsCollection implements IteratorAggregate, Countable
     }
 
     /**
-     * Zvyraznene useky z odpovedi, naklicovane podle _id dokumentu. Iterace kolekce zustava
-     * na surovych hitech, takze `$hit['highlight']` funguje dal - tohle je jen zkratka.
+     * The highlighted fragments from the response, keyed by document _id. Iterating the collection
+     * stays on the raw hits, so `$hit['highlight']` keeps working - this is only a shortcut.
      *
      * @return array<string, array<string, string[]>>
      */

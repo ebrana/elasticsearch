@@ -28,7 +28,7 @@ class HighlightTest extends TestCase
 
     public function testFieldWithoutOptionsIsEmptyObject(): void
     {
-        // {"fields":{"name":{}}} - prazdne pole by ES odmitl
+        // {"fields":{"name":{}}} - an empty array would be rejected by ES
         $this->assertJsonSame(
             '{"fields":{"name":{}}}',
             (new Highlight(new HighlightField('name')))->toArray()

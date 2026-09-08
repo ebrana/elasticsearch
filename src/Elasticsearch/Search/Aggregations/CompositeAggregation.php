@@ -10,8 +10,9 @@ use Elasticsearch\Search\Aggregations\Concerns\WithAggregations;
 use RuntimeException;
 
 /**
- * Strankovatelna agregace pres kombinace hodnot. Jako jedina umi projit uplne vsechny
- * buckety - odpoved vraci `after_key`, ktery se predá do `after()` pro dalsi stranku.
+ * A pageable aggregation over combinations of values. It is the only one able to walk through
+ * absolutely all buckets - the response returns `after_key`, which is passed to `after()`
+ * to get the next page.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-composite-aggregation.html
  */

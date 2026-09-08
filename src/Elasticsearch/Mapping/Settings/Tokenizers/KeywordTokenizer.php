@@ -8,8 +8,8 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractTokenizer;
 
 /**
- * Cely vstup vrati jako jediny token - hodi se, kdyz ma nad neanalyzovanou hodnotou
- * jeste bezet retez filtru.
+ * Returns the whole input as a single token - useful when a filter chain still has to run
+ * over an unanalyzed value.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-keyword-tokenizer.html
  */

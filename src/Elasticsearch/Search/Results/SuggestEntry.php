@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Results;
 
 /**
- * Jeden vstupni usek textu a navrhy k nemu. Term suggester vraci jednu polozku
- * za kazde slovo vstupu, phrase a completion jednu za cely vstup.
+ * A single input fragment of text and the suggestions for it. The term suggester returns one entry
+ * per input word, phrase and completion one per the whole input.
  */
 final readonly class SuggestEntry
 {
@@ -45,7 +45,7 @@ final readonly class SuggestEntry
     }
 
     /**
-     * Jen texty navrhu - typicky to, co se posila do frontendu.
+     * Only the suggestion texts - typically what gets sent to the frontend.
      *
      * @return string[]
      */

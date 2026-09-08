@@ -10,8 +10,8 @@ use Elasticsearch\Search\Queries\Query;
 use RuntimeException;
 
 /**
- * Vic pojmenovanych filtru naraz - kazdy dostane svuj bucket. Na rozdil od FilterAggregation
- * (jednotne cislo) nemusi clovek posilat samostatnou agregaci pro kazdou podminku.
+ * Several named filters at once - each gets its own bucket. Unlike FilterAggregation (singular)
+ * one does not have to send a separate aggregation for every condition.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-filters-aggregation.html
  */
@@ -48,7 +48,7 @@ class FiltersAggregation extends AbstractAggregation
     }
 
     /**
-     * Prida bucket pro dokumenty, ktere neodpovidaji zadnemu filtru.
+     * Adds a bucket for documents that match none of the filters.
      */
     public function otherBucket(bool $otherBucket, ?string $key = null): self
     {

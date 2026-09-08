@@ -41,7 +41,7 @@ class SamplerAggregation extends AbstractAggregation
             $parameters['shard_size'] = $this->shardSize;
         }
 
-        // bez parametru musi jit do JSONu prazdny objekt, ne prazdne pole
+        // with no parameters an empty object must go into the JSON, not an empty array
         $data = ['sampler' => [] === $parameters ? (object)[] : $parameters];
 
         if (!$this->aggregations->isEmpty()) {

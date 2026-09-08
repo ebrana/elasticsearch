@@ -126,8 +126,8 @@ class FulltextQueriesTest extends TestCase
 
     public function testPrefixQueryKeepsOptionsInsideField(): void
     {
-        // rewrite a case_insensitive musi byt uvnitr objektu pole; vedle nej je ES odmita
-        // hlaskou "query doesn't support multiple fields"
+        // rewrite and case_insensitive must live inside the field object; next to it ES rejects them
+        // with "query doesn't support multiple fields"
         $this->assertSame(
             ['prefix' => ['code' => [
                 'value'            => 'ab',

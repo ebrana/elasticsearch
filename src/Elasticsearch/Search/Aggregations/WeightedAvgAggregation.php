@@ -7,8 +7,9 @@ namespace Elasticsearch\Search\Aggregations;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Vazeny prumer - hodnota a vaha se berou z ruznych poli (napr. hodnoceni vazene
- * poctem recenzi). Na rozdil od ostatnich metrik ma `missing` zvlast pro hodnotu i vahu.
+ * A weighted average - the value and the weight are taken from different fields (e.g. a rating
+ * weighted by the number of reviews). Unlike the other metrics it has a separate `missing`
+ * for the value and for the weight.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-weight-avg-aggregation.html
  */

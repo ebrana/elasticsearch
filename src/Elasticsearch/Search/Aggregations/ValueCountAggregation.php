@@ -7,7 +7,7 @@ namespace Elasticsearch\Search\Aggregations;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Pocet hodnot v poli - na rozdil od cardinality nepocita unikatni, ale vsechny.
+ * The number of values in a field - unlike cardinality it does not count unique ones, but all of them.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-valuecount-aggregation.html
  */

@@ -9,9 +9,9 @@ use Elasticsearch\Search\Aggregations\Concerns\WithAggregations;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Termy, ktere jsou ve vysledku dotazu vyrazne castejsi nez v celem indexu - hodi se na
- * "souvisejici hledani" nebo doporucene filtry. Na rozdil od terms nevraci nejcastejsi,
- * ale nejneobvyklejsi.
+ * Terms that are significantly more frequent in the query result than in the whole index - useful
+ * for "related searches" or suggested filters. Unlike terms it does not return the most frequent
+ * ones, but the most unusual ones.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-significantterms-aggregation.html
  */
@@ -64,7 +64,7 @@ class SignificantTermsAggregation extends AbstractAggregation
     }
 
     /**
-     * Zuzi mnozinu, proti ktere se cetnost porovnava (vychozi je cely index).
+     * Narrows the set the frequency is compared against (the whole index by default).
      */
     public function backgroundFilter(Query $query): self
     {
@@ -94,7 +94,7 @@ class SignificantTermsAggregation extends AbstractAggregation
     }
 
     /**
-     * Zpusob vypoctu vyznamnosti, napr. 'chi_square' nebo 'gnd'. Bez zadani pouzije ES jlh.
+     * The way significance is computed, e.g. 'chi_square' or 'gnd'. With none given ES uses jlh.
      *
      * @param array<string, mixed> $parameters
      */

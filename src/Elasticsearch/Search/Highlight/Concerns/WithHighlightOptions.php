@@ -11,8 +11,8 @@ use Elasticsearch\Search\Highlight\Enums\HighlightOrder;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Volby, ktere Elasticsearch pripousti jak globalne, tak u jednotlivych poli.
- * U pole prebiji tu globalni.
+ * The options Elasticsearch accepts both globally and per individual field.
+ * The per-field one overrides the global one.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html
  */
@@ -47,7 +47,7 @@ trait WithHighlightOptions
     }
 
     /**
-     * Znacky se zadavaji jako pole, protoze Elasticsearch umi obalit kazdou shodu jinak.
+     * The tags are given as arrays, because Elasticsearch can wrap each match differently.
      *
      * @param string[]|null $pre_tags
      * @param string[]|null $post_tags
@@ -110,7 +110,7 @@ trait WithHighlightOptions
     }
 
     /**
-     * Kolik znaku vratit, kdyz v poli zadna shoda neni. Bez toho se takove pole vynecha.
+     * How many characters to return when the field contains no match. Without it such a field is omitted.
      */
     public function setNoMatchSize(?int $no_match_size): static
     {
@@ -120,7 +120,7 @@ trait WithHighlightOptions
     }
 
     /**
-     * Zvyrazni podle jine query, nez ktera se hledala.
+     * Highlights according to a different query than the one that was searched.
      */
     public function setHighlightQuery(?Query $highlight_query): static
     {

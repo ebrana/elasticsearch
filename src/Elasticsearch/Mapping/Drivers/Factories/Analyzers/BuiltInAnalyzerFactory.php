@@ -17,8 +17,8 @@ use Elasticsearch\Mapping\Settings\Analyzers\WhitespaceAnalyzer;
 use stdClass;
 
 /**
- * Vytvari vestavene analyzery ze JSON definice. Jazykove analyzery se poznaji podle toho,
- * ze je jejich `type` jmenem jazyka (czech, english, ...).
+ * Creates the built-in analyzers from a JSON definition. Language analyzers are recognized by
+ * their `type` being a language name (czech, english, ...).
  */
 final class BuiltInAnalyzerFactory
 {
@@ -29,9 +29,9 @@ final class BuiltInAnalyzerFactory
     }
 
     /**
-     * Podle typu se cte: max_token_length (standard), buffer_size (keyword),
+     * Depending on the type it reads: max_token_length (standard), buffer_size (keyword),
      * pattern/flags/lowercase (pattern), separator/max_output_size (fingerprint),
-     * stem_exclusion (jazykove analyzery) a stopwords/stopwords_path.
+     * stem_exclusion (language analyzers) and stopwords/stopwords_path.
      */
     public static function create(string $name, string $type, stdClass $configuration): AbstractAnalyzer
     {

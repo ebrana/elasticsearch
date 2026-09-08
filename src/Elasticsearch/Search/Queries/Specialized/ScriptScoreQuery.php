@@ -7,8 +7,8 @@ namespace Elasticsearch\Search\Queries\Specialized;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Prepocita skore shod vlastnim skriptem. Skript se zadava tak, jak ho ceka Elasticsearch,
- * tedy vcetne klice `source` a pripadneho `params`.
+ * Recomputes the score of the matches with a custom script. The script is passed the way
+ * Elasticsearch expects it, i.e. including the `source` key and an optional `params`.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-score-query.html
  */

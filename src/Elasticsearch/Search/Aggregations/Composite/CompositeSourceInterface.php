@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Aggregations\Composite;
 
 /**
- * Jeden zdroj hodnot v composite agregaci. Kombinace vsech zdroju tvori klic bucketu.
+ * A single value source in a composite aggregation. The combination of all sources forms the bucket key.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-composite-aggregation.html
  */

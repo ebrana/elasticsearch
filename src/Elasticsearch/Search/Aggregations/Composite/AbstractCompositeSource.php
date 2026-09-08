@@ -31,7 +31,7 @@ abstract class AbstractCompositeSource implements CompositeSourceInterface
     }
 
     /**
-     * Zaradi i dokumenty, kterym pole chybi (jinak z composite vypadnou).
+     * Includes documents that are missing the field as well (otherwise they drop out of the composite).
      */
     public function missingBucket(bool $missingBucket): static
     {
@@ -41,14 +41,14 @@ abstract class AbstractCompositeSource implements CompositeSourceInterface
     }
 
     /**
-     * Vlastni cast zdroje bez spolecnych voleb.
+     * The source-specific part, without the shared options.
      *
      * @return array<string, mixed>
      */
     abstract protected function provideSource(): array;
 
     /**
-     * Typ zdroje, napr. "terms".
+     * The source type, e.g. "terms".
      */
     abstract protected function getType(): string;
 

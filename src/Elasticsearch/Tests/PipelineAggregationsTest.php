@@ -67,7 +67,7 @@ class PipelineAggregationsTest extends TestCase
 
     public function testBucketSortWithoutOptionsIsEmptyObject(): void
     {
-        // bucket_sort jde pouzit i jen na strankovani; prazdne pole by ES odmitl
+        // bucket_sort can be used for paging alone; an empty array would be rejected by ES
         $this->assertJsonSame('{"bucket_sort":{}}', (new BucketSortAggregation('a'))->toArray());
     }
 

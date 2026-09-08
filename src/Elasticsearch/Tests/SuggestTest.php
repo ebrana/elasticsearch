@@ -176,7 +176,7 @@ class SuggestTest extends TestCase
         $this->assertSame('1', $completion->getId());
         $this->assertSame('product', $completion->getIndex());
         $this->assertSame(['name' => 'boty'], $completion->getSource());
-        // freq vraci jen term suggester
+        // freq is returned by the term suggester only
         $this->assertNull($completion->getFreq());
     }
 

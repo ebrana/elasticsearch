@@ -23,8 +23,8 @@ use RuntimeException;
 class ScoringQueriesTest extends TestCase
 {
     /**
-     * Query obalujici jine query se porovnavaji na urovni JSONu - MatchAllQuery zamerne
-     * vraci stdClass, aby se serializoval jako {}, a to pres assertSame na pole neprojde.
+     * Queries wrapping other queries are compared at the JSON level - MatchAllQuery deliberately
+     * returns stdClass so that it serializes as {}, and that does not pass assertSame on an array.
      *
      * @param array<string, mixed> $actual
      */
@@ -93,7 +93,7 @@ class ScoringQueriesTest extends TestCase
             (new RankFeatureQuery('popularity', new SaturationFunction(80.0)))->toArray()
         );
 
-        // saturation bez pivotu si ho ES spocita sam, ale musi dostat prazdny objekt, ne pole
+        // saturation without a pivot lets ES compute it, but it must receive an empty object, not an array
         $this->assertJsonQuery(
             '{"rank_feature":{"field":"popularity","saturation":{}}}',
             (new RankFeatureQuery('popularity', new SaturationFunction()))->toArray()

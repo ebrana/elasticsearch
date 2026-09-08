@@ -8,8 +8,8 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractTokenizer;
 
 /**
- * Rozpada text na zadanych znacich. Levnejsi alternativa pattern tokenizeru,
- * kdyz staci vyjmenovat oddelovace.
+ * Splits text at the given characters. A cheaper alternative to the pattern tokenizer
+ * when listing the separators is enough.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-chargroup-tokenizer.html
  */
@@ -19,8 +19,8 @@ class CharGroupTokenizer extends AbstractTokenizer
     public const int DEFAULT_MAX_TOKEN_LENGTH = 255;
 
     /**
-     * V tokenize_on_chars lze mit jak jmena trid znaku (whitespace, letter, digit,
-     * punctuation, symbol), tak konkretni znaky ("-", "/").
+     * tokenize_on_chars can hold both character class names (whitespace, letter, digit,
+     * punctuation, symbol) and concrete characters ("-", "/").
      *
      * @param string[] $tokenize_on_chars
      */

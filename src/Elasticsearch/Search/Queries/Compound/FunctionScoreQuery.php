@@ -10,8 +10,8 @@ use Elasticsearch\Search\Queries\Compound\FunctionScore\ScoreFunctionInterface;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Prepocita skore shod pomoci jedne nebo vice funkci. `score_mode` rika, jak se slozi
- * funkce mezi sebou, `boost_mode` jak se vysledek spoji se skorem z puvodni query.
+ * Recomputes the score of the matches using one or more functions. `score_mode` says how the
+ * functions combine with each other, `boost_mode` how the result joins the score of the original query.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html
  */

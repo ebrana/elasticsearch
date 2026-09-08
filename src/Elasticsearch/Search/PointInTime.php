@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Elasticsearch\Search;
 
 /**
- * Point in Time - zamrznuty pohled na index, aby hluboke strankovani pres search_after
- * vracelo konzistentni vysledky i kdyz se mezitim indexuje.
+ * Point in Time - a frozen view of the index, so that deep paging via search_after returns
+ * consistent results even while indexing goes on.
  *
- * Otevira se pres Connection::openPointInTime() a po dostrankovani je potreba ho zavrit
- * pres Connection::closePointInTime(), jinak drzi zdroje az do vyprseni keep_alive.
+ * It is opened through Connection::openPointInTime() and once paging is done it has to be closed
+ * through Connection::closePointInTime(), otherwise it holds resources until keep_alive expires.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/point-in-time-api.html
  */

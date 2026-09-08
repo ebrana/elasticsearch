@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Results;
 
 /**
- * Jeden navrh z odpovedi suggesteru. `freq` vraci jen term suggester,
- * `_id`/`_index`/`_source` jen completion suggester.
+ * A single suggestion from a suggester response. `freq` is returned by the term suggester only,
+ * `_id`/`_index`/`_source` by the completion suggester only.
  */
 final readonly class SuggestOption
 {

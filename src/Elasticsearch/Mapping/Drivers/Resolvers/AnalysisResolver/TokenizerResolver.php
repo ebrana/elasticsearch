@@ -38,7 +38,7 @@ final class TokenizerResolver
     ];
 
     /**
-     * @deprecated Preklep v nazvu, pouzij resolveTokenizer().
+     * @deprecated Misspelled name, use resolveTokenizer().
      */
     public function resolvetTokenizer(stdClass $tokenizers, Analysis $analysis): void
     {

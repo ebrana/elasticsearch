@@ -7,7 +7,7 @@ namespace Elasticsearch\Mapping\Types\Helpers;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Parametry, ktere maji spolecne date a date_nanos.
+ * Parameters shared by date and date_nanos.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html
  */
@@ -22,7 +22,7 @@ trait DateOptionsTrait
     private bool $ignore_malformed = false;
 
     /**
-     * Napr. "yyyy-MM-dd" nebo "strict_date_optional_time||epoch_millis".
+     * E.g. "yyyy-MM-dd" or "strict_date_optional_time||epoch_millis".
      */
     public function getFormat(): ?string
     {
@@ -85,7 +85,7 @@ trait DateOptionsTrait
     }
 
     /**
-     * Neplatne datum se pri indexaci preskoci misto vyhozeni chyby.
+     * An invalid date is skipped during indexing instead of raising an error.
      */
     public function isIgnoreMalformed(): bool
     {

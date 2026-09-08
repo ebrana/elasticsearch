@@ -8,8 +8,8 @@ use Elasticsearch\Search\Queries\Compound\FunctionScore\Enums\FieldValueFactorMo
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Skore pocita z hodnoty ciselneho pole. `missing` je hodnota pouzita, kdyz pole chybi -
- * bez ni takove dokumenty skonci s chybou.
+ * Computes the score from the value of a numeric field. `missing` is the value used when the field
+ * is absent - without it such documents end up with an error.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html#function-field-value-factor
  */

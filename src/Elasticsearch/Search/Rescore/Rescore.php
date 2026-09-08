@@ -8,8 +8,8 @@ use Elasticsearch\Search\Queries\Query;
 use Elasticsearch\Search\Rescore\Enums\RescoreMode;
 
 /**
- * Prepocita skore jen u prvnich `window_size` vysledku z kazdeho shardu. Hodi se na drahe
- * query (napr. match_phrase nebo script), ktere by se pres cely index nevyplatilo pustit.
+ * Recomputes the score of only the first `window_size` results from each shard. Useful for
+ * expensive queries (e.g. match_phrase or script) that would not pay off across the whole index.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/filter-search-results.html#rescore
  */

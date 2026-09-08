@@ -230,8 +230,8 @@ class Connection
     }
 
     /**
-     * Davkova indexace. Bulk vraci HTTP 200 i kdyz cast polozek selze, takze je potreba
-     * zkontrolovat BulkResponse::hasErrors().
+     * Bulk indexing. Bulk returns HTTP 200 even when some of the items fail, so
+     * BulkResponse::hasErrors() has to be checked.
      *
      * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
@@ -302,8 +302,8 @@ class Connection
     }
 
     /**
-     * Otevre Point in Time - zamrznuty pohled na index pro konzistentni hluboke strankovani
-     * pres search_after. Po dostrankovani je potreba ho zavrit pres closePointInTime().
+     * Opens a Point in Time - a frozen view of the index for consistent deep paging via
+     * search_after. Once paging is done it has to be closed via closePointInTime().
      *
      * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
@@ -349,8 +349,8 @@ class Connection
     }
 
     /**
-     * Ladeni analyzeru: vrati tokeny, na ktere Elasticsearch rozpadne zadany text.
-     * Bez indexu lze testovat jen vestavene analyzery; s indexem i ty definovane v jeho mappingu.
+     * Analyzer debugging: returns the tokens Elasticsearch splits the given text into.
+     * Without an index only built-in analyzers can be tested; with one, also those defined in its mapping.
      *
      * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException

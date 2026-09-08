@@ -141,6 +141,13 @@ verzování ze [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Nové query jsou v podsložkách podle kategorií z dokumentace Elasticsearche
   (`Queries\Compound`, `Queries\Specialized`). Stávající query zůstávají v `Queries`,
   jejich přesun by byl BC break a proběhne samostatně.
+- `AbstractCharactedFilter` a `MappingMetada` navíc hlásí `E_USER_DEPRECATED` při vytvoření
+  instance, aby na ně upozornil i běh aplikace, nejen IDE. Atribut `#[\Deprecated]` použít
+  nelze — PHP ho na třídy nepovoluje a existuje až od 8.4, zatímco knihovna drží 8.3.
+- `AnalyzeRequest` a `AnalyzeResult` jsou `readonly` třídy.
+- Komentáře a docblocky v `src/` jsou nově anglicky, v souladu se zbytkem kódu.
+- Testovací entita už neodkazuje na konkrétní platformu (`AmproductsModule` → `ProductModule`),
+  včetně ukázek v README a fixture `Tests/Json/test.json`.
 
 ### Opraveno
 

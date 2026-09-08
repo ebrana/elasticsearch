@@ -11,7 +11,7 @@ trait WithStopwords
     private ?string $stopwords_path = null;
 
     /**
-     * Bud vlastni seznam slov, nebo preddefinovana sada Elasticsearche (napr. "_czech_", "_none_").
+     * Either a custom word list, or a predefined Elasticsearch set (e.g. "_czech_", "_none_").
      *
      * @param string[]|string|null $stopwords
      */

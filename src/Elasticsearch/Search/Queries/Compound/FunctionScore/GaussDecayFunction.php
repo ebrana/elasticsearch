@@ -8,8 +8,8 @@ use Elasticsearch\Search\Queries\Compound\FunctionScore\Enums\MultiValueMode;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Zvonova krivka - blizko originu skore klesa pomalu, dal rychleji a nakonec zase pomalu.
- * Nejcastejsi volba pro "cim novejsi, tim lepsi".
+ * A bell curve - near the origin the score decays slowly, farther away faster and eventually
+ * slowly again. The most common choice for "the newer the better".
  */
 readonly class GaussDecayFunction extends AbstractDecayFunction
 {

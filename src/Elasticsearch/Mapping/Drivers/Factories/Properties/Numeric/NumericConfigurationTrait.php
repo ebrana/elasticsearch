@@ -10,7 +10,7 @@ use stdClass;
 trait NumericConfigurationTrait
 {
     /**
-     * Cte spolecne parametry ciselnych typu: coerce, doc_values, ignored_malformed, index, store, null_value.
+     * Reads the parameters shared by the numeric types: coerce, doc_values, ignored_malformed, index, store, null_value.
      */
     private static function applyConfiguration(AbstractNumericType $type, stdClass $configuration): void
     {

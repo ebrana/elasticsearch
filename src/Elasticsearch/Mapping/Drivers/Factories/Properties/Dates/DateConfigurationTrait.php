@@ -11,7 +11,7 @@ use stdClass;
 trait DateConfigurationTrait
 {
     /**
-     * Cte format, locale, null_value, index, doc_values, store a ignore_malformed.
+     * Reads format, locale, null_value, index, doc_values, store and ignore_malformed.
      */
     private static function applyConfiguration(DateType|DateNanoType $type, stdClass $configuration): void
     {

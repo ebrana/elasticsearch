@@ -106,7 +106,7 @@ final class PropertiesResolver
     }
 
     /**
-     * Multi-fields (`fields`) nemohou byt zanorene do dalsich multi-fields, resi se proto jen jedna uroven.
+     * Multi-fields (`fields`) cannot be nested into further multi-fields, so only one level is resolved.
      */
     private function resolveMultiFields(stdClass $fields, MultiFieldsInterface $parent): void
     {

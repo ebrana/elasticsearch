@@ -41,7 +41,7 @@ final class ScaledFloatType extends AbstractNumericType
     public function getCollection(): ArrayCollection
     {
         $collection = parent::getCollection();
-        // scaling_factor je u scaled_float povinny - bez nej ES odmitne vytvorit index
+        // scaling_factor is required for scaled_float - without it ES refuses to create the index
         $collection->set('scaling_factor', $this->getScalingFactor());
 
         return $collection;

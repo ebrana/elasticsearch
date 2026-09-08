@@ -24,8 +24,8 @@ class PropertyTypesTest extends TestCase
 {
     public function testScaledFloatEmitsScalingFactor(): void
     {
-        // scaling_factor je u scaled_float povinny; dokud se neemitoval, ES odmitl
-        // vytvorit index s takovou property
+        // scaling_factor is required for scaled_float; while it was not emitted, ES refused
+        // to create an index with such a property
         $type = new ScaledFloatType(scaling_factor: 100.0, name: 'price');
 
         $this->assertSame(
@@ -58,7 +58,7 @@ class PropertyTypesTest extends TestCase
 
     public function testAliasTypeAcceptsContext(): void
     {
-        // konstruktor mel preklep "contect", takze pojmenovany argument context: padal
+        // the constructor had the typo "contect", so the named argument context: used to fail
         $type = new AliasType(path: 'original.name', name: 'alias', context: self::class);
 
         $this->assertSame(self::class, $type->getContext());
@@ -74,7 +74,7 @@ class PropertyTypesTest extends TestCase
         $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         $properties = $decoded['mappings']['properties'];
 
-        // dokud typy nebyly registrovane, JSON driver je zahazoval uplne
+        // while the types were not registered, the JSON driver dropped them entirely
         $this->assertCount(19, $properties);
 
         $this->assertSame(['type' => 'match_only_text'], $properties['strucne']);
@@ -86,7 +86,7 @@ class PropertyTypesTest extends TestCase
         $this->assertSame(['type' => 'unsigned_long'], $properties['bezznamenka']);
         $this->assertSame(['type' => 'double', 'index' => false], $properties['presna']);
         $this->assertSame(['type' => 'half_float'], $properties['polovicni']);
-        // cele cislo projde json_encode/decode jako int, ES to bere
+        // a whole number survives json_encode/decode as an int, ES accepts that
         $this->assertSame(['type' => 'scaled_float', 'scaling_factor' => 100], $properties['skalovana']);
         $this->assertSame(['type' => 'binary', 'store' => true], $properties['priloha']);
         $this->assertSame(['type' => 'alias', 'path' => 'nazev'], $properties['alias_nazvu']);
@@ -168,7 +168,7 @@ class PropertyTypesTest extends TestCase
             (new RankFeatureType(name: 'popularita'))->getCollection()->toArray()
         );
 
-        // false se posilat musi - vyssi hodnota ma skore snizovat
+        // false has to be sent - a higher value is meant to lower the score
         $this->assertSame(
             ['type' => 'rank_feature', 'positive_score_impact' => false],
             (new RankFeatureType(positive_score_impact: false, name: 'doba'))->getCollection()->toArray()

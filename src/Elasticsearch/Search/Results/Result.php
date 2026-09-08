@@ -138,7 +138,7 @@ final class Result
     }
 
     /**
-     * Navrhy naklicovane podle jmena suggesteru, jak je vrati Elasticsearch.
+     * The suggestions keyed by the suggester name, the way Elasticsearch returns them.
      *
      * @return array<string, SuggestEntry[]>
      */

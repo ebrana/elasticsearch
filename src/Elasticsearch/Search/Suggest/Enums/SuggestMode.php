@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Suggest\Enums;
 
 /**
- * Pro ktere termy se maji navrhy hledat. Pouziva se jak v tele requestu (TermSuggest,
- * DirectGenerator), tak jako query parametr suggest_mode v SearchParams.
+ * For which terms suggestions should be looked up. It is used both in the request body (TermSuggest,
+ * DirectGenerator) and as the suggest_mode query parameter in SearchParams.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#term-suggester
  */
 enum SuggestMode: string
 {
-    /** jen pro termy, ktere v indexu nejsou */
+    /** only for terms that are not in the index */
     case MISSING = 'missing';
-    /** jen pro termy castejsi nez zadany */
+    /** only for terms more frequent than the given one */
     case POPULAR = 'popular';
     case ALWAYS = 'always';
 }

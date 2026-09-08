@@ -7,7 +7,7 @@ namespace Elasticsearch\Search\Queries\Compound\FunctionScore;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Samotna vaha - typicky ve spojeni s filtrem: "co odpovida tomuhle, nasob skore X".
+ * The weight alone - typically together with a filter: "whatever matches this, multiply the score by X".
  */
 readonly class WeightFunction extends AbstractScoreFunction
 {

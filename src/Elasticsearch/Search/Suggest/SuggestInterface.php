@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Suggest;
 
 /**
- * Jeden pojmenovany suggester v sekci `suggest`. Pod svym jmenem se pak vraci i v odpovedi.
+ * A single named suggester in the `suggest` section. It is then returned under its own name
+ * in the response as well.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html
  */

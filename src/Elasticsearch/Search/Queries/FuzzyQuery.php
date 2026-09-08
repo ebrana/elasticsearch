@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries;
 
 /**
- * Term query tolerantni k preklepum - hleda termy do zadane editacni vzdalenosti.
- * Pracuje na neanalyzovane hodnote, takze se hodi na keyword pole.
+ * A term query tolerant to typos - it looks for terms within the given edit distance.
+ * It works on the unanalyzed value, so it suits keyword fields.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html
  */

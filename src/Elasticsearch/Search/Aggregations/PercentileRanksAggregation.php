@@ -8,8 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithMissing;
 
 /**
- * Obraceny percentiles - pro zadane hodnoty vrati, kolik procent dokumentu je pod nimi
- * ("kolik procent produktu je do 500 Kc").
+ * The inverse of percentiles - for the given values it returns what percentage of documents
+ * is below them ("what percentage of products is under 500 CZK").
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-percentile-rank-aggregation.html
  */

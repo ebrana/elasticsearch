@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Mapping\Settings\Analyzers\Enums;
 
 /**
- * Jazyky, pro ktere ma Elasticsearch vestaveny language analyzer.
- * Je to uzsi seznam nez u stemmer filtru (Settings\Filters\Enums\Language), proto vlastni enum.
+ * Languages for which Elasticsearch provides a built-in language analyzer.
+ * The list is narrower than the stemmer filter one (Settings\Filters\Enums\Language), hence a separate enum.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html
  */

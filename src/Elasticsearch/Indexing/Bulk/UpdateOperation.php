@@ -8,8 +8,8 @@ use Elasticsearch\Mapping\Index;
 use RuntimeException;
 
 /**
- * Castecna zmena dokumentu - bud predanymi polemi (`doc`), nebo skriptem (`script`).
- * `docAsUpsert` zaridi, ze se dokument vytvori, kdyz jeste neexistuje.
+ * Partial document change - either by the given fields (`doc`), or by a script (`script`).
+ * `docAsUpsert` makes the document be created when it does not exist yet.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
  */
@@ -18,7 +18,7 @@ readonly class UpdateOperation implements BulkOperationInterface
     /**
      * @param array<string, mixed>|null $doc
      * @param array<string, mixed>|null $script
-     * @param array<string, mixed>|null $upsert dokument pouzity, kdyz cil neexistuje
+     * @param array<string, mixed>|null $upsert the document used when the target does not exist
      * @param array<string, mixed> $metadata
      */
     public function __construct(
@@ -59,6 +59,16 @@ readonly class UpdateOperation implements BulkOperationInterface
         return $metadata;
     }
 
+    /**
+     * Exactly one of `doc` or `script` is present; `doc_as_upsert` and `upsert` are optional.
+     *
+     * @return array{
+     *     doc?: array<string, mixed>,
+     *     script?: array<string, mixed>,
+     *     doc_as_upsert?: true,
+     *     upsert?: array<string, mixed>
+     * }
+     */
     public function getSource(): ?array
     {
         if (null === $this->doc && null === $this->script) {

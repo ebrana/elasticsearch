@@ -9,11 +9,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Types\AbstractType;
 
 /**
- * Zemepisny bod. Pouziva se pri razeni podle vzdalenosti (GeoDistanceSort), v decay
- * funkcich a v DistanceFeatureQuery.
+ * A geographic point. Used when sorting by distance (GeoDistanceSort), in decay functions
+ * and in DistanceFeatureQuery.
  *
- * Hodnotu Elasticsearch prijima ve vic tvarech - objekt {"lat":…,"lon":…}, pole [lon, lat],
- * retezec "lat,lon" nebo geohash.
+ * Elasticsearch accepts the value in several shapes - an object {"lat":…,"lon":…}, an array
+ * [lon, lat], a string "lat,lon" or a geohash.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html
  */
@@ -52,7 +52,7 @@ final class GeoPointType extends AbstractType
     }
 
     /**
-     * false znamena, ze bod se tretim rozmerem skonci chybou misto jeho zahozeni.
+     * false means a point carrying a third dimension fails with an error instead of it being dropped.
      */
     public function isIgnoreZValue(): bool
     {

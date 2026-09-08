@@ -8,7 +8,7 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 
 /**
- * Vyhodi tokeny mimo zadany rozsah delky.
+ * Drops tokens outside the given length range.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-length-tokenfilter.html
  */

@@ -8,8 +8,8 @@ use Elasticsearch\Search\Queries\Enums\Operator;
 use Elasticsearch\Search\Queries\Enums\SimpleQueryStringFlag;
 
 /**
- * Na rozdil od query_string nespadne na syntaktickou chybu, jen nesmyslnou cast ignoruje -
- * proto je to bezpecnejsi volba pro vstup od uzivatele.
+ * Unlike query_string it does not fail on a syntax error, it only ignores the nonsensical part -
+ * which makes it the safer choice for user input.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html
  */

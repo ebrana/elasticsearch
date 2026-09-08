@@ -7,8 +7,8 @@ namespace Elasticsearch\Search\Queries\Compound\FunctionScore;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * `filter` (funkce se uplatni jen na jeho shody) a `weight` (nasobitel skore funkce)
- * muze mit kterakoli funkce, proto jsou tady.
+ * `filter` (the function applies only to its matches) and `weight` (a multiplier of the function
+ * score) can be used by any function, hence they live here.
  */
 abstract readonly class AbstractScoreFunction implements ScoreFunctionInterface
 {
@@ -29,7 +29,7 @@ abstract readonly class AbstractScoreFunction implements ScoreFunctionInterface
     }
 
     /**
-     * Vlastni cast funkce, tedy napr. ['field_value_factor' => [...]].
+     * The function-specific part, i.e. e.g. ['field_value_factor' => [...]].
      *
      * @return array<string, mixed>
      */

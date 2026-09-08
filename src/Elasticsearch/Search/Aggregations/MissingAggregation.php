@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithAggregations;
 
 /**
- * Bucket dokumentu, kterym zadane pole chybi (nebo je null).
+ * A bucket of documents that are missing the given field (or have it null).
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-missing-aggregation.html
  */

@@ -62,7 +62,7 @@ class RequestBodyTest extends TestCase
 
     public function testFalseValuesAreStillSent(): void
     {
-        // false u track_* neni "nenastaveno" - musi se poslat
+        // false in track_* is not "unset" - it has to be sent
         $builder = $this->createBuilder();
         $builder->trackTotalHits(false)->trackScores(false);
 
@@ -152,7 +152,7 @@ class RequestBodyTest extends TestCase
         $withoutPit = $builder->build()->toArray();
         $this->assertSame('testing_product', $withoutPit['index']);
 
-        // s PIT patri index do pit.id; ES by request s indexem odmitl
+        // with a PIT the index belongs into pit.id; ES would reject a request carrying an index
         $builder->setPointInTime(new PointInTime('abc123'));
         $withPit = $builder->build()->toArray();
         $this->assertArrayNotHasKey('index', $withPit);

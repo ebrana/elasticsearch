@@ -7,11 +7,11 @@ namespace Elasticsearch\Mapping\Settings;
 use Attribute;
 
 /**
- * Normalizer je obdoba analyzeru pro keyword pole - nema tokenizer a vysledkem je vzdy
- * jediny token. Pouziva se na sjednoceni hodnot pro razeni a fasety (napr. lowercase
- * + asciifolding). Na pole se zapoji pres KeywordType(normalizer: "...").
+ * A normalizer is the keyword-field counterpart of an analyzer - it has no tokenizer and always
+ * produces a single token. It is used to unify values for sorting and facets (e.g. lowercase
+ * + asciifolding). It is attached to a field via KeywordType(normalizer: "...").
  *
- * Elasticsearch u normalizeru povoluje jen cast filtru (ty, ktere nemeni pocet tokenu).
+ * Elasticsearch allows only a subset of filters in a normalizer (those that do not change the token count).
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-normalizers.html
  */

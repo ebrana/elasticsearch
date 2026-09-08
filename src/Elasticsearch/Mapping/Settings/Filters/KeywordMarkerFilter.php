@@ -8,8 +8,8 @@ use Attribute;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 
 /**
- * Oznaci tokeny jako klicova slova, takze je nasledujici stemmer nechá být.
- * Musi byt v poradi filtru pred stemmerem.
+ * Marks tokens as keywords so that the following stemmer leaves them alone.
+ * Must come before the stemmer in the filter order.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-keyword-marker-tokenfilter.html
  */

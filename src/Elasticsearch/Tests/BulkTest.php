@@ -141,7 +141,7 @@ class BulkTest extends TestCase
 
     public function testResponseCollectsItemErrors(): void
     {
-        // bulk vraci HTTP 200 i pri castecnem selhani
+        // bulk returns HTTP 200 even on a partial failure
         $response = new BulkResponse([
             'took'   => 5,
             'errors' => true,

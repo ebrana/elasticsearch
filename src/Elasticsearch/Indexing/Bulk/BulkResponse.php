@@ -7,8 +7,8 @@ namespace Elasticsearch\Indexing\Bulk;
 use Countable;
 
 /**
- * Odpoved bulk API. Pozor: bulk vraci HTTP 200 i kdyz cast polozek selze - chyby
- * je potreba zkontrolovat pres hasErrors() / getErrors().
+ * Bulk API response. Beware: bulk returns HTTP 200 even when some of the items fail - the errors
+ * have to be checked via hasErrors() / getErrors().
  */
 final class BulkResponse implements Countable
 {
@@ -82,7 +82,7 @@ final class BulkResponse implements Countable
     }
 
     /**
-     * Celkovy pocet polozek v odpovedi.
+     * The total number of items in the response.
      */
     public function count(): int
     {

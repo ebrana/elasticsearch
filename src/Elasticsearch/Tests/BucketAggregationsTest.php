@@ -248,7 +248,7 @@ class BucketAggregationsTest extends TestCase
 
     public function testGlobalAggregationOmitsEmptyAggs(): void
     {
-        // prazdne "aggs" ES odmita hlaskou "Expected [START_OBJECT] under [aggs]"
+        // an empty "aggs" is rejected by ES with "Expected [START_OBJECT] under [aggs]"
         $this->assertJsonSame('{"global":{}}', (new GlobalAggregation('vse'))->toArray());
 
         $aggregation = new GlobalAggregation('vse');

@@ -10,7 +10,7 @@ use stdClass;
 final class NormalizerFactory implements NormalizerFactoryInterface
 {
     /**
-     * Cte filter a char_filter; Elasticsearch u obou pripousti jak jedno jmeno, tak pole jmen.
+     * Reads filter and char_filter; Elasticsearch accepts both a single name and an array of names for each.
      */
     public static function create(string $name, stdClass $configuration): Normalizer
     {

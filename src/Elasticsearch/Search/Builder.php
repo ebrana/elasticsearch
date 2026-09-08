@@ -78,8 +78,9 @@ final class Builder
     }
 
     /**
-     * Filtr, ktery se uplatni az po vypoctu agregaci - agregace tedy pocitaji z vysledku
-     * pred timto filtrem. Typicke pro fasety, kde vybrana hodnota nema zuzit nabidku.
+     * A filter applied only after the aggregations have been computed - the aggregations therefore
+     * count from the result before this filter. Typical for facets, where the selected value
+     * must not narrow the offer.
      */
     public function setPostFilter(?Query $postFilter): void
     {
@@ -87,8 +88,8 @@ final class Builder
     }
 
     /**
-     * S Point in Time se index neposila v requestu, ale je soucasti PIT - build()
-     * ho proto vynecha.
+     * With a Point in Time the index is not sent in the request but is part of the PIT -
+     * build() therefore omits it.
      */
     public function setPointInTime(?PointInTime $pointInTime): void
     {
@@ -103,7 +104,7 @@ final class Builder
     }
 
     /**
-     * true = presny pocet, cislo = presny do zadaneho limitu (nad nim relation "gte").
+     * true = an exact count, a number = exact up to the given limit (above it the relation is "gte").
      */
     public function trackTotalHits(bool|int|null $trackTotalHits): self
     {
@@ -113,7 +114,7 @@ final class Builder
     }
 
     /**
-     * Vraci skore i kdyz se radi podle pole - jinak je _score null.
+     * Returns the score even when sorting by a field - otherwise _score is null.
      */
     public function trackScores(?bool $trackScores): self
     {
@@ -130,7 +131,7 @@ final class Builder
     }
 
     /**
-     * @param array<string, mixed> $script skript tak, jak ho ceka ES (vcetne klice source)
+     * @param array<string, mixed> $script the script the way ES expects it (including the source key)
      */
     public function addScriptField(string $name, array $script): self
     {
@@ -140,9 +141,9 @@ final class Builder
     }
 
     /**
-     * Pole spocitane az pri hledani, bez zapisu do indexu.
+     * A field computed at search time, without being written into the index.
      *
-     * @param array<string, mixed> $definition napr. ['type' => 'keyword', 'script' => [...]]
+     * @param array<string, mixed> $definition e.g. ['type' => 'keyword', 'script' => [...]]
      */
     public function addRuntimeMapping(string $field, array $definition): self
     {
@@ -183,7 +184,7 @@ final class Builder
         if (!empty($body)) {
             $collection->set('body', $body);
         }
-        // s PIT patri index do pit.id, ne do requestu; ES by ho jinak odmitl
+        // with a PIT the index belongs into pit.id, not into the request; ES would reject it otherwise
         if (null === $this->pointInTime) {
             $collection->set('index', $this->index->getName());
             if (null !== $this->indexPrefix) {
@@ -302,7 +303,7 @@ final class Builder
 
         if ($this->rescores) {
             $rescores = array_map(static fn (Rescore $rescore): array => $rescore->toArray(), $this->rescores);
-            // jeden rescore jde poslat i jako objekt, vic jich musi byt pole
+            // a single rescore can be sent as an object, several of them must be an array
             $collection->set('rescore', 1 === count($rescores) ? $rescores[0] : $rescores);
         }
 

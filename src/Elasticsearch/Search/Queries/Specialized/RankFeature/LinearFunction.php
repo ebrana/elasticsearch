@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries\Specialized\RankFeature;
 
 /**
- * Skore je primo proporcni hodnote pole. Nema zadne parametry.
+ * The score is directly proportional to the field value. It takes no parameters.
  */
 readonly class LinearFunction implements RankFeatureFunctionInterface
 {
     public function toArray(): array
     {
-        // prazdny objekt, ne prazdne pole - ES pole odmita
+        // an empty object, not an empty array - ES rejects an array
         return ['linear' => (object)[]];
     }
 }

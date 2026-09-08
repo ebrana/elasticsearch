@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithMissing;
 
 /**
- * Vrati count, min, max, avg a sum jednim dotazem - levnejsi nez ctyri samostatne agregace.
+ * Returns count, min, max, avg and sum in a single request - cheaper than four separate aggregations.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
  */

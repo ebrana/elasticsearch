@@ -8,8 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithAggregations;
 
 /**
- * Opak terms agregace - vraci termy s nejmensim poctem dokumentu. Na rozdil od
- * `terms` s obracenym order dava presny vysledek.
+ * The opposite of the terms aggregation - it returns the terms with the lowest document count.
+ * Unlike `terms` with a reversed order it gives an exact result.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-rare-terms-aggregation.html
  */
@@ -36,7 +36,7 @@ class RareTermsAggregation extends AbstractAggregation
     }
 
     /**
-     * Horni hranice poctu dokumentu, aby se term jeste povazoval za vzacny (ES default 1).
+     * The upper document-count bound for a term to still count as rare (ES default 1).
      */
     public function maxDocCount(int $maxDocCount): self
     {

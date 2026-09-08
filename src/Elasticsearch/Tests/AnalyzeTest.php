@@ -43,7 +43,7 @@ class AnalyzeTest extends TestCase
 
     public function testRequestBodyWithInlineFilterDefinition(): void
     {
-        // filtr lze zadat i inline definici, takze se da otestovat drive nez se dostane do indexu
+        // a filter can also be given as an inline definition, so it can be tested before it reaches an index
         $request = new AnalyzeRequest(
             'bilerne',
             tokenizer: 'standard',
@@ -74,7 +74,7 @@ class AnalyzeTest extends TestCase
 
     public function testResultParsesExplainDetail(): void
     {
-        // pri explain: true vraci Elasticsearch misto `tokens` podrobny rozpad v `detail`
+        // with explain: true Elasticsearch returns a detailed breakdown in `detail` instead of `tokens`
         $result = new AnalyzeResult([
             'detail' => [
                 'custom_analyzer' => true,

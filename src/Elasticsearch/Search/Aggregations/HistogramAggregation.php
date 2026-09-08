@@ -9,7 +9,7 @@ use Elasticsearch\Search\Aggregations\Concerns\WithAggregations;
 use Elasticsearch\Search\Aggregations\Concerns\WithMissing;
 
 /**
- * Rozdeli ciselne hodnoty do intervalu pevne sirky - typicky cenova pasma.
+ * Splits numeric values into intervals of a fixed width - typically price bands.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-histogram-aggregation.html
  */
@@ -42,7 +42,7 @@ class HistogramAggregation extends AbstractAggregation
     }
 
     /**
-     * 0 vrati i prazdne intervaly (ES default 1).
+     * 0 returns the empty intervals as well (ES default 1).
      */
     public function minDocCount(int $minDocCount): self
     {
@@ -66,7 +66,7 @@ class HistogramAggregation extends AbstractAggregation
     }
 
     /**
-     * Vynuti intervaly i mimo rozsah dat; funguje jen s minDocCount(0).
+     * Forces intervals beyond the data range as well; works only together with minDocCount(0).
      */
     public function extendedBounds(float $min, float $max): self
     {
@@ -76,7 +76,7 @@ class HistogramAggregation extends AbstractAggregation
     }
 
     /**
-     * Naopak intervaly mimo rozsah orizne.
+     * Conversely, it trims the intervals outside the range.
      */
     public function hardBounds(float $min, float $max): self
     {

@@ -7,8 +7,8 @@ namespace Elasticsearch\Search\Queries\Compound;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Dokumenty odpovidajici `negative` nevyradi, jen jim snizi skore. Hodi se, kdyz
- * neco nechceme uplne skryt, jen odsunout dozadu (napr. nedostupne produkty).
+ * Does not exclude documents matching `negative`, it only lowers their score. Useful when
+ * something should not be hidden completely, only pushed back (e.g. unavailable products).
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-boosting-query.html
  */

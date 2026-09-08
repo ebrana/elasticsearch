@@ -8,9 +8,9 @@ use Elasticsearch\Search\Queries\Compound\FunctionScore\Enums\MultiValueMode;
 use Elasticsearch\Search\Queries\Query;
 
 /**
- * Zaklad pro gauss, exp a linear - skore klesa se vzdalenosti od `origin`.
- * Ve `scale` je vzdalenost, na ktere skore spadne na `decay` (default 0.5).
- * Pole musi byt numeric, date nebo geo_point.
+ * Base for gauss, exp and linear - the score decays with the distance from `origin`.
+ * `scale` is the distance at which the score drops to `decay` (0.5 by default).
+ * The field must be numeric, date or geo_point.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html#function-decay
  */
@@ -57,7 +57,7 @@ abstract readonly class AbstractDecayFunction extends AbstractScoreFunction
 
         $function = [$this->field => $parameters];
 
-        // multi_value_mode je sourozenec pole, ne jeho soucast
+        // multi_value_mode is a sibling of the field, not a part of it
         if (null !== $this->multi_value_mode) {
             $function['multi_value_mode'] = $this->multi_value_mode->value;
         }

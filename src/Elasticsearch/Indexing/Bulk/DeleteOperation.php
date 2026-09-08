@@ -7,7 +7,7 @@ namespace Elasticsearch\Indexing\Bulk;
 use Elasticsearch\Mapping\Index;
 
 /**
- * Smaze dokument podle _id. Nema datovy radek.
+ * Deletes a document by _id. Has no data row.
  */
 readonly class DeleteOperation implements BulkOperationInterface
 {

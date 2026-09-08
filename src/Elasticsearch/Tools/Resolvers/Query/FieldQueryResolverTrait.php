@@ -7,9 +7,9 @@ namespace Elasticsearch\Tools\Resolvers\Query;
 use RuntimeException;
 
 /**
- * Sdilena logika pro query ve tvaru {"<typ>": {"<pole>": {...volby}}}. Elasticsearch
- * pripousti i zkraceny zapis {"<typ>": {"<pole>": "<hodnota>"}}, proto se skalar
- * prevadi na pole pod zadanym klicem.
+ * Shared logic for queries shaped {"<type>": {"<field>": {...options}}}. Elasticsearch also
+ * accepts the shorthand {"<type>": {"<field>": "<value>"}}, so a scalar is converted to an
+ * array under the given key.
  */
 trait FieldQueryResolverTrait
 {
@@ -40,7 +40,7 @@ trait FieldQueryResolverTrait
     }
 
     /**
-     * Slozi seznam pojmenovanych argumentu z tech klicu, ktere jsou v datech pritomne.
+     * Builds the list of named arguments from those keys that are present in the data.
      *
      * @param array<string, mixed> $options
      * @param string[] $keys

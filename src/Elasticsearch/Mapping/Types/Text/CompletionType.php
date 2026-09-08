@@ -9,8 +9,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Types\AbstractType;
 
 /**
- * Pole pro autocomplete. Elasticsearch nad nim drzi FST strukturu v pameti, takze
- * navrhy vraci velmi rychle - hleda se pres CompletionSuggest.
+ * A field for autocomplete. Elasticsearch keeps an FST structure for it in memory, so it returns
+ * suggestions very fast - it is queried through CompletionSuggest.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
  */
@@ -20,8 +20,8 @@ final class CompletionType extends AbstractType
     public const int DEFAULT_MAX_INPUT_LENGTH = 50;
 
     /**
-     * @param array<int, array<string, mixed>>|null $contexts umoznuje filtrovat navrhy
-     *        podle kategorie nebo geo pozice
+     * @param array<int, array<string, mixed>>|null $contexts allows filtering the suggestions
+     *        by category or geo position
      */
     public function __construct(
         private ?string $analyzer = null,

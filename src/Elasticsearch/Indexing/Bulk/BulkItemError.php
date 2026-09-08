@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Elasticsearch\Indexing\Bulk;
 
 /**
- * Chyba jedne polozky bulk requestu. Bulk vraci HTTP 200 i kdyz cast polozek selze,
- * takze bez kontroly BulkResponse::hasErrors() by chyby zapadly.
+ * Error of a single bulk request item. Bulk returns HTTP 200 even when some of the items fail,
+ * so without checking BulkResponse::hasErrors() the errors would pass unnoticed.
  */
 final readonly class BulkItemError
 {

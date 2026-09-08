@@ -7,8 +7,8 @@ namespace Elasticsearch\Indexing\Bulk;
 use Elasticsearch\Mapping\Index;
 
 /**
- * Jedna operace v bulk requestu. Jmeno indexu (vcetne prefixu) doplnuje Connection,
- * protoze prefix zna jen ono.
+ * A single operation in a bulk request. The index name (including the prefix) is filled in by
+ * Connection, because only it knows the prefix.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
  */
@@ -24,14 +24,14 @@ interface BulkOperationInterface
     public function getId(): ?string;
 
     /**
-     * Dalsi klice do metadatoveho radku, napr. routing nebo if_seq_no.
+     * Further keys for the metadata row, e.g. routing or if_seq_no.
      *
      * @return array<string, mixed>
      */
     public function getMetadata(): array;
 
     /**
-     * Datovy radek pod metadaty. Delete ho nema, proto null.
+     * Data row below the metadata. Delete has none, hence null.
      *
      * @return array<string, mixed>|null
      */

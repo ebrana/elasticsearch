@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithGapPolicy;
 
 /**
- * Spocita novou hodnotu z metrik ve stejnem bucketu, napr. podil dvou souctu.
+ * Computes a new value from the metrics in the same bucket, e.g. the ratio of two sums.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-pipeline-bucket-script-aggregation.html
  */
@@ -17,7 +17,7 @@ class BucketScriptAggregation extends AbstractAggregation
     use WithGapPolicy;
 
     /**
-     * @param array<string, string> $bucketsPath jmeno promenne ve skriptu => cesta k metrice
+     * @param array<string, string> $bucketsPath script variable name => path to the metric
      * @param array<string, mixed>|string $script
      */
     public function __construct(

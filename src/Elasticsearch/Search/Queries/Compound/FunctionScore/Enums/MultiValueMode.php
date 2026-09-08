@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries\Compound\FunctionScore\Enums;
 
 /**
- * Kterou hodnotu vzit, kdyz ma pole u decay funkce vic hodnot.
+ * Which value to take when the field of a decay function holds several values.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html#function-decay
  */

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elasticsearch\Search\Queries\Specialized\RankFeature;
 
 /**
- * Skore = log(scaling_factor + hodnota pole). Roste neomezene, ale se zpomalujici tendenci.
+ * Score = log(scaling_factor + field value). It grows without a bound, but with a slowing tendency.
  */
 readonly class LogarithmFunction implements RankFeatureFunctionInterface
 {

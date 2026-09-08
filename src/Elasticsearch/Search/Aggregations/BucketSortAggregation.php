@@ -8,9 +8,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithGapPolicy;
 
 /**
- * Seradi nebo strankuje uz spocitane buckety. Bez `sort` funguje jen jako strankovani.
- * Pozor: rodicovska agregace uz musi mit dost velky `size`, jinak se radi jen z toho,
- * co proslo jejim orezem.
+ * Sorts or pages already computed buckets. Without `sort` it works as paging only.
+ * Beware: the parent aggregation must already use a large enough `size`, otherwise the sorting
+ * only covers what survived its cut.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-pipeline-bucket-sort-aggregation.html
  */
@@ -30,7 +30,7 @@ class BucketSortAggregation extends AbstractAggregation
     }
 
     /**
-     * Napr. ['total_sales' => ['order' => 'desc']] nebo jen 'total_sales'.
+     * E.g. ['total_sales' => ['order' => 'desc']] or just 'total_sales'.
      *
      * @param array<string, mixed>|string $sort
      */
@@ -70,7 +70,7 @@ class BucketSortAggregation extends AbstractAggregation
         }
         $this->provideGapPolicy($parameters);
 
-        // bez parametru musi jit do JSONu prazdny objekt, ne prazdne pole
+        // with no parameters an empty object must go into the JSON, not an empty array
         return new ArrayCollection(['bucket_sort' => [] === $parameters ? (object)[] : $parameters]);
     }
 }

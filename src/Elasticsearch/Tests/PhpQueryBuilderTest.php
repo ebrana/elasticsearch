@@ -257,7 +257,7 @@ class PhpQueryBuilderTest extends TestCase
         $this->assertStringContainsString("new RankFeatureQuery(field: 'sales', function: new LogarithmFunction(4));", $result);
         $this->assertStringContainsString("new PinnedQuery(organic: \$pinnedOrganic, ids: ['1', '2']);", $result);
         $this->assertStringContainsString("new MoreLikeThisQuery(fields: ['name'], like: 'boty', min_term_freq: 1);", $result);
-        // obalene query se musi vyresolvovat pred pouzitim
+        // wrapped queries have to be resolved before being used
         $this->assertStringContainsString("\$constantScoreFilter = new TermQuery(field: 'inStock', value: true);", $result);
     }
 
@@ -315,7 +315,7 @@ class PhpQueryBuilderTest extends TestCase
 
     public function testFunctionScoreShorthandSingleFunction(): void
     {
-        // ES pripousti jednu funkci zapsanou primo, bez obalu functions
+        // ES accepts a single function written directly, without the functions wrapper
         $builder = new PhpQueryBuilder();
         $result = $builder->fromJson('{
           "query": {

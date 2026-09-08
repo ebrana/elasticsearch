@@ -8,8 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Search\Aggregations\Concerns\WithMissing;
 
 /**
- * Percentily hodnot - typicky pro cenove filtry ("v jake cene je 95 % produktu").
- * Vysledek je priblizny; presnost roste s `compression`.
+ * Percentiles of the values - typically for price filters ("what price covers 95 % of the products").
+ * The result is approximate; the accuracy grows with `compression`.
  *
  * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-percentile-aggregation.html
  */
@@ -41,7 +41,7 @@ class PercentilesAggregation extends AbstractAggregation
     }
 
     /**
-     * false vrati pole polozek misto objektu naklicovaneho percentilem.
+     * false returns an array of items instead of an object keyed by the percentile.
      */
     public function keyed(bool $keyed): self
     {
