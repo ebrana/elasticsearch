@@ -199,7 +199,7 @@ final class KeywordType extends AbstractType implements MultiFieldsInterface
             $collection->set('similarity', $this->similarity->value);
         }
 
-        if ($this->null_value) {
+        if (null !== $this->null_value) {
             $collection->set('null_value', $this->null_value);
         }
 

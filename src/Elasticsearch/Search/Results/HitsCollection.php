@@ -73,6 +73,33 @@ final class HitsCollection implements IteratorAggregate, Countable
         return $this->collection->count();
     }
 
+    /**
+     * The highlighted fragments from the response, keyed by document _id. Iterating the collection
+     * stays on the raw hits, so `$hit['highlight']` keeps working - this is only a shortcut.
+     *
+     * @return array<string, array<string, string[]>>
+     */
+    public function getHighlights(): array
+    {
+        $highlights = [];
+
+        foreach ($this->collection as $hit) {
+            if (!is_array($hit) || !isset($hit['_id']) || !isset($hit['highlight'])) {
+                continue;
+            }
+
+            if (!is_array($hit['highlight'])) {
+                continue;
+            }
+
+            /** @var array<string, string[]> $hitHighlights */
+            $hitHighlights = $hit['highlight'];
+            $highlights[(string)$hit['_id']] = $hitHighlights;
+        }
+
+        return $highlights;
+    }
+
     public function isEmpty(): bool
     {
         return $this->collection->isEmpty();

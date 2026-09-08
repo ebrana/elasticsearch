@@ -168,4 +168,245 @@ class PhpQueryBuilderTest extends TestCase
         $this->assertStringContainsString('$builder->addAggregation(', $result);
         $this->assertStringContainsString('$builder->size(0);', $result);
     }
+
+    public function testFulltextQueryResolvers(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "bool": {
+              "must": [
+                { "match_phrase": { "name": { "query": "cerne boty", "slop": 2 } } },
+                { "match_phrase_prefix": { "name": { "query": "cerne bo", "max_expansions": 10 } } },
+                { "match_bool_prefix": { "name": { "query": "cerne bo", "operator": "and" } } },
+                { "fuzzy": { "code": { "value": "ABC", "fuzziness": "AUTO" } } },
+                { "regexp": { "code": { "value": "AB.*", "flags": "COMPLEMENT|INTERVAL" } } },
+                { "ids": { "values": ["1", "2"] } },
+                { "terms_set": { "tags": { "terms": ["akce"], "minimum_should_match_field": "req" } } },
+                { "simple_query_string": { "query": "cerne + boty", "fields": ["name^3"], "default_operator": "and" } }
+              ]
+            }
+          }
+        }');
+
+        $this->assertStringContainsString(
+            "new MatchPhraseQuery(field: 'name', query: 'cerne boty', slop: 2);",
+            $result
+        );
+        $this->assertStringContainsString(
+            "new MatchPhrasePrefixQuery(field: 'name', query: 'cerne bo', max_expansions: 10);",
+            $result
+        );
+        $this->assertStringContainsString(
+            "new MatchBoolPrefixQuery(field: 'name', query: 'cerne bo', operator: Operator::AND);",
+            $result
+        );
+        $this->assertStringContainsString("new FuzzyQuery(field: 'code', value: 'ABC', fuzziness: 'AUTO');", $result);
+        $this->assertStringContainsString(
+            "new RegexpQuery(field: 'code', value: 'AB.*', flags: [RegexpFlag::COMPLEMENT, RegexpFlag::INTERVAL]);",
+            $result
+        );
+        $this->assertStringContainsString("new IdsQuery(values: ['1', '2']);", $result);
+        $this->assertStringContainsString(
+            "new TermsSetQuery(field: 'tags', terms: ['akce'], minimum_should_match_field: 'req');",
+            $result
+        );
+        $this->assertStringContainsString(
+            "new SimpleQueryStringQuery(query: 'cerne + boty', fields: ['name^3'], default_operator: Operator::AND);",
+            $result
+        );
+    }
+
+    public function testShorthandFulltextQuery(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{"query": {"match_phrase": {"name": "cerne boty"}}}');
+
+        $this->assertSame("\$matchPhraseQuery = new MatchPhraseQuery(field: 'name', query: 'cerne boty');", $result);
+    }
+
+    public function testScoringQueryResolvers(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "bool": {
+              "should": [
+                { "constant_score": { "filter": { "term": { "inStock": true } }, "boost": 1.5 } },
+                {
+                  "boosting": {
+                    "positive": { "match_all": {} },
+                    "negative": { "term": { "sellingDenied": true } },
+                    "negative_boost": 0.2
+                  }
+                },
+                { "distance_feature": { "field": "createdAt", "origin": "now", "pivot": "7d" } },
+                { "rank_feature": { "field": "popularity", "saturation": { "pivot": 80 } } },
+                { "rank_feature": { "field": "sales", "log": { "scaling_factor": 4 } } },
+                { "pinned": { "organic": { "match_all": {} }, "ids": ["1", "2"] } },
+                { "more_like_this": { "fields": ["name"], "like": "boty", "min_term_freq": 1 } }
+              ]
+            }
+          }
+        }');
+
+        $this->assertStringContainsString("new ConstantScoreQuery(filter: \$constantScoreFilter, boost: 1.5);", $result);
+        $this->assertStringContainsString("new BoostingQuery(positive: \$boostingPositive, negative: \$boostingNegative, negative_boost: 0.2);", $result);
+        $this->assertStringContainsString("new DistanceFeatureQuery(field: 'createdAt', origin: 'now', pivot: '7d');", $result);
+        $this->assertStringContainsString("new RankFeatureQuery(field: 'popularity', function: new SaturationFunction(80));", $result);
+        $this->assertStringContainsString("new RankFeatureQuery(field: 'sales', function: new LogarithmFunction(4));", $result);
+        $this->assertStringContainsString("new PinnedQuery(organic: \$pinnedOrganic, ids: ['1', '2']);", $result);
+        $this->assertStringContainsString("new MoreLikeThisQuery(fields: ['name'], like: 'boty', min_term_freq: 1);", $result);
+        // wrapped queries have to be resolved before being used
+        $this->assertStringContainsString("\$constantScoreFilter = new TermQuery(field: 'inStock', value: true);", $result);
+    }
+
+    public function testScriptScoreQueryResolver(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "script_score": {
+              "query": { "match_all": {} },
+              "script": { "source": "doc[\'popularity\'].value" },
+              "min_score": 1
+            }
+          }
+        }');
+
+        $this->assertStringContainsString("\$scriptScoreInner = new MatchAllQuery();", $result);
+        $this->assertStringContainsString("new ScriptScoreQuery(query: \$scriptScoreInner, script: [", $result);
+        $this->assertStringContainsString("min_score: 1);", $result);
+    }
+
+    public function testFunctionScoreQueryResolver(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "function_score": {
+              "query": { "match_all": {} },
+              "functions": [
+                { "filter": { "term": { "inStock": true } }, "weight": 3 },
+                { "field_value_factor": { "field": "popularity", "factor": 1.2, "modifier": "sqrt", "missing": 1 } },
+                { "random_score": { "seed": 10, "field": "_seq_no" } },
+                { "gauss": { "createdAt": { "origin": "now", "scale": "10d", "decay": 0.5 } } },
+                { "linear": { "price": { "origin": 100, "scale": 50 }, "multi_value_mode": "avg" } }
+              ],
+              "score_mode": "sum",
+              "boost_mode": "multiply",
+              "max_boost": 10
+            }
+          }
+        }');
+
+        $this->assertStringContainsString("\$functionScoreInner = new MatchAllQuery();", $result);
+        $this->assertStringContainsString("\$scoreFunction0Filter = new TermQuery(field: 'inStock', value: true);", $result);
+        $this->assertStringContainsString("\$scoreFunction0 = new WeightFunction(weight: 3, filter: \$scoreFunction0Filter);", $result);
+        $this->assertStringContainsString("\$scoreFunction1 = new FieldValueFactorFunction(field: 'popularity', factor: 1.2, modifier: FieldValueFactorModifier::SQRT, missing: 1);", $result);
+        $this->assertStringContainsString("\$scoreFunction2 = new RandomScoreFunction(seed: 10, field: '_seq_no');", $result);
+        $this->assertStringContainsString("\$scoreFunction3 = new GaussDecayFunction(field: 'createdAt', origin: 'now', scale: '10d', decay: 0.5);", $result);
+        $this->assertStringContainsString("\$scoreFunction4 = new LinearDecayFunction(field: 'price', origin: 100, scale: 50, multi_value_mode: MultiValueMode::AVG);", $result);
+        $this->assertStringContainsString("functions: [\$scoreFunction0, \$scoreFunction1, \$scoreFunction2, \$scoreFunction3, \$scoreFunction4]", $result);
+        $this->assertStringContainsString("score_mode: ScoreMode::SUM", $result);
+        $this->assertStringContainsString("boost_mode: BoostMode::MULTIPLY", $result);
+        $this->assertStringContainsString("max_boost: 10", $result);
+    }
+
+    public function testFunctionScoreShorthandSingleFunction(): void
+    {
+        // ES accepts a single function written directly, without the functions wrapper
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": {
+            "function_score": {
+              "query": { "match_all": {} },
+              "random_score": {}
+            }
+          }
+        }');
+
+        $this->assertStringContainsString("\$scoreFunction0 = new RandomScoreFunction();", $result);
+        $this->assertStringContainsString("functions: [\$scoreFunction0]", $result);
+    }
+
+    public function testMetricAggregationResolvers(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": { "match_all": {} },
+          "aggs": {
+            "prumer":   { "avg": { "field": "price", "missing": 0 } },
+            "pocet":    { "value_count": { "field": "brand" } },
+            "statis":   { "stats": { "field": "price" } },
+            "rozsir":   { "extended_stats": { "field": "price", "sigma": 3 } },
+            "perc":     { "percentiles": { "field": "price", "percents": [50, 95], "keyed": false } },
+            "ranks":    { "percentile_ranks": { "field": "price", "values": [100, 500] } },
+            "vazeny":   { "weighted_avg": { "value": { "field": "rating", "missing": 0 }, "weight": { "field": "reviews" } } },
+            "znacky":   { "terms": { "field": "brand", "size": 10, "min_doc_count": 2, "shard_size": 100, "exclude": "Gama.*" } }
+          }
+        }');
+
+        $this->assertStringContainsString("new AvgAggregation('prumer', 'price');", $result);
+        $this->assertStringContainsString("->missing(0);", $result);
+        $this->assertStringContainsString("new ValueCountAggregation('pocet', 'brand');", $result);
+        $this->assertStringContainsString("new StatsAggregation('statis', 'price');", $result);
+        $this->assertStringContainsString("new ExtendedStatsAggregation('rozsir', 'price');", $result);
+        $this->assertStringContainsString("->sigma(3);", $result);
+        $this->assertStringContainsString("new PercentilesAggregation('perc', 'price');", $result);
+        $this->assertStringContainsString("->percents([50, 95]);", $result);
+        $this->assertStringContainsString("new PercentileRanksAggregation('ranks', 'price', [100, 500]);", $result);
+        $this->assertStringContainsString("new WeightedAvgAggregation('vazeny', 'rating', 'reviews');", $result);
+        $this->assertStringContainsString("->valueMissing(0);", $result);
+        $this->assertStringContainsString("new TermsAggregation('znacky', 'brand');", $result);
+        $this->assertStringContainsString("->minDocCount(2);", $result);
+        $this->assertStringContainsString("->shardSize(100);", $result);
+        $this->assertStringContainsString("->exclude('Gama.*');", $result);
+    }
+
+    public function testBucketAggregationResolvers(): void
+    {
+        $builder = new PhpQueryBuilder();
+        $result = $builder->fromJson('{
+          "query": { "match_all": {} },
+          "aggs": {
+            "pasma":   { "histogram": { "field": "price", "interval": 100, "min_doc_count": 0 } },
+            "mesice":  { "date_histogram": { "field": "createdAt", "calendar_interval": "month", "format": "yyyy-MM" } },
+            "rozsahy": { "range": { "field": "price", "ranges": [ { "to": 100, "key": "levne" }, { "from": 100, "to": 500 } ] } },
+            "obdobi":  { "date_range": { "field": "createdAt", "ranges": [ { "from": "now-1M/M", "to": "now" } ], "format": "yyyy-MM-dd" } },
+            "stavy":   { "filters": { "filters": { "skladem": { "term": { "inStock": true } } }, "other_bucket": true } },
+            "bezceny": { "missing": { "field": "price" } },
+            "vzacne":  { "rare_terms": { "field": "brand", "max_doc_count": 3 } },
+            "vyznam":  { "significant_terms": { "field": "brand", "size": 5 } },
+            "vzorek":  { "sampler": { "shard_size": 200 } },
+            "kombi":   { "multi_terms": { "terms": [ { "field": "brand" }, { "field": "color" } ], "size": 10 } },
+            "strany":  { "composite": { "size": 100, "sources": [ { "znacka": { "terms": { "field": "brand" } } }, { "cena": { "histogram": { "field": "price", "interval": 100 } } } ] } }
+          }
+        }');
+
+        $this->assertStringContainsString("new HistogramAggregation('pasma', 'price', 100);", $result);
+        $this->assertStringContainsString("->minDocCount(0);", $result);
+        $this->assertStringContainsString("new DateHistogramAggregation('mesice', 'createdAt');", $result);
+        $this->assertStringContainsString("->calendarInterval('month');", $result);
+        $this->assertStringContainsString("->format('yyyy-MM');", $result);
+        $this->assertStringContainsString(
+            "new RangeAggregation('rozsahy', 'price', new Range(to: 100, key: 'levne'), new Range(from: 100, to: 500));",
+            $result
+        );
+        $this->assertStringContainsString("new DateRangeAggregation('obdobi', 'createdAt', new Range(from: 'now-1M/M', to: 'now'));", $result);
+        $this->assertStringContainsString("new FiltersAggregation('stavy');", $result);
+        $this->assertStringContainsString("->filter('skladem', ", $result);
+        $this->assertStringContainsString("->otherBucket(true);", $result);
+        $this->assertStringContainsString("new MissingAggregation('bezceny', 'price');", $result);
+        $this->assertStringContainsString("new RareTermsAggregation('vzacne', 'brand');", $result);
+        $this->assertStringContainsString("->maxDocCount(3);", $result);
+        $this->assertStringContainsString("new SignificantTermsAggregation('vyznam', 'brand');", $result);
+        $this->assertStringContainsString("new SamplerAggregation('vzorek');", $result);
+        $this->assertStringContainsString("->shardSize(200);", $result);
+        $this->assertStringContainsString("new MultiTermsAggregation('kombi', 'brand', 'color');", $result);
+        $this->assertStringContainsString(
+            "new CompositeAggregation('strany', new TermsSource('znacka', 'brand'), new HistogramSource('cena', 'price', 100));",
+            $result
+        );
+    }
 }

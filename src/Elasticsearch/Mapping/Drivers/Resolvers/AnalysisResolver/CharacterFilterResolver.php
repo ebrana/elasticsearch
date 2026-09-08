@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver;
 
-use Elasticsearch\Mapping\Drivers\Factories\CharactedFilters\HtmlStripCharacterFilterFactory;
-use Elasticsearch\Mapping\Drivers\Factories\CharactedFilters\MappingCharacterFilterFactory;
-use Elasticsearch\Mapping\Drivers\Factories\CharactedFilters\PatternReplaceCharacterFilterFactory;
+use Elasticsearch\Mapping\Drivers\Factories\CharacterFilters\HtmlStripCharacterFilterFactory;
+use Elasticsearch\Mapping\Drivers\Factories\CharacterFilters\MappingCharacterFilterFactory;
+use Elasticsearch\Mapping\Drivers\Factories\CharacterFilters\PatternReplaceCharacterFilterFactory;
 use Elasticsearch\Mapping\Settings\Analysis;
 use stdClass;
 

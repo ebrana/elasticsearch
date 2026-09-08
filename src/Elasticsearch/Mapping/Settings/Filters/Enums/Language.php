@@ -15,7 +15,7 @@ enum Language: string
     case CATALAN = 'catalan';
     case CZECH = 'czech';
     case ENGLISH = 'english';
-    case DANISH = 'danich';
+    case DANISH = 'danish';
     case DUTCH = 'dutch';
     case GERMAN = 'german';
     case GREEK = 'greek';

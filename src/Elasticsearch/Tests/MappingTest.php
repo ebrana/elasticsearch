@@ -33,6 +33,53 @@ class MappingTest extends TestCase
         $this->assertSame('digit', $data['token_chars'][0]);
     }
 
+    public function testTextTypeProvidesAllMappingParameters(): void
+    {
+        $textType = new TextType(
+            analyzer: 'edge_ngram_with_diacritic',
+            eager_global_ordinals: true,
+            fielddata: true,
+            index_options: 'offsets',
+            index_phrases: true,
+            norms: false,
+            position_increment_gap: 0,
+            store: true,
+            search_analyzer: 'full_with_diacritic',
+            search_quote_analyzer: 'full_without_diacritic',
+            similarity: 'boolean',
+            term_vector: 'with_positions_offsets',
+            index_prefixes_min_chars: 2,
+            index_prefixes_max_chars: 5,
+            copy_to: 'copy_field',
+            name: 'probe'
+        );
+
+        $this->assertSame([
+            'type'                  => 'text',
+            'analyzer'              => 'edge_ngram_with_diacritic',
+            'search_analyzer'       => 'full_with_diacritic',
+            'search_quote_analyzer' => 'full_without_diacritic',
+            'eager_global_ordinals' => true,
+            'fielddata'             => true,
+            'index_options'         => 'offsets',
+            'index_phrases'         => true,
+            'index_prefixes'        => ['min_chars' => 2, 'max_chars' => 5],
+            'norms'                 => false,
+            'position_increment_gap' => 0,
+            'similarity'            => 'boolean',
+            'term_vector'           => 'with_positions_offsets',
+            'store'                 => true,
+            'copy_to'               => 'copy_field',
+        ], $textType->getCollection()->toArray());
+    }
+
+    public function testTextTypeOmitsDefaults(): void
+    {
+        $textType = new TextType(name: 'probe');
+
+        $this->assertSame(['type' => 'text'], $textType->getCollection()->toArray());
+    }
+
     public function testReadMapping(): void
     {
         $metadata = $this->getMappingMetadata()->getMappingMetadata()->getMetadata();
@@ -121,7 +168,7 @@ class MappingTest extends TestCase
         /** @var NestedType $nestedByKeyResolver */
         $nestedByKeyResolver = $metadataProductIndex->getProperties()->get('books');
 
-        $this->assertSame('amproductsmodule', $metadataRequest->getIndex()->getName());
+        $this->assertSame('productmodule', $metadataRequest->getIndex()->getName());
 
         /** @var mixed[][][][][][][][][] $mapping */
         $mapping = json_decode($metadataRequest->getMappingJson(), true);
@@ -139,12 +186,46 @@ class MappingTest extends TestCase
         $this->assertArrayHasKey('settings', $mapping);
         $this->assertArrayHasKey('analysis', $mapping['settings']);
         $this->assertArrayHasKey('analyzer', $mapping['settings']['analysis']);
-        $this->assertCount(2, $mapping['settings']['analysis']['analyzer']);
+        $this->assertCount(4, $mapping['settings']['analysis']['analyzer']);
         $this->assertArrayHasKey('standard', $mapping['settings']['analysis']['analyzer']);
         $this->assertArrayHasKey('autocomplete_analyzer', $mapping['settings']['analysis']['analyzer']);
+        // built-in analyzers via attributes: they have no tokenizer/filter and the type is not "custom"
+        $this->assertSame([
+            'type'           => 'czech',
+            'stopwords'      => '_czech_',
+            'stem_exclusion' => ['akce'],
+        ], $mapping['settings']['analysis']['analyzer']['czech_fulltext']);
+        $this->assertSame([
+            'type'             => 'standard',
+            'max_token_length' => 20,
+        ], $mapping['settings']['analysis']['analyzer']['standard_limited']);
         $this->assertArrayHasKey('filter', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('tokenizer', $mapping['settings']['analysis']);
         $this->assertArrayHasKey('ngram', $mapping['settings']['analysis']['tokenizer']);
+        $this->assertSame([
+            'type'      => 'path_hierarchy',
+            'delimiter' => '|',
+        ], $mapping['settings']['analysis']['tokenizer']['category_path']);
+        $this->assertSame([
+            'type'   => 'custom',
+            'filter' => ['lowercase', 'asciifolding'],
+        ], $mapping['settings']['analysis']['normalizer']['sort_normalizer']);
+        $this->assertArrayHasKey('char_filter', $mapping['settings']['analysis']);
+        $this->assertCount(2, $mapping['settings']['analysis']['char_filter']);
+        $this->assertEquals(
+            'pattern_replace',
+            $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['type']
+        );
+        $this->assertEquals('\.', $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['pattern']);
+        $this->assertEquals(
+            'html_strip',
+            $mapping['settings']['analysis']['char_filter']['html_strip_filter']['type']
+        );
+        $this->assertSame(
+            ['dots_replace_filter', 'html_strip_filter'],
+            $mapping['settings']['analysis']['analyzer']['autocomplete_analyzer']['char_filter']
+        );
+        $this->assertArrayNotHasKey('char_filter', $mapping['settings']['analysis']['analyzer']['standard']);
         $this->assertEquals('nested', $objectType->getType());
         $this->assertEquals('object', $objectType2->getType());
         $this->assertEquals('sellingPrice', $objectType->getName());
@@ -191,12 +272,135 @@ class MappingTest extends TestCase
         $mapping2 = json_decode((string)file_get_contents($jsonTestFile), true, 512, JSON_THROW_ON_ERROR);
 
         $this->assertEquals('text', $mapping['mappings']['properties']['searching_names']['type']);
-        $this->assertEquals('pattern_replace', $mapping['settings']['analysis']['character_filter']['dots_replace_filter']['type']);
-        $this->assertEquals('\.', $mapping['settings']['analysis']['character_filter']['dots_replace_filter']['pattern']);
+        $this->assertEquals('pattern_replace', $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['type']);
+        $this->assertEquals('\.', $mapping['settings']['analysis']['char_filter']['dots_replace_filter']['pattern']);
         $this->assertEquals('custom', $mapping['settings']['analysis']['analyzer']['full_with_diacritic']['type']);
         $this->assertCount(1, $mapping['settings']['analysis']['analyzer']['full_with_diacritic']['filter']);
+        // a char_filter written as a scalar in the JSON must come out as an array (ES accepts both variants)
+        $this->assertSame(
+            ['html_strip'],
+            $mapping['settings']['analysis']['analyzer']['full_without_diacritic_html']['char_filter']
+        );
+        $this->assertSame(
+            ['dots_replace_filter'],
+            $mapping['settings']['analysis']['analyzer']['whitespace_without_dots']['char_filter']
+        );
+        $this->assertArrayNotHasKey('char_filter', $mapping['settings']['analysis']['analyzer']['stemming']);
+
+        // property parameters from the JSON must survive the round-trip (while the factories ignored them, only "type" was left)
+        $catnums = $mapping['mappings']['properties']['searching_catnums'];
+        $this->assertSame('whitespace', $catnums['analyzer']);
+        $this->assertSame('whitespace_without_dots', $catnums['search_analyzer']);
+        $this->assertSame('text', $catnums['fields']['edge_ngram_unanalyzed_words']['type']);
+        $this->assertSame(
+            'edge_ngram_unanalyzed_words',
+            $catnums['fields']['edge_ngram_unanalyzed_words']['analyzer']
+        );
+        $this->assertSame(
+            'whitespace_without_dots',
+            $catnums['fields']['edge_ngram_unanalyzed_words']['search_analyzer']
+        );
+
+        $names = $mapping['mappings']['properties']['searching_names'];
+        $this->assertSame('stemming', $names['analyzer']);
+        $this->assertSame('full_with_diacritic', $names['fields']['full_with_diacritic']['analyzer']);
+        // icu_collation_keyword multi-field se driv preskakoval, protoze ho knihovna neznala
+        $this->assertSame([
+            'type'     => 'icu_collation_keyword',
+            'language' => 'en',
+            'index'    => false,
+        ], $names['fields']['keyword']);
+
+        // index: false on a keyword property has to be carried through
+        $breadcrumb = $mapping['mappings']['properties']['breadcrumb']['properties'];
+        $this->assertSame('keyword', $breadcrumb['slug']['type']);
+
+        // built-in analyzers from the JSON (while `type` was ignored, they turned into a custom analyzer)
+        $analyzers = $mapping['settings']['analysis']['analyzer'];
+        $this->assertSame([
+            'type'           => 'czech',
+            'stopwords'      => '_czech_',
+            'stem_exclusion' => ['akce'],
+        ], $analyzers['czech_builtin']);
+        $this->assertSame(['type' => 'standard', 'max_token_length' => 20], $analyzers['standard_limited']);
+        $this->assertSame(['type' => 'keyword'], $analyzers['catnum_keyword']);
+
+        // token filtry z JSONu; posilaji se jen odchylky od defaultu Elasticsearche
+        $filters = $mapping['settings']['analysis']['filter'];
+        $this->assertSame(['type' => 'lowercase', 'language' => 'turkish'], $filters['lowercase_turkish']);
+        $this->assertSame(['type' => 'asciifolding', 'preserve_original' => true], $filters['ascii']);
+        $this->assertSame([
+            'type'     => 'synonym_graph',
+            'synonyms' => ['notebook, laptop', 'mobil, telefon'],
+            'expand'   => false,
+            'lenient'  => true,
+        ], $filters['eshop_synonyms']);
+        $this->assertSame([
+            'type'                 => 'word_delimiter_graph',
+            'preserve_original'    => true,
+            'split_on_case_change' => false,
+            'protected_words'      => ['Wi-Fi'],
+        ], $filters['catnum_delimiter']);
+        $this->assertSame([
+            'type'             => 'shingle',
+            'max_shingle_size' => 3,
+            'output_unigrams'  => false,
+            'token_separator'  => '-',
+        ], $filters['bigrams']);
+        $this->assertSame([
+            'type'          => 'elision',
+            'articles'      => ['l', 'd'],
+            'articles_case' => true,
+        ], $filters['french_elision']);
+        $this->assertSame([
+            'type'        => 'keyword_marker',
+            'keywords'    => ['akce'],
+            'ignore_case' => true,
+        ], $filters['protect_brands']);
+        $this->assertSame([
+            'type'        => 'pattern_replace',
+            'pattern'     => '-',
+            'replacement' => '',
+            'all'         => false,
+        ], $filters['strip_dashes']);
+        $this->assertSame(['type' => 'length', 'min' => 2], $filters['min_length']);
+        $this->assertSame(['type' => 'unique', 'only_on_same_position' => true], $filters['dedup']);
+        $this->assertSame(['type' => 'trim'], $filters['trimmed']);
+
+        // tokenizery z JSONu
+        $tokenizers = $mapping['settings']['analysis']['tokenizer'];
+        $this->assertSame(['type' => 'keyword', 'buffer_size' => 512], $tokenizers['whole_value']);
+        $this->assertSame(['type' => 'whitespace', 'max_token_length' => 30], $tokenizers['spaces']);
+        $this->assertSame(['type' => 'letter'], $tokenizers['letters_only']);
+        $this->assertSame(['type' => 'lowercase'], $tokenizers['lowercased']);
+        $this->assertSame(['type' => 'uax_url_email'], $tokenizers['urls_and_emails']);
+        $this->assertSame(['type' => 'classic'], $tokenizers['classic_english']);
+        $this->assertSame([
+            'type'              => 'char_group',
+            'tokenize_on_chars' => ['whitespace', '-', '/'],
+        ], $tokenizers['catnum_chars']);
+        $this->assertSame([
+            'type'      => 'path_hierarchy',
+            'delimiter' => '|',
+            'reverse'   => true,
+            'skip'      => 1,
+        ], $tokenizers['category_path']);
+
+        // normalizers from the JSON; a char_filter written as a scalar must come out as an array
+        $normalizers = $mapping['settings']['analysis']['normalizer'];
+        $this->assertSame([
+            'type'   => 'custom',
+            'filter' => ['lowercase', 'asciifolding'],
+        ], $normalizers['sort_normalizer']);
+        $this->assertSame([
+            'type'        => 'custom',
+            'char_filter' => ['dots_replace_filter'],
+        ], $normalizers['single_char_filter']);
+        // an analyzer without `type` stays custom, with its own tokenizer
+        $this->assertSame('custom', $analyzers['full_with_diacritic']['type']);
+        $this->assertSame('keep_special_chars', $analyzers['full_with_diacritic']['tokenizer']);
         $this->assertCount(53, $mapping['mappings']['properties']);
-        $this->assertCount(53, $mapping2['testing_amproductsmodule']['mappings']['properties']);
+        $this->assertCount(53, $mapping2['testing_productmodule']['mappings']['properties']);
     }
 
     private function getMappingMetadata(): MetadataProviderInterface

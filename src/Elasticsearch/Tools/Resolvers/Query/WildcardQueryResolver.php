@@ -15,8 +15,13 @@ class WildcardQueryResolver extends AbstractQueryResolver
     public function resolve(array $metadata, ?string $property = null): string
     {
         $field = array_key_first($metadata);
-        $value = $metadata[$field];
         $property = $property ?? '$wildcardQuery';
+
+        if (null === $field) {
+            throw new \RuntimeException('Wildcard query must contain field metadata.');
+        }
+
+        $value = $metadata[$field];
 
         if (!is_array($value)) {
             throw new \RuntimeException('Wildcard query metadata for field must be array.');

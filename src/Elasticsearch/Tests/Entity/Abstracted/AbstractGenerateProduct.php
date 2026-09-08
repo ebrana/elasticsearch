@@ -7,9 +7,16 @@ namespace Elasticsearch\Tests\Entity\Abstracted;
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analyzer;
+use Elasticsearch\Mapping\Settings\Analyzers\Enums\AnalyzerLanguage;
+use Elasticsearch\Mapping\Settings\Analyzers\LanguageAnalyzer;
+use Elasticsearch\Mapping\Settings\Analyzers\StandardAnalyzer;
+use Elasticsearch\Mapping\Settings\CharacterFilters\HtmlStripCharacterFilter;
+use Elasticsearch\Mapping\Settings\CharacterFilters\PatternReplaceCharacterFilter;
 use Elasticsearch\Mapping\Settings\Filters\NgramFilter;
+use Elasticsearch\Mapping\Settings\Normalizer;
 use Elasticsearch\Mapping\Settings\Tokenizers\Enums\TokenChars;
 use Elasticsearch\Mapping\Settings\Tokenizers\NgramTokenizer;
+use Elasticsearch\Mapping\Settings\Tokenizers\PathHierarchyTokenizer;
 use Elasticsearch\Mapping\Types\Common\Keywords\KeywordType;
 use Elasticsearch\Mapping\Types\Common\Numeric\FloatType;
 use Elasticsearch\Mapping\Types\Common\Numeric\IntegerType;
@@ -23,11 +30,22 @@ use Elasticsearch\Tests\Entity\Translations;
 use Elasticsearch\Tests\LangKeyResolver;
 use Elasticsearch\Tests\PostEventSample;
 
-#[Index(name: "AmproductsModule", postEventClass: PostEventSample::class)]
-#[Analyzer(name: "autocomplete_analyzer", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
+#[Index(name: "ProductModule", postEventClass: PostEventSample::class)]
+#[Analyzer(
+    name: "autocomplete_analyzer",
+    tokenizer: "ngram",
+    filters: ["lowercase", "trigrams_filter"],
+    charFilters: ["dots_replace_filter", "html_strip_filter"]
+)]
 #[Analyzer(name: "standard", tokenizer: "ngram", filters: ["lowercase", "trigrams_filter"])]
 #[NgramTokenizer(name: "ngram", token_chars: [TokenChars::DIGIT])]
 #[NgramFilter(name: "trigrams_filter", min_gram: 3, max_gram: 3)]
+#[PatternReplaceCharacterFilter(name: "dots_replace_filter", pattern: "\.", replacement: "")]
+#[HtmlStripCharacterFilter(name: "html_strip_filter")]
+#[LanguageAnalyzer(name: "czech_fulltext", language: AnalyzerLanguage::CZECH, stopwords: "_czech_", stem_exclusion: ["akce"])]
+#[StandardAnalyzer(name: "standard_limited", max_token_length: 20)]
+#[PathHierarchyTokenizer(name: "category_path", delimiter: "|")]
+#[Normalizer(name: "sort_normalizer", filters: ["lowercase", "asciifolding"])]
 abstract class AbstractGenerateProduct
 {
     #[TextType]

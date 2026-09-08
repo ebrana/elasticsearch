@@ -99,7 +99,7 @@ final class BooleanType extends AbstractType
 
         $this->provideOnScriptAsArray($collection);
 
-        if ($this->null_value) {
+        if (null !== $this->null_value) {
             $collection->set('null_value', $this->null_value);
         }
 

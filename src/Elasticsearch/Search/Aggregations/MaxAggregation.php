@@ -24,7 +24,7 @@ class MaxAggregation extends AbstractAggregation
             'field' => $this->field,
         ];
 
-        if ($this->missing) {
+        if (null !== $this->missing) {
             $parameters['missing'] = $this->missing;
         }
 

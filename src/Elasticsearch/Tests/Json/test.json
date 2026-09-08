@@ -1,10 +1,14 @@
 {
-    "testing_amproductsmodule": {
+    "testing_productmodule": {
         "settings": {
             "index": {
                 "number_of_shards": 1,
-                "number_of_replicas": 1
+                "number_of_replicas": 1,
+                "max_ngram_diff": 2,
+                "max_shingle_diff": 4
             },
+            "refresh_interval": "5s",
+            "max_result_window": 20000,
             "analysis": {
                 "filter": {
                     "english_stop": {
@@ -19,12 +23,104 @@
                         "type": "edge_ngram",
                         "min_gram": 2,
                         "max_gram": 20
+                    },
+                    "lowercase_turkish": {
+                        "type": "lowercase",
+                        "language": "turkish"
+                    },
+                    "ascii": {
+                        "type": "asciifolding",
+                        "preserve_original": true
+                    },
+                    "eshop_synonyms": {
+                        "type": "synonym_graph",
+                        "synonyms": ["notebook, laptop", "mobil, telefon"],
+                        "expand": false,
+                        "lenient": true
+                    },
+                    "catnum_delimiter": {
+                        "type": "word_delimiter_graph",
+                        "preserve_original": true,
+                        "split_on_case_change": false,
+                        "protected_words": ["Wi-Fi"]
+                    },
+                    "bigrams": {
+                        "type": "shingle",
+                        "max_shingle_size": 3,
+                        "output_unigrams": false,
+                        "token_separator": "-"
+                    },
+                    "french_elision": {
+                        "type": "elision",
+                        "articles": ["l", "d"],
+                        "articles_case": true
+                    },
+                    "protect_brands": {
+                        "type": "keyword_marker",
+                        "keywords": ["akce"],
+                        "ignore_case": true
+                    },
+                    "strip_dashes": {
+                        "type": "pattern_replace",
+                        "pattern": "-",
+                        "replacement": "",
+                        "all": false
+                    },
+                    "min_length": {
+                        "type": "length",
+                        "min": 2
+                    },
+                    "dedup": {
+                        "type": "unique",
+                        "only_on_same_position": true
+                    },
+                    "trimmed": {
+                        "type": "trim"
                     }
                 },
                 "tokenizer": {
                     "keep_special_chars": {
                         "type": "pattern",
                         "pattern": "[^\\p{L}\\d-/]+"
+                    },
+                    "whole_value": {
+                        "type": "keyword",
+                        "buffer_size": 512
+                    },
+                    "spaces": {
+                        "type": "whitespace",
+                        "max_token_length": 30
+                    },
+                    "letters_only": {
+                        "type": "letter"
+                    },
+                    "lowercased": {
+                        "type": "lowercase"
+                    },
+                    "urls_and_emails": {
+                        "type": "uax_url_email"
+                    },
+                    "catnum_chars": {
+                        "type": "char_group",
+                        "tokenize_on_chars": ["whitespace", "-", "/"]
+                    },
+                    "category_path": {
+                        "type": "path_hierarchy",
+                        "delimiter": "|",
+                        "skip": 1,
+                        "reverse": true
+                    },
+                    "classic_english": {
+                        "type": "classic"
+                    }
+                },
+                "normalizer": {
+                    "sort_normalizer": {
+                        "type": "custom",
+                        "filter": ["lowercase", "asciifolding"]
+                    },
+                    "single_char_filter": {
+                        "char_filter": "dots_replace_filter"
                     }
                 },
                 "analyzer": {
@@ -99,6 +195,18 @@
                         "char_filter": [
                             "dots_replace_filter"
                         ]
+                    },
+                    "czech_builtin": {
+                        "type": "czech",
+                        "stopwords": "_czech_",
+                        "stem_exclusion": ["akce"]
+                    },
+                    "standard_limited": {
+                        "type": "standard",
+                        "max_token_length": 20
+                    },
+                    "catnum_keyword": {
+                        "type": "keyword"
                     }
                 },
                 "char_filter": {

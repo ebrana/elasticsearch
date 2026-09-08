@@ -11,10 +11,13 @@ use stdClass;
 
 class FloatTypeFactory implements PropertyFactoryInterface
 {
+    use NumericConfigurationTrait;
+
     public static function create(string $name, stdClass $configuration): AbstractType
     {
         $floatType = new FloatType();
         $floatType->setName($name);
+        self::applyConfiguration($floatType, $configuration);
 
         return $floatType;
     }
