@@ -53,27 +53,67 @@ class MetadataRequestFactory
     }
 
     /**
-     * @return array<string, array<string, array<string, array<string, array<string>|string>>>>|null
+     * @return array<string, mixed>|null
      */
     private function resolveSettings(Index $index): ?array
     {
+        // index settings are sent even when the index has no analysis at all
+        $settings = $this->provideIndexSettings($index);
         $analysis = $index->getAnalysis();
-        if (null === $analysis) {
-            return null;
+
+        if (null !== $analysis) {
+            $settings['analysis'] = ['analyzer' => []];
+            $this->provideAnalyzers($analysis, $settings);
+            $this->provideFilters($analysis, $settings);
+            $this->provideCharacterFilters($analysis, $settings);
+            $this->provideTokenizers($analysis, $settings);
+            $this->provideNormalizers($analysis, $settings);
         }
 
-        $settings = [
-            'analysis' => [
-                'analyzer' => [],
-            ],
-            'max_result_window' => $index->getMaxResultWindow(),
+        return [] === $settings ? null : $settings;
+    }
+
+    /**
+     * Elasticsearch accepts these keys both flat in `settings` and under `settings.index` -
+     * the library sends them flat.
+     *
+     * @return array<string, mixed>
+     */
+    private function provideIndexSettings(Index $index): array
+    {
+        $settings = ['max_result_window' => $index->getMaxResultWindow()];
+
+        $optionalSettings = [
+            'number_of_shards'   => $index->getNumberOfShards(),
+            'number_of_replicas' => $index->getNumberOfReplicas(),
+            'refresh_interval'   => $index->getRefreshInterval(),
+            'max_ngram_diff'     => $index->getMaxNgramDiff(),
+            'max_shingle_diff'   => $index->getMaxShingleDiff(),
         ];
-        $this->provideAnalyzers($analysis, $settings);
-        $this->provideFilters($analysis, $settings);
-        $this->provideCharacterFilters($analysis, $settings);
-        $this->provideTokenizers($analysis, $settings);
+
+        foreach ($optionalSettings as $key => $value) {
+            if (null !== $value) {
+                $settings[$key] = $value;
+            }
+        }
 
         return $settings;
+    }
+
+    /**
+     * @param array<string, mixed> $settings
+     */
+    private function provideNormalizers(Analysis $analysis, array &$settings): void
+    {
+        $normalizers = $analysis->getNormalizers();
+        if ($normalizers->count() > 0) {
+            $settings['analysis']['normalizer'] = [];
+
+            /** @var \Elasticsearch\Mapping\Settings\Normalizer $normalizer */
+            foreach ($normalizers as $normalizer) {
+                $settings['analysis']['normalizer'][$normalizer->getName()] = $normalizer->toArray();
+            }
+        }
     }
 
     /**
@@ -83,7 +123,7 @@ class MetadataRequestFactory
     {
         $analyzers = $analysis->getAnalyzers();
 
-        /** @var \Elasticsearch\Mapping\Settings\Analyzer $analyzer */
+        /** @var \Elasticsearch\Mapping\Settings\AnalyzerInterface $analyzer */
         foreach ($analyzers as $analyzer) {
             $settings['analysis']['analyzer'][$analyzer->getName()] = $analyzer->toArray();
         }
@@ -112,11 +152,11 @@ class MetadataRequestFactory
     {
         $filters = $analysis->getCharacterFilters();
         if ($filters->count() > 0) {
-            $settings['analysis']['character_filter'] = [];
+            $settings['analysis']['char_filter'] = [];
 
-            /** @var \Elasticsearch\Mapping\Settings\AbstractFilter $filter */
+            /** @var \Elasticsearch\Mapping\Settings\AbstractCharacterFilter $filter */
             foreach ($filters as $filter) {
-                $settings['analysis']['character_filter'][$filter->getName()] = $filter->toArray();
+                $settings['analysis']['char_filter'][$filter->getName()] = $filter->toArray();
             }
         }
     }

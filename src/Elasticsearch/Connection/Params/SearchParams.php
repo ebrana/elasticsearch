@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Connection\Params;
 
+use Elasticsearch\Search\Suggest\Enums\SuggestMode;
+
 final class SearchParams extends AbstractParams
 {
     public function __construct(

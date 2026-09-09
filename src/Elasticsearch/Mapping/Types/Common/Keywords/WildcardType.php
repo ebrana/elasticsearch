@@ -66,7 +66,7 @@ final class WildcardType extends AbstractType implements MultiFieldsInterface
             $collection->set('ignore_above', $this->ignore_above);
         }
 
-        if ($this->null_value) {
+        if (null !== $this->null_value) {
             $collection->set('null_value', $this->null_value);
         }
 

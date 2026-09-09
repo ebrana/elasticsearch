@@ -129,7 +129,7 @@ abstract class AbstractNumericType extends AbstractType
             $collection->set('store', $this->store);
         }
 
-        if ($this->null_value) {
+        if (null !== $this->null_value) {
             $collection->set('null_value', $this->null_value);
         }
 

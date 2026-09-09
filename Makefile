@@ -29,7 +29,7 @@ composer-update:
 phpstan: _phpstan
 _phpstan:
 	@echo "${BLUE}>>> Run PHPstan${EOL}"
-	@docker run -it --rm --network=host -v ${current_dir}:/var/www/Elasticsearch -w /var/www/Elasticsearch docker-elasticsearch-app /bin/bash -c "./vendor/bin/phpstan --configuration=phpstan.neon"
+	@docker run -it --rm --network=host -v ${current_dir}:/var/www/Elasticsearch -w /var/www/Elasticsearch docker-elasticsearch-app /bin/bash -c "./vendor/bin/phpstan --configuration=phpstan.neon --memory-limit=512M"
 
 phpunit: _phpunit
 _phpunit:

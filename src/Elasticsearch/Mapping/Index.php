@@ -32,9 +32,14 @@ final class Index
 
     public function __construct(
         ?string $name = null,
-        private readonly int $max_result_window = 10000,
+        private int $max_result_window = 10000,
         /** @var class-string|null */
         private readonly ?string $postEventClass = null,
+        private ?int $number_of_shards = null,
+        private ?int $number_of_replicas = null,
+        private ?string $refresh_interval = null,
+        private ?int $max_ngram_diff = null,
+        private ?int $max_shingle_diff = null,
     ) {
         $this->properties = new ArrayCollection();
         $this->name = $name ? strtolower($name) : $name;
@@ -81,6 +86,71 @@ final class Index
     public function getMaxResultWindow(): int
     {
         return $this->max_result_window;
+    }
+
+    public function setMaxResultWindow(int $max_result_window): void
+    {
+        $this->max_result_window = $max_result_window;
+    }
+
+    public function getNumberOfShards(): ?int
+    {
+        return $this->number_of_shards;
+    }
+
+    public function setNumberOfShards(?int $number_of_shards): void
+    {
+        $this->number_of_shards = $number_of_shards;
+    }
+
+    public function getNumberOfReplicas(): ?int
+    {
+        return $this->number_of_replicas;
+    }
+
+    public function setNumberOfReplicas(?int $number_of_replicas): void
+    {
+        $this->number_of_replicas = $number_of_replicas;
+    }
+
+    /**
+     * E.g. "1s" or "-1" to turn it off; during a bulk reindex it pays off to turn it off
+     * and restore it once finished.
+     */
+    public function getRefreshInterval(): ?string
+    {
+        return $this->refresh_interval;
+    }
+
+    public function setRefreshInterval(?string $refresh_interval): void
+    {
+        $this->refresh_interval = $refresh_interval;
+    }
+
+    /**
+     * Maximalni rozdil mezi min_gram a max_gram u ngram tokenizeru (ES default 1).
+     */
+    public function getMaxNgramDiff(): ?int
+    {
+        return $this->max_ngram_diff;
+    }
+
+    public function setMaxNgramDiff(?int $max_ngram_diff): void
+    {
+        $this->max_ngram_diff = $max_ngram_diff;
+    }
+
+    /**
+     * Maximalni rozdil mezi min_shingle_size a max_shingle_size (ES default 3).
+     */
+    public function getMaxShingleDiff(): ?int
+    {
+        return $this->max_shingle_diff;
+    }
+
+    public function setMaxShingleDiff(?int $max_shingle_diff): void
+    {
+        $this->max_shingle_diff = $max_shingle_diff;
     }
 
     /**

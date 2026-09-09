@@ -7,6 +7,7 @@ namespace Elasticsearch\Mapping\Drivers;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\AnalyzerResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\CharacterFilterResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\FiltersResolver;
+use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\NormalizerResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\TokenizerResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\PropertiesResolver\PropertiesResolver;
 use Elasticsearch\Mapping\Index;
@@ -21,6 +22,7 @@ class JsonDriver implements DriverInterface
     private TokenizerResolver $tokenizerResolver;
     private AnalyzerResolver $analyzerResolver;
     private CharacterFilterResolver $characterFilterResolver;
+    private NormalizerResolver $normalizerResolver;
 
     public function __construct()
     {
@@ -29,6 +31,7 @@ class JsonDriver implements DriverInterface
         $this->tokenizerResolver = new TokenizerResolver();
         $this->analyzerResolver = new AnalyzerResolver();
         $this->characterFilterResolver = new CharacterFilterResolver();
+        $this->normalizerResolver = new NormalizerResolver();
     }
 
     /**
@@ -57,10 +60,45 @@ class JsonDriver implements DriverInterface
             $this->propertiesResolver->resolveProperties($mapping->$indexName->mappings, $index);
         }
         if (isset($mapping->$indexName->settings)) {
+            $this->resolveIndexSettings($mapping->$indexName->settings, $index);
             $this->resolveAnalysis($mapping->$indexName->settings, $index);
         }
 
         return $index;
+    }
+
+    /**
+     * Index settings can be placed under `settings.index` in the JSON, or flat in `settings` -
+     * Elasticsearch accepts both variants.
+     */
+    private function resolveIndexSettings(stdClass $settings, Index $index): void
+    {
+        $sources = [$settings];
+        if (isset($settings->index) && $settings->index instanceof stdClass) {
+            // applied last on purpose, so the nested values overwrite the flat ones
+            $sources[] = $settings->index;
+        }
+
+        foreach ($sources as $source) {
+            if (isset($source->max_result_window)) {
+                $index->setMaxResultWindow((int)$source->max_result_window);
+            }
+            if (isset($source->number_of_shards)) {
+                $index->setNumberOfShards((int)$source->number_of_shards);
+            }
+            if (isset($source->number_of_replicas)) {
+                $index->setNumberOfReplicas((int)$source->number_of_replicas);
+            }
+            if (isset($source->refresh_interval)) {
+                $index->setRefreshInterval((string)$source->refresh_interval);
+            }
+            if (isset($source->max_ngram_diff)) {
+                $index->setMaxNgramDiff((int)$source->max_ngram_diff);
+            }
+            if (isset($source->max_shingle_diff)) {
+                $index->setMaxShingleDiff((int)$source->max_shingle_diff);
+            }
+        }
     }
 
     /**
@@ -80,11 +118,15 @@ class JsonDriver implements DriverInterface
             }
             // resolve tokenizer
             if (isset($mappings->analysis->tokenizer)) {
-                $this->tokenizerResolver->resolvetTokenizer($mappings->analysis->tokenizer, $analysis);
+                $this->tokenizerResolver->resolveTokenizer($mappings->analysis->tokenizer, $analysis);
             }
             // resolve character filter
             if (isset($mappings->analysis->char_filter)) {
                 $this->characterFilterResolver->resolveFilters($mappings->analysis->char_filter, $analysis);
+            }
+            // resolve normalizer
+            if (isset($mappings->analysis->normalizer)) {
+                $this->normalizerResolver->resolveNormalizer($mappings->analysis->normalizer, $analysis);
             }
 
             $index->setAnalysis($analysis);

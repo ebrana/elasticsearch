@@ -6,7 +6,7 @@ namespace Elasticsearch\Mapping;
 
 class MappingMetadataProvider implements MetadataProviderInterface
 {
-    private ?MappingMetada $metadata = null;
+    private ?MappingMetadata $metadata = null;
 
     public function __construct(private readonly MappingMetadataFactory $mappingMetadataFactory)
     {
@@ -15,7 +15,7 @@ class MappingMetadataProvider implements MetadataProviderInterface
     /**
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function getMappingMetadata(): MappingMetada
+    public function getMappingMetadata(): MappingMetadata
     {
         if (null === $this->metadata) {
             $this->metadata = $this->mappingMetadataFactory->create();

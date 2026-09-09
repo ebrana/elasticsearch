@@ -33,6 +33,28 @@ class TermsAggregationResolver extends AbstractAggregationResolver
             $lines[] = sprintf('%s->missing(%s);', $property, $this->resolvePhpValue($metadata['missing']));
         }
 
+        if (isset($metadata['shard_size'])) {
+            $lines[] = sprintf(
+                '%s->shardSize(%s);',
+                $property,
+                $this->resolvePhpValue((int) $metadata['shard_size'])
+            );
+        }
+
+        if (isset($metadata['min_doc_count'])) {
+            $lines[] = sprintf(
+                '%s->minDocCount(%s);',
+                $property,
+                $this->resolvePhpValue((int) $metadata['min_doc_count'])
+            );
+        }
+
+        foreach (['include', 'exclude'] as $key) {
+            if (isset($metadata[$key])) {
+                $lines[] = sprintf('%s->%s(%s);', $property, $key, $this->resolvePhpValue($metadata[$key]));
+            }
+        }
+
         return $lines;
     }
 }

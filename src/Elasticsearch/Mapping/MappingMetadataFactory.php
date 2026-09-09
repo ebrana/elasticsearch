@@ -23,7 +23,7 @@ final readonly class MappingMetadataFactory
     /**
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function create(): MappingMetada
+    public function create(): MappingMetadata
     {
         $mappingMetadata = $this->loadCache();
         if ($mappingMetadata) {
@@ -37,7 +37,7 @@ final readonly class MappingMetadataFactory
             $metadata->set($class, $indexMetadata);
         }
 
-        $mappingMetadata = new MappingMetada($metadata);
+        $mappingMetadata = new MappingMetadata($metadata);
 
         $this->saveCache($mappingMetadata);
 
@@ -52,7 +52,7 @@ final readonly class MappingMetadataFactory
     /**
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    private function loadCache(): ?MappingMetada
+    private function loadCache(): ?MappingMetadata
     {
         if (null === $this->cacheItemPool) {
             return null;
@@ -61,14 +61,14 @@ final readonly class MappingMetadataFactory
         $mappingMetadata = null;
         $item = $this->cacheItemPool->getItem($this->getCacheKey());
         if ($item->isHit()) {
-            /** @var \Elasticsearch\Mapping\MappingMetada|null $mappingMetadata */
+            /** @var \Elasticsearch\Mapping\MappingMetadata|null $mappingMetadata */
             $mappingMetadata = $item->get();
         }
 
         return $mappingMetadata;
     }
 
-    private function saveCache(MappingMetada $mappingMetadata): void
+    private function saveCache(MappingMetadata $mappingMetadata): void
     {
         if ($this->cacheItemPool) {
             $item = $this->cacheItemPool->getItem($this->getCacheKey());

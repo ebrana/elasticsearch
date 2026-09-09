@@ -47,11 +47,63 @@ $this->resolveCollectionsByField(
       $document,
       $entity,
       $this->index->getProperties()->get('sellingPriceWithVat'),
-      function (AmproductsModuleLangs $langs) {
+      function (ProductModuleLangs $langs) {
             return '@' . $langs->getLang();
       }
 );
 `````
+
+## Bulk API
+
+Pro dávkovou indexaci je `Connection::bulk()`. Do jedné dávky lze míchat operace i indexy.
+
+```php
+use Elasticsearch\Connection\Params\BulkParams;
+use Elasticsearch\Indexing\Bulk\BulkRequest;
+
+$request = new BulkRequest();
+$request->index($document)                              // zaindexuje, případně přepíše
+    ->create($jinyDocument)                             // jen když _id ještě neexistuje
+    ->update($index, '3', ['price' => 150], docAsUpsert: true)
+    ->delete($index, '4');
+
+$response = $connection->bulk($request, new BulkParams(refresh: true));
+```
+
+Pro operace, které potřebují víc voleb, jsou třídy `IndexOperation`, `CreateOperation`,
+`UpdateOperation` a `DeleteOperation` a metoda `add()`:
+
+```php
+use Elasticsearch\Indexing\Bulk\UpdateOperation;
+
+$request->add(new UpdateOperation($index, '2',
+    script: ['source' => 'ctx._source.views += 5'],
+    retryOnConflict: 3
+));
+```
+
+### ⚠️ Kontrola chyb je povinná
+
+**Bulk vrací HTTP 200 i když část položek selže** — bez kontroly by chyby zapadly:
+
+```php
+if ($response->hasErrors()) {
+    foreach ($response->getErrors() as $error) {
+        $logger->error((string)$error);
+        // create bulk_items/1 failed with 409: version conflict, document already exists (...)
+        $error->getAction();   // 'create'
+        $error->getStatus();   // 409
+        $error->getId();
+    }
+}
+
+$response->count();            // celkem položek
+$response->getSuccessCount();  // úspěšných
+$response->getTook();          // ms
+```
+
+Velikost dávky si řídí volající — knihovna dávku nedělí. Elasticsearch doporučuje řádově
+tisíce dokumentů nebo 5–15 MB těla na jeden request.
 
 []() > [Ukázka použítí](../../../examples/indexData.php) <
 

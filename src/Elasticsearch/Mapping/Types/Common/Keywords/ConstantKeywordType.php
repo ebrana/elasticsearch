@@ -56,7 +56,7 @@ final class ConstantKeywordType extends AbstractType implements MultiFieldsInter
         if ($meta) {
             $collection->set('meta', $meta);
         }
-        if ($this->value) {
+        if (null !== $this->value) {
             $collection->set('value', $this->value);
         }
 

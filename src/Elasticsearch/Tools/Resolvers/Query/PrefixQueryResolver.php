@@ -14,8 +14,13 @@ class PrefixQueryResolver extends AbstractQueryResolver
     public function resolve(array $metadata, ?string $property = null): string
     {
         $field = array_key_first($metadata);
-        $value = $metadata[$field];
         $property = $property ?? '$prefixQuery';
+
+        if (null === $field) {
+            throw new \RuntimeException('Prefix query must contain field metadata.');
+        }
+
+        $value = $metadata[$field];
 
         if (!is_array($value)) {
             $value = ['value' => $value];

@@ -11,7 +11,8 @@ use stdClass;
 final class AnalyzerFactory implements AnalyzerFactoryInterface
 {
     /**
-     * @param stdClass&object{tokenizer?: string, filter?: string[]|null|scalar} $configuration
+     * Custom analyzer: reads tokenizer (required), filter and char_filter.
+     *
      * @throws \Elasticsearch\Mapping\Exceptions\AttributeMissingException
      */
     public static function create(string $name, stdClass $configuration): Analyzer
@@ -19,8 +20,24 @@ final class AnalyzerFactory implements AnalyzerFactoryInterface
         if (!isset($configuration->tokenizer)) {
             throw new AttributeMissingException('Analyzer must define tokenizer.');
         }
-        $filters = isset($configuration->filter) && is_array($configuration->filter) ? $configuration->filter : [];
+        $filters = self::resolveList($configuration->filter ?? null);
+        $charFilters = self::resolveList($configuration->char_filter ?? null);
 
-        return new Analyzer($name, $configuration->tokenizer, $filters);
+        return new Analyzer($name, $configuration->tokenizer, $filters, $charFilters);
+    }
+
+    /**
+     * Elasticsearch accepts both a single name and a list of names.
+     *
+     * @param string[]|null|scalar $value
+     * @return string[]
+     */
+    private static function resolveList(array|string|int|float|bool|null $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        return is_string($value) && '' !== $value ? [$value] : [];
     }
 }

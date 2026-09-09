@@ -6,6 +6,7 @@ A simple mapping, indexing and filtering library on Elasticsearch...
 - [Mapping](src/Elasticsearch/Mapping/README.md)
 - [Indexing](src/Elasticsearch/Indexing/README.md)
 - [Searching](src/Elasticsearch/Search/README.md)
+- [Changelog](CHANGELOG.md)
 
 ### Docker
 Pro jednoduchost lze použít připravené skripty přes make (Makefile).

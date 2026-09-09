@@ -13,9 +13,11 @@ use Elasticsearch\Mapping\Exceptions\MissingKeyResolverException;
 use Elasticsearch\Mapping\Exceptions\MissingObjectTypeTemplateFiledsException;
 use Elasticsearch\Mapping\Exceptions\MissingPostEventException;
 use Elasticsearch\Mapping\Index;
+use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Analysis;
-use Elasticsearch\Mapping\Settings\Analyzer;
+use Elasticsearch\Mapping\Settings\AnalyzerInterface;
+use Elasticsearch\Mapping\Settings\Normalizer;
 use Elasticsearch\Mapping\Settings\AbstractTokenizer;
 use Elasticsearch\Mapping\Types\AbstractType;
 use Elasticsearch\Mapping\Types\MappingInterface;
@@ -60,7 +62,7 @@ class AnnotationDriver implements DriverInterface
         $index = $reflection->getAttributes(Index::class);
 
         if (empty($index)) {
-            // hledej v dalsich levelech
+            // look further up the class hierarchy
             $parentClass = $reflection->getParentClass();
             if (false !== $parentClass) {
                 $this->level++;
@@ -75,8 +77,8 @@ class AnnotationDriver implements DriverInterface
             $indexMetadata = $index[0]->newInstance();
         }
 
-        // hledej filtry a analyzery
-        $analyzers = $reflection->getAttributes(Analyzer::class);
+        // look for filters and analyzers (both a custom Analyzer and the built-in ones)
+        $analyzers = $reflection->getAttributes(AnalyzerInterface::class, ReflectionAttribute::IS_INSTANCEOF);
         $analysis = null;
 
         if (!empty($analyzers)) {
@@ -105,6 +107,30 @@ class AnnotationDriver implements DriverInterface
             foreach ($tokenizers as $tokenizer) {
                 $tokenizerInstance = $tokenizer->newInstance();
                 $analysis->addTokenizer($tokenizerInstance);
+            }
+        }
+
+        $normalizers = $reflection->getAttributes(Normalizer::class);
+        if (!empty($normalizers)) {
+            if (null === $analysis) {
+                $analysis = new Analysis();
+            }
+            foreach ($normalizers as $normalizer) {
+                $analysis->addNormalizer($normalizer->newInstance());
+            }
+        }
+
+        $characterFilters = $reflection->getAttributes(
+            AbstractCharacterFilter::class,
+            ReflectionAttribute::IS_INSTANCEOF
+        );
+        if (!empty($characterFilters)) {
+            if (null === $analysis) {
+                $analysis = new Analysis();
+            }
+            foreach ($characterFilters as $characterFilter) {
+                $characterFilterInstance = $characterFilter->newInstance();
+                $analysis->addCharacterFilter($characterFilterInstance);
             }
         }
 
@@ -183,7 +209,7 @@ class AnnotationDriver implements DriverInterface
         if (null === $key) {
             throw new RuntimeException(sprintf('Field "%s" has no keyResolver.', $objectType->getFieldName()));
         }
-        // mam typ object a zaroven rikam, ze chci klice pres resolver
+        // the type is object and at the same time the keys are requested via a resolver
         $keyResolver = $this->getKeyResolver($key);
         $keys = $keyResolver->resolve();
         foreach ($keys as $key) {

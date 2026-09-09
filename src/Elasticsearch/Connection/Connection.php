@@ -8,16 +8,22 @@ use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Endpoints\Indices;
 use Elastic\Elasticsearch\Response\Elasticsearch;
+use Elasticsearch\Connection\Analyze\AnalyzeRequest;
+use Elasticsearch\Connection\Analyze\AnalyzeResult;
+use Elasticsearch\Connection\Params\BulkParams;
 use Elasticsearch\Connection\Params\CountParams;
 use Elasticsearch\Connection\Params\CreateIndexParams;
 use Elasticsearch\Connection\Params\DeleteIndexParams;
 use Elasticsearch\Connection\Params\IndexDocumentParams;
 use Elasticsearch\Connection\Params\IndexExistParams;
 use Elasticsearch\Connection\Params\SearchParams;
+use Elasticsearch\Indexing\Bulk\BulkRequest;
+use Elasticsearch\Indexing\Bulk\BulkResponse;
 use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Request\MetadataRequest;
 use Elasticsearch\Search\Builder;
+use Elasticsearch\Search\PointInTime;
 use Elasticsearch\Search\Results\Result;
 use RuntimeException;
 
@@ -218,6 +224,159 @@ class Connection
         $response = $this->getClient()->search($typedData);
         if ($response instanceof Elasticsearch) {
             return new Result($response->asArray());
+        }
+
+        throw new RuntimeException('Wrong data format');
+    }
+
+    /**
+     * Bulk indexing. Bulk returns HTTP 200 even when some of the items fail, so
+     * BulkResponse::hasErrors() has to be checked.
+     *
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
+     * @throws \JsonException
+     */
+    public function bulk(BulkRequest $request, ?BulkParams $params = null): BulkResponse
+    {
+        if ($request->isEmpty()) {
+            throw new RuntimeException('Bulk request must contain at least one operation.');
+        }
+
+        $data = ['body' => $this->provideBulkBody($request)];
+
+        if ($params) {
+            $data = array_merge($data, $params->toArray());
+        }
+
+        // klient ma refresh typovany jako string; bool by prevedl sam, ale shape to nedovoluje
+        if (isset($data['refresh']) && is_bool($data['refresh'])) {
+            $data['refresh'] = $data['refresh'] ? 'true' : 'false';
+        }
+
+        /** @var array{body: string, refresh?: string, routing?: string, timeout?: int|string} $typedData */
+        $typedData = $data;
+
+        $response = $this->getClient()->bulk($typedData);
+        if ($response instanceof Elasticsearch) {
+            /** @var array<string, mixed> $result */
+            $result = $response->asArray();
+
+            return new BulkResponse($result);
+        }
+
+        throw new RuntimeException('Wrong data format');
+    }
+
+    /**
+     * Bulk telo je NDJSON: radek s metadaty, pod nim (krome delete) radek s daty.
+     *
+     * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
+     * @throws \JsonException
+     */
+    private function provideBulkBody(BulkRequest $request): string
+    {
+        $lines = '';
+
+        foreach ($request->getOperations() as $operation) {
+            $metadata = ['_index' => $operation->getIndex()->getNameWithPrefix($this->indexPrefix)];
+
+            $id = $operation->getId();
+            if (null !== $id) {
+                $metadata['_id'] = $id;
+            }
+
+            $metadata = array_merge($metadata, $operation->getMetadata());
+            $lines .= json_encode([$operation->getAction() => $metadata], JSON_THROW_ON_ERROR) . "\n";
+
+            $source = $operation->getSource();
+            if (null !== $source) {
+                $lines .= json_encode($source, JSON_THROW_ON_ERROR) . "\n";
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Opens a Point in Time - a frozen view of the index for consistent deep paging via
+     * search_after. Once paging is done it has to be closed via closePointInTime().
+     *
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
+     */
+    public function openPointInTime(Index $index, string $keepAlive = '1m'): PointInTime
+    {
+        $response = $this->getClient()->openPointInTime([
+            'index'      => $index->getNameWithPrefix($this->indexPrefix),
+            'keep_alive' => $keepAlive,
+        ]);
+
+        if (!$response instanceof Elasticsearch) {
+            throw new RuntimeException('Wrong data format');
+        }
+
+        $data = $response->asArray();
+        if (!isset($data['id']) || !is_string($data['id'])) {
+            throw new RuntimeException('Point in time response is missing id.');
+        }
+
+        return new PointInTime($data['id'], $keepAlive);
+    }
+
+    /**
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
+    public function closePointInTime(PointInTime $pointInTime): bool
+    {
+        $response = $this->getClient()->closePointInTime([
+            'body' => ['id' => $pointInTime->getId()],
+        ]);
+
+        if (!$response instanceof Elasticsearch) {
+            throw new RuntimeException('Wrong data format');
+        }
+
+        return (bool)($response->asArray()['succeeded'] ?? false);
+    }
+
+    /**
+     * Analyzer debugging: returns the tokens Elasticsearch splits the given text into.
+     * Without an index only built-in analyzers can be tested; with one, also those defined in its mapping.
+     *
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws \Elasticsearch\Mapping\Exceptions\EmptyIndexNameException
+     */
+    public function analyze(AnalyzeRequest $request, ?Index $index = null): AnalyzeResult
+    {
+        $data = [
+            'body' => $request->toArray(),
+        ];
+
+        if (null !== $index) {
+            $data['index'] = $index->getNameWithPrefix($this->indexPrefix);
+        }
+
+        /** @var array{index?: string, body: array<string, mixed>} $typedData */
+        $typedData = $data;
+
+        $response = $this->indices()->analyze($typedData);
+        if ($response instanceof Elasticsearch) {
+            /** @var array<string, mixed> $result */
+            $result = $response->asArray();
+
+            return new AnalyzeResult($result);
         }
 
         throw new RuntimeException('Wrong data format');
