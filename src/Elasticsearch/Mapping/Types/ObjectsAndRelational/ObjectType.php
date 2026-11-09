@@ -7,6 +7,7 @@ namespace Elasticsearch\Mapping\Types\ObjectsAndRelational;
 use Attribute;
 use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Types\AbstractType;
+use Elasticsearch\Mapping\Types\SourceOnly;
 use Elasticsearch\Mapping\Types\ValidatorInterface;
 use RuntimeException;
 
@@ -96,6 +97,9 @@ class ObjectType extends AbstractType implements ValidatorInterface
 
         /** @var AbstractType $property */
         foreach ($this->getProperties() as $property) {
+            if ($property instanceof SourceOnly) {
+                continue; // lives in _source only
+            }
             $properties[$property->getName()] = $property->getCollection()->toArray();
         }
 

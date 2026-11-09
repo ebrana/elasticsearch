@@ -9,6 +9,7 @@ use Elasticsearch\Indexing\Interfaces\IndexableEntityInterface;
 use Elasticsearch\Mapping\Types\AbstractType;
 use Elasticsearch\Mapping\Types\Common\BooleanType;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Types\SourceOnly;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -36,6 +37,8 @@ trait CollectionByMappingResolverTrait
                     throw new DataResolverExistsException(sprintf('Entity "%s" does not have method "%s(...)".', get_class($relEntity), $relGetter));
                 }
                 $relValue = $relEntity->$relGetter();
+                // keyed by the ES field name (`name:`), which may differ from the PHP property
+                $objectPropertyName = $relProperty->getName();
                 if ($relProperty instanceof ObjectType) {
                     if (!is_iterable($relValue)) {
                         throw new InvalidArgumentException('Resolving data for instance of ObjectType must be iterable.');
@@ -43,6 +46,16 @@ trait CollectionByMappingResolverTrait
                     /** @var IndexableEntityInterface[] $typedValue */
                     $typedValue = $relValue;
                     $record[$objectPropertyName] = $this->resolveCollection($relProperty, $typedValue);
+                } else if ($relProperty instanceof SourceOnly) {
+                    if (!is_scalar($relValue) && !is_array($relValue) && null !== $relValue) {
+                        throw new RuntimeException(
+                            sprintf('Resolved value of SourceOnly field must be null, scalar or array. Entity "%s" and property "%s". Write your custom resolver instead.',
+                                get_class($relEntity),
+                                $relProperty->getFieldName()
+                            )
+                        );
+                    }
+                    $record[$objectPropertyName] = $relValue;
                 } else {
                     if (!is_scalar($relValue) && null !== $relValue) {
                         throw new RuntimeException(
@@ -70,7 +83,8 @@ trait CollectionByMappingResolverTrait
             throw new RuntimeException('Property field name empty.');
         }
         $name = ucfirst($propertyName);
-        if ($type instanceof BooleanType && method_exists($entity, 'is' . $name)) {
+        // booleans (and source-only fields, whose type is unknown) may use an is*() getter
+        if (($type instanceof BooleanType || $type instanceof SourceOnly) && method_exists($entity, 'is' . $name)) {
             $prefix = 'is';
         }
 

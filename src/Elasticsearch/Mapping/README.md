@@ -219,6 +219,54 @@ JSON driver čte `index.mapping.*` vnořeně (`settings.index.mapping.total_fiel
 tak to vrací `GET _settings`) i jako tečkovaný klíč (`"index.mapping.total_fields.limit"`
 nebo bez prefixu `index.`).
 
+### Pole jen v `_source` (`SourceOnly`)
+
+Někdy je potřeba mít data v dokumentu (vrací se v `_source` hitu), ale neindexovat je —
+nemají se podle nich hledat, nemají zabírat místo v mappingu ani se počítat do
+`total_fields.limit`. K tomu slouží atribut `SourceOnly`:
+
+```php
+use Elasticsearch\Mapping\Types\SourceOnly;
+
+#[Index(name: "Article", dynamic: Dynamic::FALSE)]
+class Article
+{
+    #[TextType]
+    private string $title;
+
+    #[SourceOnly]
+    private string $teaser;                 // skalár
+
+    #[SourceOnly(name: "meta")]
+    private array $metadata;                // i pole — v dokumentu pod klíčem "meta"
+
+    #[ObjectType(mappedBy: Comment::class)]
+    private array $comments;
+}
+
+class Comment
+{
+    #[KeywordType(context: Article::class)]
+    private string $author;
+
+    #[SourceOnly(context: Article::class)]  // funguje i uvnitř mappedBy objektu
+    private string $body;
+}
+```
+
+Do mappingu se `SourceOnly` pole nedostane (`MetadataRequestFactory` i `ObjectType` ho
+přeskočí), do dokumentu ho vloží `DefaultDocumentBuilder`, `ScalarValueResolverTrait`
+i `CollectionByMappingResolverTrait` (viz [Indexing](../Indexing/README.md)).
+
+⚠️ **Úroveň, na které `SourceOnly` leží, musí mít `dynamic: false`** — jinak by si
+Elasticsearch pole při prvním dokumentu namapoval sám (`true`), nebo dokument odmítl
+(`strict`). Nastavuje se na `#[Index(dynamic: Dynamic::FALSE)]` nebo na rodičovském
+`ObjectType(dynamic: Dynamic::FALSE)`; `ObjectType` bez vlastního `dynamic` dědí hodnotu
+rodiče. Při generování mappingu to knihovna kontroluje a vyhodí
+`SourceOnlyRequiresDynamicFalseException` (potomek `MappingJsonCreateException`).
+
+Jméno `SourceOnly` pole nesmí kolidovat s mapovaným polem (`DuplicityPropertyException`).
+
 ### Vestavěné analyzery
 
 Vedle vlastního (custom) analyzeru skládaného z tokenizeru a filtrů (`Analyzer`) lze použít

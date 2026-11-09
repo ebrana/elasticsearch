@@ -12,6 +12,7 @@ use Elasticsearch\Indexing\Interfaces\IndexableEntityInterface;
 use Elasticsearch\Indexing\Resolvers\CollectionByMappingResolverTrait;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Types\SourceOnly;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -59,6 +60,16 @@ readonly class DefaultDocumentBuilder implements DocumentBuilderInterface
                 /** @var IndexableEntityInterface[] $typedData */
                 $typedData = $data;
                 $data = $this->resolveCollection($property, $typedData);
+            } else if ($property instanceof SourceOnly) {
+                // goes to _source as it is; Document::set() accepts null, scalars and arrays
+                if (!is_scalar($data) && !is_array($data) && null !== $data) {
+                    throw new RuntimeException(
+                        sprintf('Resolved value of SourceOnly field must be null, scalar or array. Entity "%s" and property "%s". Write your custom resolver instead.',
+                            get_class($entity),
+                            $property->getFieldName()
+                        )
+                    );
+                }
             } else if (!is_scalar($data) && null !== $data) {
                 throw new RuntimeException(
                     sprintf('Resolved value must be null or scalar. Entity "%s" and property "%s". Write your custom resolver instead.',
@@ -67,7 +78,8 @@ readonly class DefaultDocumentBuilder implements DocumentBuilderInterface
                     )
                 );
             }
-            $document->set($propertyName, $data);
+            // the document key is the ES field name (`name:`), which may differ from the PHP property
+            $document->set($property->getName(), $data);
         }
 
         return $document;

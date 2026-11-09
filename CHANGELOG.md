@@ -20,9 +20,30 @@ verzování ze [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   jen ručně mimo knihovnu.
 - Atribut `Index` nese kořenové `dynamic` (`Dynamic::TRUE|FALSE|STRICT`) — `mappings.dynamic`
   se dosud dalo nastavit jen na `ObjectType`. `TRUE` je ES default a neposílá se.
+
+#### Mapping / Indexing — pole jen v `_source`
+
+- Nový atribut property `SourceOnly` (`Elasticsearch\Mapping\Types`): hodnota se zapíše do
+  dokumentu (a tedy do `_source`), ale pole není v mappingu — neindexuje se ani se nepočítá
+  do `total_fields.limit`. Funguje i uvnitř `mappedBy` objektů (přes `context`).
+  `DefaultDocumentBuilder`, `ScalarValueResolverTrait` i `CollectionByMappingResolverTrait`
+  ho plní automaticky, u `SourceOnly` přijmou i pole, ne jen skalár.
+- Úroveň se `SourceOnly` polem musí mít `dynamic: false` (jinak by ES pole namapoval sám
+  nebo dokument odmítl). `MetadataRequestFactory::create()` to kontroluje a vyhodí
+  `SourceOnlyRequiresDynamicFalseException` (potomek `MappingJsonCreateException`, aby ho
+  chytil i profiler bundlu). `ObjectType` bez vlastního `dynamic` dědí hodnotu rodiče.
 - JSON driver čte `index.mapping.*` vnořeně (`settings.index.mapping.total_fields.limit`),
   i jako tečkovaný klíč s prefixem `index.` nebo bez něj, a `mappings.dynamic` jako string
   i boolean.
+
+### Změněno
+
+- ⚠️ **`DefaultDocumentBuilder`, `ScalarValueResolverTrait` a `CollectionByMappingResolverTrait`
+  klíčují dokument ES jménem pole (`name:` atributu), ne názvem PHP property.** Dosud
+  `#[KeywordType(name: "variantId")] private string $id` zapsal hodnotu pod `id`, takže
+  mapované pole `variantId` zůstalo prázdné a pod `id` vzniklo dynamické pole navíc.
+  Projekty, které `name:` používají jen s vlastním builderem, to neovlivní.
+- `MappingJsonCreateException` má nepovinný 2. parametr `$message`.
 
 ## [v1.1.0]
 
