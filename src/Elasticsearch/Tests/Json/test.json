@@ -5,7 +5,16 @@
                 "number_of_shards": 1,
                 "number_of_replicas": 1,
                 "max_ngram_diff": 2,
-                "max_shingle_diff": 4
+                "max_shingle_diff": 4,
+                "mapping": {
+                    "total_fields": {
+                        "limit": 1500,
+                        "ignore_dynamic_beyond_limit": true
+                    },
+                    "nested_fields": {
+                        "limit": 100
+                    }
+                }
             },
             "refresh_interval": "5s",
             "max_result_window": 20000,
@@ -219,6 +228,7 @@
             }
         },
         "mappings": {
+            "dynamic": "false",
             "properties": {
                 "searching_names": {
                     "type": "text",

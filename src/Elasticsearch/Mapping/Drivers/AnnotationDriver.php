@@ -17,6 +17,7 @@ use Elasticsearch\Mapping\Settings\AbstractCharacterFilter;
 use Elasticsearch\Mapping\Settings\AbstractFilter;
 use Elasticsearch\Mapping\Settings\Analysis;
 use Elasticsearch\Mapping\Settings\AnalyzerInterface;
+use Elasticsearch\Mapping\Settings\MappingSettings;
 use Elasticsearch\Mapping\Settings\Normalizer;
 use Elasticsearch\Mapping\Settings\AbstractTokenizer;
 use Elasticsearch\Mapping\Types\AbstractType;
@@ -136,6 +137,12 @@ class AnnotationDriver implements DriverInterface
 
         if ($analysis) {
             $indexMetadata->setAnalysis($analysis);
+        }
+
+        // index.mapping.* limits; a child class overrides what the parent declared
+        $mappingSettings = $reflection->getAttributes(MappingSettings::class);
+        if (!empty($mappingSettings)) {
+            $indexMetadata->setMappingSettings($mappingSettings[0]->newInstance());
         }
 
         // resolvuj property
