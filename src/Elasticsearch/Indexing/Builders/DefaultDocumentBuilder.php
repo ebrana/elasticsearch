@@ -53,33 +53,18 @@ readonly class DefaultDocumentBuilder implements DocumentBuilderInterface
             }
 
             $data = $entity->$getter();
+            // the document key is the ES field name (`name:`), which may differ from the PHP property
             if ($property instanceof ObjectType && $property->getMappedBy()) {
                 if (!is_iterable($data)) {
                     throw new InvalidArgumentException('Resolving data for instance of ObjectType must be iterable.');
                 }
                 /** @var IndexableEntityInterface[] $typedData */
                 $typedData = $data;
-                $data = $this->resolveCollection($property, $typedData);
-            } else if ($property instanceof SourceOnly) {
-                // goes to _source as it is; Document::set() accepts null, scalars and arrays
-                if (!is_scalar($data) && !is_array($data) && null !== $data) {
-                    throw new RuntimeException(
-                        sprintf('Resolved value of SourceOnly field must be null, scalar or array. Entity "%s" and property "%s". Write your custom resolver instead.',
-                            get_class($entity),
-                            $property->getFieldName()
-                        )
-                    );
-                }
-            } else if (!is_scalar($data) && null !== $data) {
-                throw new RuntimeException(
-                    sprintf('Resolved value must be null or scalar. Entity "%s" and property "%s". Write your custom resolver instead.',
-                        get_class($entity),
-                        $property->getFieldName()
-                    )
-                );
+                $document->set($property->getName(), $this->resolveCollection($property, $typedData));
+                continue;
             }
-            // the document key is the ES field name (`name:`), which may differ from the PHP property
-            $document->set($property->getName(), $data);
+
+            $document->set($property->getName(), $this->resolveScalarOrSourceValue($entity, $property, $data));
         }
 
         return $document;

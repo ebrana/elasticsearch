@@ -46,33 +46,42 @@ trait CollectionByMappingResolverTrait
                     /** @var IndexableEntityInterface[] $typedValue */
                     $typedValue = $relValue;
                     $record[$objectPropertyName] = $this->resolveCollection($relProperty, $typedValue);
-                } else if ($relProperty instanceof SourceOnly) {
-                    if (!is_scalar($relValue) && !is_array($relValue) && null !== $relValue) {
-                        throw new RuntimeException(
-                            sprintf('Resolved value of SourceOnly field must be null, scalar or array. Entity "%s" and property "%s". Write your custom resolver instead.',
-                                get_class($relEntity),
-                                $relProperty->getFieldName()
-                            )
-                        );
-                    }
-                    $record[$objectPropertyName] = $relValue;
-                } else {
-                    if (!is_scalar($relValue) && null !== $relValue) {
-                        throw new RuntimeException(
-                            sprintf('Resolved value must be null or scalar. Entity "%s" and property "%s". Write your custom resolver instead.',
-                                get_class($relEntity),
-                                $relProperty->getFieldName()
-                            )
-                        );
-                    }
-                    $record[$objectPropertyName] = $relValue;
+                    continue;
                 }
+
+                $record[$objectPropertyName] = $this->resolveScalarOrSourceValue($relEntity, $relProperty, $relValue);
             }
 
             $records[] = $record;
         }
 
         return $records;
+    }
+
+    /**
+     * A SourceOnly field goes to `_source` as it is - null, scalar or array (what Document::set()
+     * accepts); any other field must resolve to null or a scalar.
+     *
+     * @return scalar|array<string|int, mixed>|null
+     * @throws RuntimeException
+     */
+    private function resolveScalarOrSourceValue(object $entity, AbstractType $property, mixed $value): mixed
+    {
+        if (null === $value || is_scalar($value)) {
+            return $value;
+        }
+        if ($property instanceof SourceOnly && is_array($value)) {
+            return $value;
+        }
+
+        throw new RuntimeException(sprintf(
+            '%s Entity "%s" and property "%s". Write your custom resolver instead.',
+            $property instanceof SourceOnly
+                ? 'Resolved value of SourceOnly field must be null, scalar or array.'
+                : 'Resolved value must be null or scalar.',
+            get_class($entity),
+            $property->getFieldName()
+        ));
     }
 
     private function getGetter(object $entity, AbstractType $type): string
