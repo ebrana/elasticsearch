@@ -9,7 +9,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Elasticsearch\Mapping\Exceptions\DuplicityPropertyException;
 use Elasticsearch\Mapping\Exceptions\EmptyIndexNameException;
 use Elasticsearch\Mapping\Settings\Analysis;
+use Elasticsearch\Mapping\Settings\MappingSettings;
 use Elasticsearch\Mapping\Types\AbstractType;
+use Elasticsearch\Mapping\Types\ObjectsAndRelational\Dynamic;
 use Elasticsearch\Mapping\Types\ValidatorInterface;
 use RuntimeException;
 
@@ -28,6 +30,7 @@ final class Index
     private ?string $name;
     private ArrayCollection $properties;
     private ?Analysis $analysis = null;
+    private ?MappingSettings $mappingSettings = null;
     private string $entityClass;
 
     public function __construct(
@@ -40,6 +43,7 @@ final class Index
         private ?string $refresh_interval = null,
         private ?int $max_ngram_diff = null,
         private ?int $max_shingle_diff = null,
+        private Dynamic $dynamic = Dynamic::TRUE,
     ) {
         $this->properties = new ArrayCollection();
         $this->name = $name ? strtolower($name) : $name;
@@ -81,6 +85,19 @@ final class Index
     public function setAnalysis(?Analysis $analysis): void
     {
         $this->analysis = $analysis;
+    }
+
+    /**
+     * `index.mapping.*` limits, defined by the `#[MappingSettings]` class attribute.
+     */
+    public function getMappingSettings(): ?MappingSettings
+    {
+        return $this->mappingSettings;
+    }
+
+    public function setMappingSettings(?MappingSettings $mappingSettings): void
+    {
+        $this->mappingSettings = $mappingSettings;
     }
 
     public function getMaxResultWindow(): int
@@ -151,6 +168,16 @@ final class Index
     public function setMaxShingleDiff(?int $max_shingle_diff): void
     {
         $this->max_shingle_diff = $max_shingle_diff;
+    }
+
+    public function getDynamic(): Dynamic
+    {
+        return $this->dynamic;
+    }
+
+    public function setDynamic(Dynamic $dynamic): void
+    {
+        $this->dynamic = $dynamic;
     }
 
     /**
