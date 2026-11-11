@@ -8,6 +8,7 @@ use Elasticsearch\Indexing\Interfaces\DocumentInterface;
 use Elasticsearch\Indexing\Interfaces\IndexableEntityInterface;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Types\SourceOnly;
 use RuntimeException;
 
 trait ScalarValueResolverTrait
@@ -34,8 +35,10 @@ trait ScalarValueResolverTrait
             if ($isGetterExists || $isBoolGetterExists) {
                 $value = $isGetterExists ? $entity->$getter() : $entity->$booleanGetter();
 
-                if (null === $value || is_scalar($value)) {
-                    $document->set($propertyName, $value);
+                // a source-only field may also carry an array, it is not mapped anyway
+                if (null === $value || is_scalar($value) || ($property instanceof SourceOnly && is_array($value))) {
+                    // keyed by the ES field name (`name:`), which may differ from the PHP property
+                    $document->set($property->getName(), $value);
                 }
             }
         }

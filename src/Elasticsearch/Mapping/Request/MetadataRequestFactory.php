@@ -5,17 +5,25 @@ declare(strict_types=1);
 namespace Elasticsearch\Mapping\Request;
 
 use Elasticsearch\Mapping\Exceptions\MappingJsonCreateException;
+use Elasticsearch\Mapping\Exceptions\SourceOnlyRequiresDynamicFalseException;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analysis;
+use Elasticsearch\Mapping\Types\AbstractType;
+use Elasticsearch\Mapping\Types\ObjectsAndRelational\Dynamic;
+use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Types\SourceOnly;
 use JsonException;
 
 class MetadataRequestFactory
 {
     /**
      * @throws \Elasticsearch\Mapping\Exceptions\MappingJsonCreateException
+     * @throws \Elasticsearch\Mapping\Exceptions\SourceOnlyRequiresDynamicFalseException
      */
     public function create(Index $index): MetadataRequest
     {
+        $this->assertSourceOnlyFieldsStayOutOfTheMapping($index->getProperties(), $index->getDynamic(), '');
+
         $metadaRequest = new MetadataRequest($index);
         $record = [
             'mappings' => $this->resolveProperties($index),
@@ -46,10 +54,48 @@ class MetadataRequestFactory
         ];
 
         foreach ($properties as $property) {
+            if ($property instanceof SourceOnly) {
+                continue; // lives in _source only
+            }
             $indexProperties['properties'][$property->getName()] = $property->getCollection()->toArray();
         }
 
+        // `true` is the ES default, sent only when changed (same rule as ObjectType)
+        if ($index->getDynamic() !== Dynamic::TRUE) {
+            $indexProperties['dynamic'] = $index->getDynamic()->value;
+        }
+
         return $indexProperties;
+    }
+
+    /**
+     * A SourceOnly field only makes sense where the effective `dynamic` is `false`: `true` would map
+     * it dynamically, `strict` would reject the document. `Dynamic::TRUE` on an ObjectType is the
+     * default the library never sends, so it inherits the parent's value.
+     *
+     * @param iterable<AbstractType> $properties
+     * @throws \Elasticsearch\Mapping\Exceptions\SourceOnlyRequiresDynamicFalseException
+     */
+    private function assertSourceOnlyFieldsStayOutOfTheMapping(
+        iterable $properties,
+        Dynamic $effectiveDynamic,
+        string $path
+    ): void {
+        foreach ($properties as $property) {
+            $fieldPath = '' === $path ? $property->getName() : $path . '.' . $property->getName();
+
+            if ($property instanceof SourceOnly) {
+                if (Dynamic::FALSE !== $effectiveDynamic) {
+                    throw new SourceOnlyRequiresDynamicFalseException($fieldPath, $effectiveDynamic);
+                }
+                continue;
+            }
+
+            if ($property instanceof ObjectType) {
+                $dynamic = Dynamic::TRUE === $property->getDynamic() ? $effectiveDynamic : $property->getDynamic();
+                $this->assertSourceOnlyFieldsStayOutOfTheMapping($property->getProperties(), $dynamic, $fieldPath);
+            }
+        }
     }
 
     /**
@@ -75,7 +121,8 @@ class MetadataRequestFactory
 
     /**
      * Elasticsearch accepts these keys both flat in `settings` and under `settings.index` -
-     * the library sends them flat.
+     * the library sends them flat. Dotted keys (`mapping.total_fields.limit`) are expanded
+     * by Elasticsearch the same way.
      *
      * @return array<string, mixed>
      */
@@ -94,6 +141,13 @@ class MetadataRequestFactory
         foreach ($optionalSettings as $key => $value) {
             if (null !== $value) {
                 $settings[$key] = $value;
+            }
+        }
+
+        $mappingSettings = $index->getMappingSettings();
+        if (null !== $mappingSettings) {
+            foreach ($mappingSettings->toArray() as $path => $value) {
+                $settings['mapping.' . $path] = $value;
             }
         }
 

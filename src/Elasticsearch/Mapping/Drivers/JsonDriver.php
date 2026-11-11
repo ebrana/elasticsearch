@@ -12,6 +12,8 @@ use Elasticsearch\Mapping\Drivers\Resolvers\AnalysisResolver\TokenizerResolver;
 use Elasticsearch\Mapping\Drivers\Resolvers\PropertiesResolver\PropertiesResolver;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Settings\Analysis;
+use Elasticsearch\Mapping\Settings\MappingSettings;
+use Elasticsearch\Mapping\Types\ObjectsAndRelational\Dynamic;
 use RuntimeException;
 use stdClass;
 
@@ -58,6 +60,7 @@ class JsonDriver implements DriverInterface
 
         if (isset($mapping->$indexName->mappings)) {
             $this->propertiesResolver->resolveProperties($mapping->$indexName->mappings, $index);
+            $this->resolveDynamic($mapping->$indexName->mappings, $index);
         }
         if (isset($mapping->$indexName->settings)) {
             $this->resolveIndexSettings($mapping->$indexName->settings, $index);
@@ -98,6 +101,71 @@ class JsonDriver implements DriverInterface
             if (isset($source->max_shingle_diff)) {
                 $index->setMaxShingleDiff((int)$source->max_shingle_diff);
             }
+            $this->resolveMappingSettings($source, $index);
+        }
+    }
+
+    /**
+     * `index.mapping.*` limits. ES returns them nested (`settings.index.mapping.total_fields.limit`),
+     * a hand-written JSON may use the dotted key with or without the `index.` prefix. Values coming
+     * from ES are strings.
+     */
+    private function resolveMappingSettings(stdClass $source, Index $index): void
+    {
+        foreach (MappingSettings::PATHS as $path => $definition) {
+            $raw = $this->readMappingSetting($source, $path);
+            if (null === $raw) {
+                continue;
+            }
+            $mappingSettings = $index->getMappingSettings() ?? new MappingSettings();
+            $mappingSettings->set(
+                $path,
+                'bool' === $definition['type'] ? filter_var($raw, FILTER_VALIDATE_BOOLEAN) : (int)$raw
+            );
+            $index->setMappingSettings($mappingSettings);
+        }
+    }
+
+    /**
+     * Reads one of the `index.mapping.*` settings given by its path below `mapping.`
+     * (e.g. `total_fields.limit`): looks for the dotted key itself (with and without the `index.`
+     * prefix) and then walks the path through nested objects.
+     */
+    private function readMappingSetting(stdClass $source, string $mappingPath): mixed
+    {
+        $path = 'mapping.' . $mappingPath;
+        foreach ([$path, 'index.' . $path] as $dottedKey) {
+            if (isset($source->$dottedKey) && is_scalar($source->$dottedKey)) {
+                return $source->$dottedKey;
+            }
+        }
+
+        $current = $source;
+        foreach (explode('.', $path) as $segment) {
+            if (!$current instanceof stdClass || !isset($current->$segment)) {
+                return null;
+            }
+            $current = $current->$segment;
+        }
+
+        return is_scalar($current) ? $current : null;
+    }
+
+    /**
+     * `mappings.dynamic` comes back from Elasticsearch as a string ("false", "strict"),
+     * a hand-written JSON may hold a real boolean.
+     */
+    private function resolveDynamic(stdClass $mappings, Index $index): void
+    {
+        if (!isset($mappings->dynamic)) {
+            return;
+        }
+        $dynamic = $mappings->dynamic;
+        if (is_bool($dynamic)) {
+            $dynamic = $dynamic ? 'true' : 'false';
+        }
+        if (is_string($dynamic) && null !== $case = Dynamic::tryFrom($dynamic)) {
+            $index->setDynamic($case);
         }
     }
 

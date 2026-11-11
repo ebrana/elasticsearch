@@ -137,11 +137,13 @@ Atribut `Index` kromě jména a `postEventClass` nese i nastavení indexu:
     number_of_replicas: 1,
     refresh_interval: "30s",
     max_ngram_diff: 5,
-    max_shingle_diff: 4
+    max_shingle_diff: 4,
+    dynamic: Dynamic::FALSE
 )]
 ```
 
-Do mappingu jde jen to, co je vyplněné (`max_result_window` má default 10000). Ke všemu
+Do mappingu jde jen to, co je vyplněné (`max_result_window` má default 10000, `dynamic`
+se posílá jen když není `Dynamic::TRUE`). Ke všemu
 existují i settery, takže se to dá dolaďovat v post-event handleru — například vypnout
 refresh pro hromadnou reindexaci:
 
@@ -156,12 +158,114 @@ $index->setRefreshInterval('-1');
 | `refresh_interval` | jak často se změny stanou viditelné; `-1` vypne |
 | `max_ngram_diff` | povolený rozdíl `max_gram` − `min_gram` (ES default 1) |
 | `max_shingle_diff` | povolený rozdíl u `ShingleFilter` (ES default 3) |
+| `dynamic` | kořenové `mappings.dynamic` — `Dynamic::FALSE` nemapovaná pole jen uloží do `_source`, `Dynamic::STRICT` dokument s nimi odmítne |
 
 Bez `max_ngram_diff` Elasticsearch odmítne vytvořit index s širším ngram rozsahem než 1 —
 je to nejčastější důvod, proč `NgramTokenizer(min_gram: 2, max_gram: 6)` selže.
 
+⚠️ `dynamic` je součást mappingu, u existujícího indexu ho nelze změnit — index je potřeba
+vytvořit znovu a přeindexovat.
+
 V JSON driveru se čte jak vnořená forma `settings.index.*`, tak plochá `settings.*` —
-Elasticsearch bere obě.
+Elasticsearch bere obě; `mappings.dynamic` se čte jako string i boolean.
+
+### Limity mappingu (`index.mapping.*`)
+
+Limity mappingu mají vlastní class-level atribut `MappingSettings`, vedle `Index`:
+
+```php
+use Elasticsearch\Mapping\Settings\MappingSettings;
+
+#[Index(name: "ProductModule", dynamic: Dynamic::FALSE)]
+#[MappingSettings(total_fields_limit: 2000, nested_objects_limit: 20000)]
+class ProductModule
+```
+
+| Parametr | ES klíč `index.mapping.` | od ES | K čemu |
+|---|---|---|---|
+| `total_fields_limit` | `total_fields.limit` | 8.0 | strop počtu mapperů — pole, objekty, multi-fields, aliasy, runtime pole (ES default 1000) |
+| `total_fields_ignore_dynamic_beyond_limit` | `total_fields.ignore_dynamic_beyond_limit` | 8.13 | dynamická pole nad limit skončí v `_ignored` místo chyby |
+| `depth_limit` | `depth.limit` | 8.0 | max. hloubka vnořených objektů (ES default 20) |
+| `nested_fields_limit` | `nested_fields.limit` | 8.0 | max. počet různých `nested` mappingů (ES default 50 v 8.x, 100 v 9.x) |
+| `nested_parents_limit` | `nested_parents.limit` | 9.0 | max. `nested` polí, která jsou rodičem dalších `nested` (ES default 50) |
+| `nested_objects_limit` | `nested_objects.limit` | 8.0 | max. `nested` objektů v jednom dokumentu (ES default 10000) |
+| `field_name_length_limit` | `field_name_length.limit` | 8.0 | max. délka názvu pole (ES default bez limitu) |
+| `field_name_length_ignore_dynamic_beyond_limit` | `field_name_length.ignore_dynamic_beyond_limit` | 9.3 | příliš dlouhé dynamické názvy skončí v `_ignored` |
+| `dimension_fields_limit` | `dimension_fields.limit` | 8.0 | max. dimenzí time series (TSDS, ES default 32768) |
+
+Posílá se jen to, co je vyplněné. ⚠️ Elasticsearch odmítne vytvořit index s nastavením,
+které jeho verze nezná. Knihovna podporuje ES 8.0 až 9.3, u každého klíče proto nese verzi,
+od které existuje (`MappingSettings::PATHS`), a umí nastavení zkontrolovat proti verzi serveru:
+
+```php
+$unsupported = $index->getMappingSettings()?->unsupportedIn($serverVersion) ?? [];
+// ['field_name_length.ignore_dynamic_beyond_limit' => '9.3.0'] => tohle ES 9.2 odmítne
+```
+
+Nastavení z novějších verzí (např. `array_objects.limit` z ES 9.5) záměrně chybí.
+
+Limit polí se nejčastěji přeteče dynamickým mapováním — třeba objekt klíčovaný jazykem
+nebo parametry produktu, kde každý nový klíč přidá pole. Buď limit zvedni, nebo dynamické
+mapování vypni (`dynamic: Dynamic::FALSE`) a nemapovaná data nech jen v `_source`.
+
+Hodnoty jdou měnit i za běhu, třeba v post-event handleru:
+
+```php
+$index->getMappingSettings()?->setTotalFieldsLimit(3000);
+$index->setMappingSettings(new MappingSettings(depth_limit: 5)); // když atribut chybí
+```
+
+JSON driver čte `index.mapping.*` vnořeně (`settings.index.mapping.total_fields.limit`,
+tak to vrací `GET _settings`) i jako tečkovaný klíč (`"index.mapping.total_fields.limit"`
+nebo bez prefixu `index.`).
+
+### Pole jen v `_source` (`SourceOnly`)
+
+Někdy je potřeba mít data v dokumentu (vrací se v `_source` hitu), ale neindexovat je —
+nemají se podle nich hledat, nemají zabírat místo v mappingu ani se počítat do
+`total_fields.limit`. K tomu slouží atribut `SourceOnly`:
+
+```php
+use Elasticsearch\Mapping\Types\SourceOnly;
+
+#[Index(name: "Article", dynamic: Dynamic::FALSE)]
+class Article
+{
+    #[TextType]
+    private string $title;
+
+    #[SourceOnly]
+    private string $teaser;                 // skalár
+
+    #[SourceOnly(name: "meta")]
+    private array $metadata;                // i pole — v dokumentu pod klíčem "meta"
+
+    #[ObjectType(mappedBy: Comment::class)]
+    private array $comments;
+}
+
+class Comment
+{
+    #[KeywordType(context: Article::class)]
+    private string $author;
+
+    #[SourceOnly(context: Article::class)]  // funguje i uvnitř mappedBy objektu
+    private string $body;
+}
+```
+
+Do mappingu se `SourceOnly` pole nedostane (`MetadataRequestFactory` i `ObjectType` ho
+přeskočí), do dokumentu ho vloží `DefaultDocumentBuilder`, `ScalarValueResolverTrait`
+i `CollectionByMappingResolverTrait` (viz [Indexing](../Indexing/README.md)).
+
+⚠️ **Úroveň, na které `SourceOnly` leží, musí mít `dynamic: false`** — jinak by si
+Elasticsearch pole při prvním dokumentu namapoval sám (`true`), nebo dokument odmítl
+(`strict`). Nastavuje se na `#[Index(dynamic: Dynamic::FALSE)]` nebo na rodičovském
+`ObjectType(dynamic: Dynamic::FALSE)`; `ObjectType` bez vlastního `dynamic` dědí hodnotu
+rodiče. Při generování mappingu to knihovna kontroluje a vyhodí
+`SourceOnlyRequiresDynamicFalseException` (potomek `MappingJsonCreateException`).
+
+Jméno `SourceOnly` pole nesmí kolidovat s mapovaným polem (`DuplicityPropertyException`).
 
 ### Vestavěné analyzery
 

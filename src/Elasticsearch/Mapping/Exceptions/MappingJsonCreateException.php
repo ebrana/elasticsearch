@@ -8,8 +8,8 @@ use Throwable;
 
 class MappingJsonCreateException extends \Exception
 {
-    public function __construct(?Throwable $previous = null)
+    public function __construct(?Throwable $previous = null, string $message = 'Wrong create json index mapping.')
     {
-        parent::__construct('Wrong create json index mapping.', 0, $previous);
+        parent::__construct($message, 0, $previous);
     }
 }

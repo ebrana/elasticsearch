@@ -12,6 +12,7 @@ use Elasticsearch\Indexing\Interfaces\IndexableEntityInterface;
 use Elasticsearch\Indexing\Resolvers\CollectionByMappingResolverTrait;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\Types\ObjectsAndRelational\ObjectType;
+use Elasticsearch\Mapping\Types\SourceOnly;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -52,22 +53,18 @@ readonly class DefaultDocumentBuilder implements DocumentBuilderInterface
             }
 
             $data = $entity->$getter();
+            // the document key is the ES field name (`name:`), which may differ from the PHP property
             if ($property instanceof ObjectType && $property->getMappedBy()) {
                 if (!is_iterable($data)) {
                     throw new InvalidArgumentException('Resolving data for instance of ObjectType must be iterable.');
                 }
                 /** @var IndexableEntityInterface[] $typedData */
                 $typedData = $data;
-                $data = $this->resolveCollection($property, $typedData);
-            } else if (!is_scalar($data) && null !== $data) {
-                throw new RuntimeException(
-                    sprintf('Resolved value must be null or scalar. Entity "%s" and property "%s". Write your custom resolver instead.',
-                        get_class($entity),
-                        $property->getFieldName()
-                    )
-                );
+                $document->set($property->getName(), $this->resolveCollection($property, $typedData));
+                continue;
             }
-            $document->set($propertyName, $data);
+
+            $document->set($property->getName(), $this->resolveScalarOrSourceValue($entity, $property, $data));
         }
 
         return $document;

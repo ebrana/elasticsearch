@@ -53,6 +53,17 @@ $this->resolveCollectionsByField(
 );
 `````
 
+### Pole jen v `_source`
+
+Property označené `#[SourceOnly]` (viz [Mapping](../Mapping/README.md)) nejsou v mappingu,
+ale do dokumentu patří. `DefaultDocumentBuilder`, `ScalarValueResolverTrait`
+i `CollectionByMappingResolverTrait` je plní automaticky — na rozdíl od mapovaných skalárů
+smí hodnota být i pole (např. `['author' => 'es', 'tags' => ['a', 'b']]`). Objekt jako hodnota
+projde jen přes vlastní resolver.
+
+Klíč v dokumentu je vždy ES jméno pole (`name:` atributu), ne název PHP property —
+`#[SourceOnly(name: "meta")] private array $metadata` skončí v dokumentu jako `meta`.
+
 ## Bulk API
 
 Pro dávkovou indexaci je `Connection::bulk()`. Do jedné dávky lze míchat operace i indexy.
