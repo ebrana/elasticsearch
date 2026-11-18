@@ -289,12 +289,12 @@ class Connection
                 $metadata['_id'] = $id;
             }
 
-            $metadata = array_merge($metadata, $operation->getMetadata());
+            $metadata = [...$metadata, ...$operation->getMetadata()];
             $lines .= json_encode([$operation->getAction() => $metadata], JSON_THROW_ON_ERROR) . "\n";
 
             $source = $operation->getSource();
             if (null !== $source) {
-                $lines .= json_encode($source, JSON_THROW_ON_ERROR) . "\n";
+                $lines .= json_encode($source, JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR) . "\n";
             }
         }
 
