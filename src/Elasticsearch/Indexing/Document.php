@@ -60,12 +60,13 @@ final class Document implements DocumentInterface
      */
     public function toJson(): string
     {
-        $json = json_encode($this->toArray(), JSON_THROW_ON_ERROR);
-
-        if (empty($json)) {
-            throw new DocumentToJsonException();
+        try {
+            return json_encode(
+                $this->toArray(),
+                JSON_PRESERVE_ZERO_FRACTION | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR
+            );
+        } catch (JsonException $exception) {
+            throw new DocumentToJsonException($exception);
         }
-
-        return $json;
     }
 }
